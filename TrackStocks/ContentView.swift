@@ -14,15 +14,13 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
-            VStack {
-                Image(systemName: "globe")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                Text("Hello, world!")
-            }
-                .padding()
+            PortfolioView()
                 .tabItem {
-                    Label("Club Portfolio", systemImage: "rectangle.grid.2x2")
+                    Label("Symbols", systemImage: "rectangle.grid.2x2")
+                }
+            SymbolView()
+                .tabItem {
+                    Label("Symbols", systemImage: "rectangle.grid.2x2")
                 }
             SettingsView()
                 .tabItem {

@@ -57,10 +57,28 @@ struct StockData: Identifiable, Codable, Hashable {
     }
 }
 
-class StockDataService: ObservableObject {
-    @Published var stockData: [StockData] = []
+struct SymbolData: Identifiable, Codable, Hashable {
+    var id: String
+    var name: String?
+    var price: Float?
+    var exchange: String?
+    var exchangeShortName: String?
+    var type: String?
     
-    func fetch(tickers: String) async -> [StockData] {
+    enum CodingKeys: String, CodingKey {
+        case id = "symbol"
+        case name
+        case price
+        case exchange
+        case exchangeShortName
+        case type
+    }
+}
+
+class StockDataService: ObservableObject {
+    static let shared = StockDataService()
+    
+    func fetchStocks(tickers: String) async -> [StockData] {
         do {
             if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-order/" + tickers + "?apikey=ebsEkpswwWUGa5RgJG6YlMzG2lC0Tljf") {
                 let session = URLSession(configuration: .default)
@@ -72,6 +90,22 @@ class StockDataService: ObservableObject {
         }
         catch {
             debugPrint("StockDataService error for tickers: \(tickers) error: \(error)")
+        }
+        return []
+    }
+    
+    func fetchSymbols() async -> [SymbolData] {
+        do {
+            if let url = URL(string: "https://financialmodelingprep.com/api/v3/stock/list?apikey=ebsEkpswwWUGa5RgJG6YlMzG2lC0Tljf") {
+                let session = URLSession(configuration: .default)
+                let response = try await session.data(from: url)
+                debugPrint("response: \(response.0)")
+                let data = try JSONDecoder().decode([SymbolData].self, from: response.0)
+                return data
+            }
+        }
+        catch {
+            debugPrint("StockDataService error for fetchSymbols error: \(error)")
         }
         return []
     }

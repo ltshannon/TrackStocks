@@ -139,7 +139,7 @@ class PortfolioService: ObservableObject {
         
         let value = await getStockList(listName: listName)
         let string: String = value.joined(separator: ",")
-        let stocks = await stockDataService.fetch(tickers: string)
+        let stocks = await stockDataService.fetchStocks(tickers: string)
         return stocks
     }
     
@@ -151,7 +151,7 @@ class PortfolioService: ObservableObject {
             list += value
         }
         let string: String = list.joined(separator: ",")
-        let stocks = await stockDataService.fetch(tickers: string)
+        let stocks = await stockDataService.fetchStocks(tickers: string)
         return stocks
     }
     
@@ -215,7 +215,7 @@ class PortfolioService: ObservableObject {
             }
         }
         let string: String = list.joined(separator: ",")
-        let stockData = await stockDataService.fetch(tickers: string)
+        let stockData = await stockDataService.fetchStocks(tickers: string)
         for item in stockData {
             items.indices.forEach { index in
                 if item.id == items[index].symbol {

@@ -20,6 +20,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct TrackStocksApp: App {
     @StateObject var userAuth = Authentication.shared
     @StateObject var firebaseService = FirebaseService.shared
+    @StateObject var stockDataService = StockDataService.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     var body: some Scene {
@@ -27,6 +28,7 @@ struct TrackStocksApp: App {
             ContentView()
                 .environmentObject(userAuth)
                 .environmentObject(firebaseService)
+                .environmentObject(stockDataService)
         }
     }
 }

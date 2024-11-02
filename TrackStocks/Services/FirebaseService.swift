@@ -74,6 +74,7 @@ class FirebaseService: ObservableObject {
     @Published var user: FirebaseUserInformation = FirebaseUserInformation(id: "", displayName: "", email: "", subscription: false)
     var fmc: String = ""
     var userListener: ListenerRegistration?
+    var portfolioListener: ListenerRegistration?
     
     func getUser() {
         
@@ -117,6 +118,39 @@ class FirebaseService: ObservableObject {
             debugPrint(String.fatal, "users: Error writing users: \(error)")
             return
         }
+    }
+    
+    func addPortfolioCollection(portfolioName: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        database.collection("Portfolios").document(portfolioName)
+        
+        do {
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).setData([
+                "name": portfolioName,
+            ])
+        } catch {
+            debugPrint("Error creating addPortfolioCollection name: \(portfolioName) error: \(error)")
+        }
+    }
+    
+    func getPortfolios() async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let listener = database.collection("users").document(user.uid).collection("portfolios").whereField("name", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
+            guard let documents = querySnapshot?.documents else {
+                print("Error getPortfolios: \(error!)")
+                return
+            }
+            let portfolios = documents.compactMap { $0["name"] }
+            debugPrint("Current cities in CA: \(portfolios)")
+        }
+        
+        self.portfolioListener = listener
     }
     
     func getPortfolioList(stockList: [StockItem], listName: PortfolioType, displayStockState: DisplayStockState) async -> [PortfolioItem] {
