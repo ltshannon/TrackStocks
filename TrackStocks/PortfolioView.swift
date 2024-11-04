@@ -9,7 +9,10 @@ import SwiftUI
 
 struct PortfolioView: View {
     @EnvironmentObject var stockDataService: StockDataService
-    @State var stocks: [StockData] = []
+//    @EnvironmentObject var portfolioService: PortfolioService
+    var portfolioService = PortfolioService()
+    var portfolioName: String = ""
+    @State var stocks: [ItemData] = []
     @State var change: Float = 0
     
     var body: some View {
@@ -21,7 +24,7 @@ struct PortfolioView: View {
                             Image(systemName: getChartName(item: item)).foregroundStyle(getColorOfChange(item: item))
                             VStack {
                                 HStack {
-                                    Text(item.id)
+                                    Text(item.symbol)
                                     Text(String(format: "%.2f", item.price))
                                 }
                             }
@@ -29,19 +32,20 @@ struct PortfolioView: View {
                     }
                 }
                 .padding()
-                .task {
-                    let stockList = "MSFT,PGR,SEZL,SFM,SMCI"
-                    let results = await stockDataService.fetchStocks(tickers: stockList)
-                    await MainActor.run {
-                        stocks = results
-                    }
+            }
+        }
+        .navigationTitle(portfolioName)
+        .onAppear {
+            Task {
+                let results = await portfolioService.getPortfolio(listName: portfolioName)
+                await MainActor.run {
+                    stocks = results.0
                 }
             }
         }
-        .navigationTitle("Track Stocks")
     }
     
-    func getChartName(item: StockData) -> String {
+    func getChartName(item: ItemData) -> String {
         if let value = item.change, value < 0 {
             return "chart.line.downtrend.xyaxis"
         }
@@ -51,7 +55,7 @@ struct PortfolioView: View {
         return "chart.line.flattrend.xyaxis"
     }
     
-    func getColorOfChange(item: StockData) -> Color {
+    func getColorOfChange(item: ItemData) -> Color {
         if let value = item.change, value < 0 {
             return .red
         }

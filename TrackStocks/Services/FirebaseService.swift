@@ -17,14 +17,20 @@ struct StockItem: Codable, Identifiable, Hashable {
     var symbol: String?
 }
 
+struct Portfolio: Codable, Identifiable, Hashable {
+    @DocumentID var id: String?
+    var name: String
+}
+
 struct PortfolioItem: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
+    var name: String?
     var quantity: Double
-    var basis: Decimal
+    var basis: Float
     var dividend: [String]?
     var symbol: String?
     var isSold: Bool?
-    var price: Decimal?
+    var price: Float?
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -41,7 +47,7 @@ struct DividendDisplayData: Codable, Identifiable, Hashable, Equatable {
     var id = UUID().uuidString
     var symbol = ""
     var date = ""
-    var price: Decimal = 0
+    var price: Float = 0
 }
 
 struct DividendPlaceholder: Codable, Identifiable, Hashable {
@@ -72,6 +78,7 @@ class FirebaseService: ObservableObject {
     static let shared = FirebaseService()
     @AppStorage("profile-url") var profileURL: String = ""
     @Published var user: FirebaseUserInformation = FirebaseUserInformation(id: "", displayName: "", email: "", subscription: false)
+    @Published var portfolioList: [Portfolio] = []
     var fmc: String = ""
     var userListener: ListenerRegistration?
     var portfolioListener: ListenerRegistration?
@@ -120,12 +127,10 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func addPortfolioCollection(portfolioName: String) async {
+    func addPortfolio(portfolioName: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
-        
-        database.collection("Portfolios").document(portfolioName)
         
         do {
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).setData([
@@ -136,24 +141,56 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func getPortfolios() async {
+    func listenerForPortfolios() {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
         let listener = database.collection("users").document(user.uid).collection("portfolios").whereField("name", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else {
-                print("Error getPortfolios: \(error!)")
+                debugPrint("🧨", "Error getPortfolios: \(error!)")
                 return
             }
-            let portfolios = documents.compactMap { $0["name"] }
-            debugPrint("Current cities in CA: \(portfolios)")
+            
+            var results: [Portfolio] = []
+            
+            do {
+                for document in documents {
+                    let data = try document.data(as: Portfolio.self)
+                    results.append(data)
+                }
+                
+                DispatchQueue.main.async {
+                    self.portfolioList = results
+                }
+            }
+            catch {
+                debugPrint("🧨", "Error reading getPortfolios: \(error.localizedDescription)")
+            }
         }
         
         self.portfolioListener = listener
     }
     
-    func getPortfolioList(stockList: [StockItem], listName: PortfolioType, displayStockState: DisplayStockState) async -> [PortfolioItem] {
+    func getStocksFromPortfolio(portfolioName: String) async -> [StockItem] {
+        guard let user = Auth.auth().currentUser else {
+            return []
+        }
+        
+        var stockItems: [StockItem] = []
+        do {
+            let querySnapshot = try await database.collection("users").document(user.uid).collection(portfolioName).document(portfolioName).getDocument()
+            if querySnapshot.exists {
+                let data = try querySnapshot.data(as: StockItem.self)
+                stockItems.append(data)
+            }
+        } catch {
+            debugPrint("🧨", "getStocksFromPortfolio \(error.localizedDescription)")
+        }
+        return stockItems
+    }
+    
+    func getPortfolioList(stockList: [StockItem], listName: String, displayStockState: DisplayStockState) async -> [PortfolioItem] {
         var id: String = ""
         guard let user = Auth.auth().currentUser else {
             return []
@@ -163,7 +200,9 @@ class FirebaseService: ObservableObject {
         for item in stockList {
             do {
                 id = item.id ?? "n/a"
-                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).getDocument()
+//                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName).document(id).getDocument()
+                let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").document(id).getDocument()
+                
                 if querySnapshot.exists {
                     var data = try querySnapshot.data(as: PortfolioItem.self)
                     if displayStockState == .showSoldStocks && data.isSold == nil {
@@ -177,19 +216,16 @@ class FirebaseService: ObservableObject {
                     } else {
                         data.symbol = data.id ?? "n/a"
                     }
-//                    if listName == .eliteDividendPayers {
-                        let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).collection("dividend").document("dividend").getDocument()
-                        if querySnapshot2.exists {
-                            let data2 = try querySnapshot2.data(as: DividendData.self)
-                            //                        debugPrint("👾", "dividend: \(data2)")
-                            data.dividend = data2.values
-//                        }
+                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName).document(id).collection("dividend").document("dividend").getDocument()
+                    if querySnapshot2.exists {
+                        let data2 = try querySnapshot2.data(as: DividendData.self)
+                        data.dividend = data2.values
                     }
                     portfolioItems.append(data)
                 }
             }
             catch {
-                debugPrint("🧨", "id: \(id) listName: \(listName.rawValue) Error reading stock items: \(error.localizedDescription)")
+                debugPrint("🧨", "id: \(id) listName: \(listName) Error reading stock items: \(error.localizedDescription)")
             }
         }
         
@@ -199,20 +235,17 @@ class FirebaseService: ObservableObject {
     func getStockList(listName: String) async -> [StockItem] {
         var items: [StockItem] = []
         
-        guard let user = Auth.auth().currentUser else {
+        guard let user = Auth.auth().currentUser, listName != "" else {
             return []
         }
+        
+        
         do {
-            let querySnapshot = try await database.collection("users").document(user.uid).collection(listName).getDocuments()
-            
+            let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").getDocuments()
+
             for document in querySnapshot.documents {
-                var item = try document.data(as: StockItem.self)
-                if let _ = item.id {
-                    if let symbol = item.symbol {
-                        item.symbol = symbol
-                    }
-                    items.append(item)
-                }
+                let item = try document.data(as: StockItem.self)
+                items.append(item)
             }
         }
         catch {
@@ -304,16 +337,15 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func addItem(listName: String, symbol: String, quantity: Double, basis: Decimal) async {
+    func addItem(listName: String, symbol: String, quantity: Double, basis: Float) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
-        let temp = NSDecimalNumber(decimal: basis)
         let value = [
             "symbol": symbol,
             "quantity": quantity,
-            "basis": temp
+            "basis": basis
         ] as [String : Any]
         do {
 //            try await database.collection("users").document(user.uid).collection(listName).document(symbol).setData(value)
@@ -418,15 +450,14 @@ class FirebaseService: ObservableObject {
         if item.contains("$") {
             item = String(basis.dropFirst())
         }
-        let dec = Decimal(string: item) ?? 0
-        let temp = NSDecimalNumber(decimal:  dec)
+        let float = Float(item) ?? 0
         if symbol != originalSymbol {
             await deleteItem(listName: listName, symbol: originalSymbol)
-            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: dec)
+            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: float)
         } else {
             let value = [
                 "quantity": quantity,
-                "basis": temp
+                "basis": float
             ] as [String : Any]
             do {
                 try await database.collection("users").document(user.uid).collection(listName).document(firestoreId).updateData(value)

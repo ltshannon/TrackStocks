@@ -22,6 +22,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("Symbols", systemImage: "rectangle.grid.2x2")
                 }
+            PortfolioHomeView()
+                .tabItem {
+                    Label("Portfolios", systemImage: "rectangle.grid.2x2")
+                }
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
