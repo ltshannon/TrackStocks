@@ -22,12 +22,12 @@ struct SymbolView: View {
                 }
                 .padding()
                 .searchable(text: $searchText, prompt: "Enter Stock Symbol")
-                .task {
-                    let results = await stockDataService.fetchSymbols()
-                    await MainActor.run {
-                        symbols = results
-                    }
-                }
+//                .task {
+//                    let results = await stockDataService.fetchSymbols()
+//                    await MainActor.run {
+//                        symbols = results
+//                    }
+//                }
             }
         }
         .navigationTitle("Symbol Search")

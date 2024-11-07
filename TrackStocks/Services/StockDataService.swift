@@ -6,12 +6,14 @@
 //
 
 import Foundation
+import SwiftUI
+import SwiftData
 
 struct StockData: Identifiable, Codable, Hashable {
     var id: String
     var name: String
     var price: Float
-    var changePercentage: Float?
+    var changesPercentage: Float?
     var change: Float?
     var dayLow: Float?
     var dayHigh: Float?
@@ -35,7 +37,7 @@ struct StockData: Identifiable, Codable, Hashable {
         case id = "symbol"
         case name
         case price
-        case changePercentage
+        case changesPercentage
         case change
         case dayLow
         case dayHigh
@@ -75,6 +77,45 @@ struct SymbolData: Identifiable, Codable, Hashable {
     }
 }
 
+struct MarketSymbols: Identifiable, Codable, Hashable {
+    var id = UUID().uuidString
+    var symbol: String
+    var name: String
+    var price: Float
+    var exchange: String
+    var exchangeShortName: String
+    var type: String
+    
+    init(id: String = UUID().uuidString, symbol: String, name: String, price: Float, exchange: String, exchangeShortName: String, type: String) {
+        self.id = id
+        self.symbol = symbol
+        self.name = name
+        self.price = price
+        self.exchange = exchange
+        self.exchangeShortName = exchangeShortName
+        self.type = type
+    }
+}
+
+@Model
+class SymbolStorage {
+    var symbol: String
+    var name: String
+    var price: Float
+    var exchange: String
+    var exchangeShortName: String
+    var type: String
+    
+    init(symbol: String, name: String, price: Float, exchange: String, exchangeShortName: String, type: String) {
+        self.symbol = symbol
+        self.name = name
+        self.price = price
+        self.exchange = exchange
+        self.exchangeShortName = exchangeShortName
+        self.type = type
+    }
+}
+
 class StockDataService: ObservableObject {
     static let shared = StockDataService()
     
@@ -110,5 +151,44 @@ class StockDataService: ObservableObject {
         return []
     }
     
+}
+
+class MarketSymbolsService: ObservableObject {
+    static let shared = MarketSymbolsService()
+    @Published var marketSymbols: [MarketSymbols] = []
+    @AppStorage("stock-exchange-list") var stockExchangeList: [String] = ["NASDAQ", "NYSE", "AMEX", "OTC"]
+    
+    func makeList(symbolStorage: [SymbolStorage]) {
+        var array: [MarketSymbols] = []
+//        let set = Set(stockExchangeList)
+        for item in symbolStorage {
+//            if set.contains(item.exchange) {
+            let marketSymbol = MarketSymbols(symbol: item.symbol, name: item.name, price: item.price, exchange: item.exchange, exchangeShortName: item.exchangeShortName, type: item.type)
+                array.append(marketSymbol)
+//            }
+        }
+        DispatchQueue.main.async {
+            self.marketSymbols = array
+        }
+    }
+}
+
+extension Array: @retroactive RawRepresentable where Element: Codable {
+
+    public init?(rawValue: String) {
+        guard
+            let data = rawValue.data(using: .utf8),
+            let result = try? JSONDecoder().decode([Element].self, from: data)
+        else { return nil }
+        self = result
+    }
+
+    public var rawValue: String {
+        guard
+            let data = try? JSONEncoder().encode(self),
+            let result = String(data: data, encoding: .utf8)
+        else { return "" }
+        return result
+    }
 }
 

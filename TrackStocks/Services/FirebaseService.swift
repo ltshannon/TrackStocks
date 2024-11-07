@@ -31,6 +31,7 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var symbol: String?
     var isSold: Bool?
     var price: Float?
+    var date: String
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -337,7 +338,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func addItem(listName: String, symbol: String, quantity: Double, basis: Float) async {
+    func addItem(listName: String, symbol: String, quantity: Double, basis: Float, date: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -345,11 +346,12 @@ class FirebaseService: ObservableObject {
         let value = [
             "symbol": symbol,
             "quantity": quantity,
-            "basis": basis
+            "basis": basis,
+            "date": date
         ] as [String : Any]
+        
         do {
-//            try await database.collection("users").document(user.uid).collection(listName).document(symbol).setData(value)
-            try await database.collection("users").document(user.uid).collection(listName).addDocument(data: value)
+            try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").addDocument(data: value)
         } catch {
             debugPrint(String.boom, "addItem: \(error)")
         }
@@ -441,7 +443,12 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateItem(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String) async {
+    func updateItem(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String, date: Date) async {
+        
+        let formatter1 = DateFormatter()
+        formatter1.dateStyle = .short
+        let str = formatter1.string(from: date)
+        
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -453,7 +460,7 @@ class FirebaseService: ObservableObject {
         let float = Float(item) ?? 0
         if symbol != originalSymbol {
             await deleteItem(listName: listName, symbol: originalSymbol)
-            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: float)
+            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: float, date: str)
         } else {
             let value = [
                 "quantity": quantity,

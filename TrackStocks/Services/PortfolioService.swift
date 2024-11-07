@@ -19,7 +19,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var quantity: Double
     var dividend: [String]?
     var isSold: Bool
-    var changePercentage: Float?
+    var changesPercentage: Float?
     var change: Float?
     var dayLow: Float?
     var dayHigh: Float?
@@ -38,6 +38,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var earningsAnnouncement: String?
     var sharesOutstanding: Float?
     var timestamp: Int?
+    var date: String
 }
 
 enum PortfolioType: String, CaseIterable, Identifiable, Encodable {
@@ -64,6 +65,7 @@ enum GrowthClubPortfolio: String, CaseIterable, Identifiable, Encodable {
 
 @MainActor
 class PortfolioService: ObservableObject {
+    static let shared = PortfolioService()
     var firebaseService = FirebaseService.shared
     var stockDataService = StockDataService()
     @Published var showingProgress = false
@@ -126,8 +128,6 @@ class PortfolioService: ObservableObject {
             var value = ""
             if let symbol = item.symbol {
                 value = symbol
-            } else {
-                value = item.id ?? "NA"
             }
             var soldPrice:Float = 0.0
             var isSold = false
@@ -135,7 +135,7 @@ class PortfolioService: ObservableObject {
                 soldPrice = value
                 isSold = true
             }
-            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold)
+            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold, date: item.date)
             items.append(temp)
         }
         
@@ -145,7 +145,7 @@ class PortfolioService: ObservableObject {
         var dividendList: [DividendDisplayData] = []
         var list: [String] = []
         for item in stockList {
-            if let value = item.id, value.count <= 4 {
+            if let value = item.symbol, value.count <= 4 {
                 list.append(value)
             }
         }
@@ -172,7 +172,7 @@ class PortfolioService: ObservableObject {
                             items[index].gainLose += result.1
                         }
                     }
-                    items[index].changePercentage = item.changePercentage
+                    items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
                     items[index].change = item.change
                     items[index].dayLow = item.dayLow
                     items[index].dayHigh = item.dayHigh
@@ -215,12 +215,12 @@ class PortfolioService: ObservableObject {
     
     func addStock(listName: String, item: ItemData) async {
         
-        await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis)
+        await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis, date: item.date)
     }
     
-    func updateStock(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String) async {
+    func updateStock(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String, date: Date) async {
         
-        await firebaseService.updateItem(firestoreId: firestoreId, listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis)
+        await firebaseService.updateItem(firestoreId: firestoreId, listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis, date: date)
     }
     
     func soldStock(firestoreId: String, listName: String, price: String) async  {
@@ -307,7 +307,7 @@ class PortfolioService: ObservableObject {
     }
     
     func getBasisForStockInPortfilio(portfolioType: PortfolioType, symbol: String) -> Float? {
-        var list: [ItemData] = []
+        let list: [ItemData] = []
 //        switch portfolioType {
 //        case .acceleratedProfits:
 //            list = acceleratedProfitsList;

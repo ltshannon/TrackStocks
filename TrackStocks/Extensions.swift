@@ -51,6 +51,23 @@ extension String {
                 : $0 + String($1)
         }
     }
+    
+    func getChartName(item: ItemData) -> String {
+        if let value = item.change, value < 0 {
+            return "chart.line.downtrend.xyaxis"
+        }
+        if let value = item.change, value > 0 {
+            return "chart.line.uptrend.xyaxis"
+        }
+        return "chart.line.flattrend.xyaxis"
+    }
+}
+
+func getColorOfChange(change: Float?) -> Color {
+    if let value = change, value < 0 {
+        return .red
+    }
+    return .green
 }
 
 struct NavigationStyleLayer: UIViewControllerRepresentable {

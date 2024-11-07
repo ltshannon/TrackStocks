@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import SwiftData
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -21,7 +22,9 @@ struct TrackStocksApp: App {
     @StateObject var userAuth = Authentication.shared
     @StateObject var firebaseService = FirebaseService.shared
     @StateObject var stockDataService = StockDataService.shared
-//    @StateObject var portfolioService = PortfolioService()
+    @StateObject var portfolioService = PortfolioService.shared
+    @StateObject var marketSymbolsService = MarketSymbolsService.shared
+    @StateObject var appNavigationState = AppNavigationState()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     var body: some Scene {
@@ -30,7 +33,10 @@ struct TrackStocksApp: App {
                 .environmentObject(userAuth)
                 .environmentObject(firebaseService)
                 .environmentObject(stockDataService)
-//                .environmentObject(portfolioService)
+                .environmentObject(portfolioService)
+                .environmentObject(marketSymbolsService)
+                .environmentObject(appNavigationState)
         }
+        .modelContainer(for: [SymbolStorage.self])
     }
 }

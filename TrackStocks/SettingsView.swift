@@ -6,12 +6,18 @@
 //
 
 import SwiftUI
+import SwiftData
 import FirebaseAuth
 
 struct SettingsView: View {
     @EnvironmentObject var userAuth: Authentication
+    @Environment(\.modelContext) var context
+    @Environment(\.dismiss) private var dismiss
+    @Query(sort: \SymbolStorage.symbol) var symbolStorage: [SymbolStorage]
     @State var showSignOut = false
     @State var showDeleteAccount = false
+    @State var showingSheet: Bool = false
+    @State var showSymbolUpdate = false
     var body: some View {
         
         ZStack {
@@ -57,10 +63,32 @@ struct SettingsView: View {
                 } message: {
                     Text("Are you sure you want to delete your account?")
                 }
+                Button("Market Symbols Update") {
+                    showSymbolUpdate = true
+                }
+                .buttonStyle(PlainTextButtonStyle())
+                .alert("Update Market Symbols?", isPresented: $showSymbolUpdate) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Update", role: .destructive) {
+                        for symbol in symbolStorage {
+                            context.delete(symbol)
+                        }
+                        try! context.save()
+                    }
+                } message: {
+                    Text("Are you sure you want to update the Market Symbols, this will take a while?")
+                }
                 Spacer()
             }
             .padding([.top, .leading, .trailing])
+            .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
+                
+            }
         }
+    }
+    
+    func didDismiss() {
+        dismiss()
     }
     
 }

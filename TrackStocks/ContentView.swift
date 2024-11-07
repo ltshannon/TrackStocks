@@ -14,14 +14,6 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
-            PortfolioView()
-                .tabItem {
-                    Label("Symbols", systemImage: "rectangle.grid.2x2")
-                }
-            SymbolView()
-                .tabItem {
-                    Label("Symbols", systemImage: "rectangle.grid.2x2")
-                }
             PortfolioHomeView()
                 .tabItem {
                     Label("Portfolios", systemImage: "rectangle.grid.2x2")
