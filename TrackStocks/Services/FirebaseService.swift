@@ -142,9 +142,9 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func listenerForPortfolios() {
+    func listenerForPortfolios() -> Bool {
         guard let user = Auth.auth().currentUser else {
-            return
+            return false
         }
         
         let listener = database.collection("users").document(user.uid).collection("portfolios").whereField("name", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
@@ -171,6 +171,7 @@ class FirebaseService: ObservableObject {
         }
         
         self.portfolioListener = listener
+        return true
     }
     
     func getStocksFromPortfolio(portfolioName: String) async -> [StockItem] {
@@ -459,7 +460,7 @@ class FirebaseService: ObservableObject {
         }
         let float = Float(item) ?? 0
         if symbol != originalSymbol {
-            await deleteItem(listName: listName, symbol: originalSymbol)
+            await deleteItem(portfolioName: listName, symbol: originalSymbol)
             await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: float, date: str)
         } else {
             let value = [
@@ -493,13 +494,46 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func deleteItem(listName: String, symbol: String) async  {
+    func deletePortfolio(portfolioName: String) async  {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
         do {
-          try await database.collection("users").document(user.uid).collection(listName).document(symbol).delete()
+            let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").getDocuments()
+            for document in querySnapshot.documents {
+                let item = try document.data(as: StockItem.self)
+                if let id = item.id {
+                    try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
+                }
+            }
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).delete()
+        } catch {
+            debugPrint(String.boom, "deletePortfolio for portfolio; \(portfolioName) \(error)")
+        }
+        
+    }
+    
+    func deletePortfolioStock(portfolioName: String, stockId: String) async  {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        do {
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).delete()
+        } catch {
+            debugPrint(String.boom, "deletePortfolioStock for portfolio: \(portfolioName) sockid: \(stockId) error: \(error)")
+        }
+        
+    }
+    
+    func deleteItem(portfolioName: String, symbol: String) async  {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        do {
+          try await database.collection("users").document(user.uid).collection(portfolioName).document(symbol).delete()
         } catch {
             debugPrint(String.boom, "deleteItem: \(error)")
         }

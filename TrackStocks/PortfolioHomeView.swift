@@ -22,26 +22,24 @@ struct PortfolioHomeView: View {
     
     var body: some View {
         NavigationStack(path: $appNavigationState.portfolioNavigation) {
-//            ScrollView {
-                List {
-                    ForEach(firebaseService.portfolioList, id: \.id) { item in
-                        VStack {
-                            Text(item.name)
-                                .font(.title2)
-//                            Divider()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            let parameters = PortfolioParameters(portfolioName: item.name)
-                            appNavigationState.portfolioView(parameters: parameters)
-                        }
+            List {
+                ForEach(firebaseService.portfolioList, id: \.id) { item in
+                    HStack {
+                        Text(item.name)
+                            .font(.title2)
+                        Spacer()
                     }
-                    .onDelete(perform: delete)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        let parameters = PortfolioParameters(portfolioName: item.name)
+                        appNavigationState.portfolioView(parameters: parameters)
+                    }
                 }
-                .toolbar {
-                     EditButton()
-                 }
-//            }
+                .onDelete(perform: delete)
+            }
+            .toolbar {
+                EditButton()
+            }
             .navigationTitle("Portfolios")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -67,8 +65,9 @@ struct PortfolioHomeView: View {
         }
         .onAppear {
             if firstTime {
-                firstTime = false
-                firebaseService.listenerForPortfolios()
+                if firebaseService.listenerForPortfolios() {
+                    firstTime = false
+                }
             }
             if symbolStorage.isEmpty {
                 let set = Set(stockExchangeList)
@@ -102,11 +101,19 @@ struct PortfolioHomeView: View {
     func add() {
         Task {
             await firebaseService.addPortfolio(portfolioName: portfolioName)
+            portfolioName = ""
         }
     }
     
     func delete(at offsets: IndexSet) {
-
+        for index in offsets {
+            if index <= firebaseService.portfolioList.count {
+                let portfolio = firebaseService.portfolioList[index]
+                Task {
+                    await firebaseService.deletePortfolio(portfolioName: portfolio.name)
+                }
+            }
+        }
     }
 }
 

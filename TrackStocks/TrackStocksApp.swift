@@ -29,7 +29,7 @@ struct TrackStocksApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SignInView()
                 .environmentObject(userAuth)
                 .environmentObject(firebaseService)
                 .environmentObject(stockDataService)

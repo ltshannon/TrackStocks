@@ -11,6 +11,7 @@ struct PortfolioView: View {
     @EnvironmentObject var stockDataService: StockDataService
     @EnvironmentObject var portfolioService: PortfolioService
     @EnvironmentObject var appNavigationState: AppNavigationState
+    @EnvironmentObject var firebaseService: FirebaseService
     var portfolioName: String
     @State var stocks: [ItemData] = []
     @State var change: Float = 0
@@ -88,7 +89,13 @@ struct PortfolioView: View {
     }
     
     func delete(at offsets: IndexSet) {
-
+        for index in offsets {
+            if index <= stocks.count {
+                Task {
+                    await firebaseService.deletePortfolioStock(portfolioName: self.portfolioName, stockId: stocks[index].firestoreId)
+                }
+            }
+        }
     }
     
     func didDismiss() {

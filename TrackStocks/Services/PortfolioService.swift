@@ -230,7 +230,7 @@ class PortfolioService: ObservableObject {
     
     func deleteStock(listName: String, symbol: String) async {
         
-        await firebaseService.deleteItem(listName: listName, symbol: symbol)
+        await firebaseService.deleteItem(portfolioName: listName, symbol: symbol)
     }
     
     func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {

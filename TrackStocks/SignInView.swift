@@ -10,11 +10,10 @@ import AuthenticationServices
 import FirebaseAuth
 
 struct SignInView: View {
+    @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var userAuth: Authentication
-    @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
-    @State var errorMessage = ""
-    @State var showError = false
+    @State var showingContentView: Bool = false
     
     var body: some View {
         VStack {
@@ -29,10 +28,24 @@ struct SignInView: View {
             .cornerRadius(8)
         }
         .padding([.leading, .trailing], 20)
-        .alert("Error", isPresented: $showError) {
-            Button("Ok", role: .cancel) {  }
-        } message: {
-            Text("Error: \(errorMessage)")
+        .onReceive(userAuth.$state) { state in
+            debugPrint("😍", "ContentView onReceive userAtuh.state: \(state)")
+            if state == .loggedOut {
+
+            }
+            if state == .loggedIn {
+                Task {
+                    await firebaseService.createUser(token: userAuth.fcmToken)
+                    firebaseService.getUser()
+                    DispatchQueue.main.async {
+                        showingContentView = true
+                    }
+                }
+
+            }
+        }
+        .fullScreenCover(isPresented: $showingContentView) {
+            ContentView()
         }
     }
 }
