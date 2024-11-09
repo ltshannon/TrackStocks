@@ -90,7 +90,7 @@ struct PortfolioHomeView: View {
         }
         .alert("Add Portfolio", isPresented: $showAlert) {
             TextField("Name", text: $portfolioName)
-                .keyboardType(.decimalPad)
+                .keyboardType(.default)
             Button("OK", action: add)
             Button("Cancel", role: .cancel) { }
          } message: {
