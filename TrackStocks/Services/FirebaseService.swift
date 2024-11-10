@@ -31,7 +31,8 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var symbol: String?
     var isSold: Bool?
     var price: Float?
-    var date: String
+    var purchasedDate: String
+    var soldDate: String
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -339,7 +340,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func addItem(listName: String, symbol: String, quantity: Double, basis: Float, date: String) async {
+    func addItem(listName: String, symbol: String, quantity: Double, basis: Float, purchasedDate: String, soldDate: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -348,7 +349,8 @@ class FirebaseService: ObservableObject {
             "symbol": symbol,
             "quantity": quantity,
             "basis": basis,
-            "date": date
+            "purchasedDate": purchasedDate,
+            "soldDate": soldDate
         ] as [String : Any]
         
         do {
@@ -461,7 +463,7 @@ class FirebaseService: ObservableObject {
         let float = Float(item) ?? 0
         if symbol != originalSymbol {
             await deleteItem(portfolioName: listName, symbol: originalSymbol)
-            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: float, date: str)
+            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: float, purchasedDate: str, soldDate: "n/a")
         } else {
             let value = [
                 "quantity": quantity,

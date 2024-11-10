@@ -38,7 +38,8 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var earningsAnnouncement: String?
     var sharesOutstanding: Float?
     var timestamp: Int?
-    var date: String
+    var purchasedDate: String
+    var soldDate: String
 }
 
 enum PortfolioType: String, CaseIterable, Identifiable, Encodable {
@@ -135,7 +136,7 @@ class PortfolioService: ObservableObject {
                 soldPrice = value
                 isSold = true
             }
-            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold, date: item.date)
+            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: "n/a")
             items.append(temp)
         }
         
@@ -215,7 +216,7 @@ class PortfolioService: ObservableObject {
     
     func addStock(listName: String, item: ItemData) async {
         
-        await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis, date: item.date)
+        await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis, purchasedDate: item.purchasedDate, soldDate: "n/a")
     }
     
     func updateStock(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String, date: Date) async {

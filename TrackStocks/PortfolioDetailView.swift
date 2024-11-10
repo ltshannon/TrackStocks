@@ -31,10 +31,16 @@ struct PortfolioDetailView: View {
                         Text(item.symbol)
                             .bold()
                     }
-                    VStack {
+                    VStack(alignment: .leading) {
                         Text(String(format: "%.2f", item.price))
                         Text(item.change != nil ? String(format: "%.2f", item.change!) : "n/a")
                         Text(item.changesPercentage ?? 0, format: .percent.precision(.fractionLength(2)))
+                    }
+                    .font(.caption)
+                    VStack(alignment: .leading) {
+                        Text("Bought: \(item.purchasedDate)")
+                        Text("Sold: \(item.soldDate)")
+                        Text("")
                     }
                     .font(.caption)
                     VStack(alignment: .leading) {

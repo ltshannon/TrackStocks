@@ -16,6 +16,7 @@ struct PortfolioView: View {
     @State var stocks: [ItemData] = []
     @State var change: Float = 0
     @State var showingSheet: Bool = false
+    @State var showingDeleteAlert = false
     
     init(paramters: PortfolioParameters) {
         self.portfolioName = paramters.portfolioName
@@ -35,15 +36,19 @@ struct PortfolioView: View {
                             .bold()
                     }
                     VStack(alignment: .leading) {
-                        Text(String(format: "%.2f", item.price))
-                        Text(item.change != nil ? String(format: "%.2f", item.change!) : "n/a")
+                        Text(item.price, format: .currency(code: "USD"))
+                        if let change = item.change {
+                            Text(change, format: .currency(code: "USD"))
+                        } else {
+                            Text("n/a")
+                        }
                         Text(item.changesPercentage ?? 0, format: .percent.precision(.fractionLength(2)))
                     }
                     .font(.caption)
                     .foregroundStyle(getColorOfChange(change: item.change))
                     VStack(alignment: .leading) {
                         Text("\(String(format: "%.0f", item.quantity))@\(String(format: "%.2f", item.basis))")
-                        Text(String(format: "%.2f", item.gainLose))
+                        Text(item.gainLose, format: .currency(code: "USD"))
                             .foregroundStyle(getColorOfChange(change: item.change))
                         Text(item.percent, format: .percent.precision(.fractionLength(2)))
                             .foregroundStyle(getColorOfChange(change: item.change))
@@ -60,11 +65,37 @@ struct PortfolioView: View {
                         appNavigationState.portfolioDetailView(parameters: parameters)
                     }
                 }
+                .swipeActions(allowsFullSwipe: false) {
+                    Button {
+                        print("Dividend")
+                    } label: {
+                        Text("Dividend")
+                    }
+                    .tint(.orange)
+                    Button {
+                        print("Update")
+                    } label: {
+                        Text("Update")
+                    }
+                    .tint(.yellow)
+                    Button {
+                        print("Sold")
+                    } label: {
+                        Text("Sold")
+                    }
+                    .tint(.indigo)
+                    Button(role: .destructive) {
+                        showingDeleteAlert = true
+                    } label: {
+                        Label("Delete", systemImage: "trash.fill")
+                    }
+                    .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
+                        Button("Yes", role: .cancel) {
+                            deleteItem(item: item)
+                        }
+                    }
+                }
             }
-            .onDelete(perform: delete)
-        }
-        .toolbar {
-            EditButton()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -83,18 +114,15 @@ struct PortfolioView: View {
         .onAppear {
             updatePortfolio()
         }
+
         .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
             AddNewStockToPortfolioView(portfolioName: portfolioName)
         }
     }
     
-    func delete(at offsets: IndexSet) {
-        for index in offsets {
-            if index <= stocks.count {
-                Task {
-                    await firebaseService.deletePortfolioStock(portfolioName: self.portfolioName, stockId: stocks[index].firestoreId)
-                }
-            }
+    func deleteItem(item: ItemData) {
+        Task {
+            await firebaseService.deletePortfolioStock(portfolioName: self.portfolioName, stockId: item.firestoreId)
         }
     }
     
