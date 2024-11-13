@@ -60,6 +60,10 @@ struct PortfolioHomeView: View {
                     PortfolioView(paramters: parameters)
                 case .portfolioDetailView(let parameters):
                     PortfolioDetailView(paramters: parameters)
+                case .portfolioUpdateView(let parameters):
+                    PortfolioUpdateView(paramters: parameters)
+                case .portfolioSoldView(let parameters):
+                    PortfolioSoldView(paramters: parameters)
                 }
             }
         }

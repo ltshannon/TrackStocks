@@ -27,9 +27,22 @@ struct PortfolioDetailParameters: Identifiable, Hashable, Encodable {
     }
 }
 
+struct PortfolioUpdateParameters: Identifiable, Hashable, Encodable {
+    var id = UUID().uuidString
+    var item: ItemData
+    var portfolioName: String
+    
+    init(item: ItemData, portfolioName: String) {
+        self.item = item
+        self.portfolioName = portfolioName
+    }
+}
+
 enum PortfolioNavDestination: Hashable {
     case portfolioView(PortfolioParameters)
     case portfolioDetailView(PortfolioDetailParameters)
+    case portfolioUpdateView(PortfolioUpdateParameters)
+    case portfolioSoldView(PortfolioUpdateParameters)
 }
 
 class AppNavigationState: ObservableObject {
@@ -41,6 +54,14 @@ class AppNavigationState: ObservableObject {
     
     func portfolioDetailView(parameters: PortfolioDetailParameters) {
         portfolioNavigation.append(PortfolioNavDestination.portfolioDetailView(parameters))
+    }
+    
+    func portfolioUpdateView(parameters: PortfolioUpdateParameters) {
+        portfolioNavigation.append(PortfolioNavDestination.portfolioUpdateView(parameters))
+    }
+    
+    func portfolioSoldView(parameters: PortfolioUpdateParameters) {
+        portfolioNavigation.append(PortfolioNavDestination.portfolioSoldView(parameters))
     }
     
 }

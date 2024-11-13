@@ -136,7 +136,7 @@ class PortfolioService: ObservableObject {
                 soldPrice = value
                 isSold = true
             }
-            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: "n/a")
+            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: item.soldDate)
             items.append(temp)
         }
         
@@ -214,20 +214,20 @@ class PortfolioService: ObservableObject {
         await firebaseService.deleteSymbol(listName: listName, symbol: symbol)
     }
     
-    func addStock(listName: String, item: ItemData) async {
-        
-        await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis, purchasedDate: item.purchasedDate, soldDate: "n/a")
-    }
+//    func addStock(listName: String, item: ItemData) async {
+//        
+//        await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis, purchasedDate: item.purchasedDate, soldDate: "n/a")
+//    }
     
-    func updateStock(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String, date: Date) async {
-        
-        await firebaseService.updateItem(firestoreId: firestoreId, listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis, date: date)
-    }
+//    func updateStock(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String, date: Date) async {
+//        
+//        await firebaseService.updateItem(firestoreId: firestoreId, listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis, date: date)
+//    }
     
-    func soldStock(firestoreId: String, listName: String, price: String) async  {
-        
-        await firebaseService.soldItem(firestoreId: firestoreId, listName: listName, price: price)
-    }
+//    func soldStock(firestoreId: String, listName: String, price: String) async  {
+//        
+//        await firebaseService.soldItem(firestoreId: firestoreId, listName: listName, price: price)
+//    }
     
     func deleteStock(listName: String, symbol: String) async {
         

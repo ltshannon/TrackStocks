@@ -340,7 +340,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func addItem(listName: String, symbol: String, quantity: Double, basis: Float, purchasedDate: String, soldDate: String) async {
+    func addItem(portfolioName: String, symbol: String, quantity: Double, basis: Double, purchasedDate: String, soldDate: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -354,7 +354,7 @@ class FirebaseService: ObservableObject {
         ] as [String : Any]
         
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").addDocument(data: value)
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").addDocument(data: value)
         } catch {
             debugPrint(String.boom, "addItem: \(error)")
         }
@@ -446,54 +446,39 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateItem(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String, date: Date) async {
-        
-        let formatter1 = DateFormatter()
-        formatter1.dateStyle = .short
-        let str = formatter1.string(from: date)
-        
+    func updateItem(firestoreId: String, portfolioName: String, quantity: Decimal, basis: Decimal, date: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
-        var item = basis
-        if item.contains("$") {
-            item = String(basis.dropFirst())
-        }
-        let float = Float(item) ?? 0
-        if symbol != originalSymbol {
-            await deleteItem(portfolioName: listName, symbol: originalSymbol)
-            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: float, purchasedDate: str, soldDate: "n/a")
-        } else {
-            let value = [
-                "quantity": quantity,
-                "basis": float
-            ] as [String : Any]
-            do {
-                try await database.collection("users").document(user.uid).collection(listName).document(firestoreId).updateData(value)
-            } catch {
-                debugPrint(String.boom, "updateItem: \(error)")
-            }
+        let value = [
+            "quantity": quantity,
+            "basis": basis,
+            "purchasedDate": date
+        ] as [String : Any]
+        do {
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)
+        } catch {
+                debugPrint(String.boom, "updateItem for portfolio \(portfolioName) document \(firestoreId) failed: \(error)")
         }
         
     }
     
-    func soldItem(firestoreId: String, listName: String, price: String) async {
+    func soldItem(firestoreId: String, portfolioName: String, date: String, price: Decimal) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
-        let dec = Decimal(string: price) ?? 0
         let value = [
-            "price": dec,
+            "soldDate": date,
+            "price": price,
             "isSold": true
         ] as [String : Any]
         do {
-            try await database.collection("users").document(user.uid).collection(listName).document(firestoreId).updateData(value)
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)
         } catch {
-            debugPrint(String.boom, "soldItem: \(error)")
+                debugPrint(String.boom, "soldItem for portfolio \(portfolioName) document \(firestoreId) failed: \(error)")
         }
-        
     }
     
     func deletePortfolio(portfolioName: String) async  {

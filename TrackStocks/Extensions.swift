@@ -63,7 +63,10 @@ extension String {
     }
 }
 
-func getColorOfChange(change: Float?) -> Color {
+func getColorOfChange(change: Float?, isSold: Bool = false) -> Color {
+    if isSold {
+        return .orange
+    }
     if let value = change, value < 0 {
         return .red
     }

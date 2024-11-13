@@ -26,7 +26,7 @@ struct PortfolioDetailView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 50 , height: 50)
-                        .foregroundStyle(getColorOfChange(change: item.change))
+                        .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
                     VStack {
                         Text(item.symbol)
                             .bold()

@@ -14,44 +14,48 @@ struct StockDateSelectorView: View {
     @State var showingNotSelectedAlert = false
     
     var body: some View {
-        VStack {
-            Form {
-                Section {
+        NavigationStack {
+            VStack {
+                Form {
                     Section {
-                        DatePicker("", selection: $date, in: ...Date(), displayedComponents: .date)
-                            .datePickerStyle(GraphicalDatePickerStyle())
-                            .frame(maxHeight: 200)
+                        Section {
+                            DatePicker("", selection: $date, in: ...Date(), displayedComponents: .date)
+                                .datePickerStyle(GraphicalDatePickerStyle())
+                                .frame(maxHeight: 200)
+                        } header: {
+                            Text("Select a date")
+                        }
+                        .onChange(of: date) {
+                            setDate(date: date)
+                            dismiss()
+                        }
+                    }
+                    Section {
+                        TextField("Date", text: $selectedDate)
+                            .keyboardType(.default)
                     } header: {
-                        Text("Select a date")
-                    }
-                    .onChange(of: date) {
-                        setDate(date: date)
+                        Text("Date")
                     }
                 }
-                Section {
-                    TextField("Date", text: $selectedDate)
-                        .keyboardType(.default)
-                } header: {
-                    Text("Date")
+                .navigationTitle("Select Date")
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("Cancel")
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("Done")
+                        }
+                    }
                 }
             }
         }
-        Button {
-            if selectedDate.isEmpty {
-                showingNotSelectedAlert = true
-                return
-            }
-            dismiss()
-        } label: {
-            Text("Done")
-        }
-        .buttonStyle(.borderedProminent)
-        Button {
-            dismiss()
-        } label: {
-            Text("Cancel")
-        }
-        .buttonStyle(.borderedProminent)
         .onAppear {
             setDate(date: Date())
         }

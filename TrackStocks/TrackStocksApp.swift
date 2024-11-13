@@ -25,6 +25,7 @@ struct TrackStocksApp: App {
     @StateObject var portfolioService = PortfolioService.shared
     @StateObject var marketSymbolsService = MarketSymbolsService.shared
     @StateObject var appNavigationState = AppNavigationState()
+    @StateObject var settingsService = SettingsService.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     var body: some Scene {
@@ -36,6 +37,7 @@ struct TrackStocksApp: App {
                 .environmentObject(portfolioService)
                 .environmentObject(marketSymbolsService)
                 .environmentObject(appNavigationState)
+                .environmentObject(settingsService)
         }
         .modelContainer(for: [SymbolStorage.self])
     }

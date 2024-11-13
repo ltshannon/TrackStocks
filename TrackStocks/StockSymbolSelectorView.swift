@@ -13,8 +13,12 @@ struct StockSymbolSelectorView: View {
     @Binding var symbol: String
     @State var symbols: [MarketSymbols] = []
     @State var searchText = ""
-    @State var selectedStock = ""
-    @State var showingNotSelectedAlert = false
+//    @State var selectedStock = ""
+//    @State var showingNotSelectedAlert = false
+//    @FocusState private var isSymbolFocused: Bool
+    
+    @FocusState private var fieldFocused: Bool
+    @State private var isSearchFieldFocused: Bool = true
     
     var body: some View {
         NavigationStack {
@@ -29,54 +33,36 @@ struct StockSymbolSelectorView: View {
                                 Text(item.name)
                             }
                             .onTapGesture {
-                                selectedStock = item.symbol
+                                symbol = item.symbol
+                                dismiss()
                             }
                             Divider()
                         }
                     }
                 }
                 .padding([.leading, .trailing], 20)
+                .searchable(text: $searchText, isPresented: $isSearchFieldFocused, prompt: "Enter Stock Symbol")
             }
-            Form {
-                Section {
-                    TextField("Stock Symbol", text: $selectedStock)
-                        .textCase(.uppercase)
-                        .disableAutocorrection(true)
-                        .disabled(true)
-                } header: {
-                    Text("Stock Symbol")
+            .navigationTitle("Select Stock")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("Cancel")
+                    }
                 }
             }
-            Button {
-                if selectedStock.isEmpty {
-                    showingNotSelectedAlert = true
-                    return
-                }
-                symbol = selectedStock
-                dismiss()
-            } label: {
-                Text("Done")
-            }
-            .buttonStyle(.borderedProminent)
-            Button {
-                dismiss()
-            } label: {
-                Text("Cancel")
-            }
-            .buttonStyle(.borderedProminent)
         }
-        .searchable(text: $searchText, prompt: "Enter Stock Symbol")
         .onAppear {
             symbols = marketSymbolsService.marketSymbols
-        }
-        .alert("You haven't entered a Stock Symbol", isPresented: $showingNotSelectedAlert) {
-            Button("Cancel", role: .cancel) { }
+            fieldFocused = true
         }
     }
     
     var searchResults: [MarketSymbols] {
         if searchText.isEmpty {
-            return []
+            return symbols
         } else {
             return symbols.filter { $0.symbol.contains(searchText.uppercased()) }
         }

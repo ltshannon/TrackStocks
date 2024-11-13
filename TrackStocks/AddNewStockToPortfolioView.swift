@@ -8,12 +8,16 @@
 import SwiftUI
 import SwiftData
 
+enum FocusedField: Hashable {
+    case symbol, date, quantity, basis
+}
+
 struct AddNewStockToPortfolioView: View {
-    @EnvironmentObject var portfolioService: PortfolioService
+    @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.dismiss) var dismiss
     var portfolioName: String = ""
-    @State var basis: String = ""
-    @State var quantity: String = ""
+    @State var basis: Decimal?
+    @State var quantity: Decimal?
     @State var selectedStock = ""
     @State var selectedDate = ""
     @State var showingStockSelector: Bool = false
@@ -22,12 +26,8 @@ struct AddNewStockToPortfolioView: View {
     @State var showingMissingDate: Bool = false
     @State var showingMissingQuantity: Bool = false
     @State var showingMissingBasis: Bool = false
-
-    @FocusState private var focusedField: FocusedField?
     
-    enum FocusedField {
-        case symbol, quantity, basis
-    }
+    @State var navigationLinkTriggerer: Bool? = nil
     
     var body: some View {
         NavigationStack {
@@ -54,32 +54,18 @@ struct AddNewStockToPortfolioView: View {
                         Text("Select a date")
                     }
                     Section {
-                        TextField("Quantity", text: $quantity)
-//                            .focused($focusedField, equals: .quantity)
+                        TextField("Quantity", value: $quantity, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
                     } header: {
                         Text("Number of shares")
                     }
                     Section {
-                        TextField("Basis", text: $basis)
-//                            .focused($focusedField, equals: .basis)
+                        TextField("Basis", value: $basis, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
                     } header: {
                         Text("Cost Basis")
                     }
                 }
-                Button {
-                    add()
-                } label: {
-                    Text("Add")
-                }
-                .buttonStyle(.borderedProminent)
-                Button {
-                    dismiss()
-                } label: {
-                    Text("Cancel")
-                }
-                .buttonStyle(.borderedProminent)
             }
             .navigationTitle(portfolioName)
             .alert("You are missing a Stock Symbol", isPresented: $showingMissingSymbol) {
@@ -100,6 +86,24 @@ struct AddNewStockToPortfolioView: View {
             .fullScreenCover(isPresented: $showingDateSelector) {
                 StockDateSelectorView(selectedDate: $selectedDate)
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("Cancel")
+                    }
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        add()
+                    } label: {
+                        Text("Save")
+                    }
+                }
+            }
         }
     }
     
@@ -112,18 +116,26 @@ struct AddNewStockToPortfolioView: View {
             showingMissingDate = true
             return
         }
-        if quantity.isEmpty {
+        if quantity == nil {
             showingMissingQuantity = true
             return
         }
-        if basis.isEmpty {
+        if basis == nil {
             showingMissingBasis = true
             return
         }
-        let item = ItemData(firestoreId: "", symbol: selectedStock.uppercased(), basis: Float(basis) ?? 0, price: 0, gainLose: 0, percent: 0, quantity: Double(quantity) ?? 0, isSold: false, purchasedDate: selectedDate, soldDate: "n/a")
+        var doubleQuantity: Double = 0
+        if let a = quantity {
+            doubleQuantity = Double(truncating: a as NSNumber)
+        }
+        var doubleBasis: Double = 0
+        if let a = basis {
+            doubleBasis = Double(truncating: a as NSNumber)
+        }
+        let item = ItemData(firestoreId: "", symbol: selectedStock.uppercased(), basis: Float(doubleBasis), price: 0, gainLose: 0, percent: 0, quantity: doubleQuantity, isSold: false, purchasedDate: selectedDate, soldDate: "n/a")
         Task {
             dismiss()
-            await portfolioService.addStock(listName: portfolioName, item: item)
+            await firebaseService.addItem(portfolioName: portfolioName, symbol: item.symbol, quantity: item.quantity, basis: doubleBasis, purchasedDate: item.purchasedDate, soldDate: "n/a")
         }
     }
     

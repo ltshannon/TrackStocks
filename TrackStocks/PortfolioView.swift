@@ -12,9 +12,11 @@ struct PortfolioView: View {
     @EnvironmentObject var portfolioService: PortfolioService
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var firebaseService: FirebaseService
+    @EnvironmentObject var settingsService: SettingsService
     var portfolioName: String
     @State var stocks: [ItemData] = []
     @State var change: Float = 0
+    @State var itemToDelete: ItemData?
     @State var showingSheet: Bool = false
     @State var showingDeleteAlert = false
     
@@ -30,7 +32,7 @@ struct PortfolioView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 50 , height: 50)
-                        .foregroundStyle(getColorOfChange(change: item.change))
+                        .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
                     VStack {
                         Text(item.symbol)
                             .bold()
@@ -45,13 +47,13 @@ struct PortfolioView: View {
                         Text(item.changesPercentage ?? 0, format: .percent.precision(.fractionLength(2)))
                     }
                     .font(.caption)
-                    .foregroundStyle(getColorOfChange(change: item.change))
+                    .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
                     VStack(alignment: .leading) {
                         Text("\(String(format: "%.0f", item.quantity))@\(String(format: "%.2f", item.basis))")
                         Text(item.gainLose, format: .currency(code: "USD"))
-                            .foregroundStyle(getColorOfChange(change: item.change))
+                            .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
                         Text(item.percent, format: .percent.precision(.fractionLength(2)))
-                            .foregroundStyle(getColorOfChange(change: item.change))
+                            .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
                     }
                     .font(.caption)
                     Spacer()
@@ -73,26 +75,24 @@ struct PortfolioView: View {
                     }
                     .tint(.orange)
                     Button {
-                        print("Update")
+                        let parameters = PortfolioUpdateParameters(item: item, portfolioName: portfolioName)
+                        appNavigationState.portfolioUpdateView(parameters: parameters)
                     } label: {
                         Text("Update")
                     }
                     .tint(.yellow)
                     Button {
-                        print("Sold")
+                        let parameters = PortfolioUpdateParameters(item: item, portfolioName: portfolioName)
+                        appNavigationState.portfolioSoldView(parameters: parameters)
                     } label: {
                         Text("Sold")
                     }
                     .tint(.indigo)
                     Button(role: .destructive) {
+                        itemToDelete = item
                         showingDeleteAlert = true
                     } label: {
                         Label("Delete", systemImage: "trash.fill")
-                    }
-                    .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
-                        Button("Yes", role: .cancel) {
-                            deleteItem(item: item)
-                        }
                     }
                 }
             }
@@ -102,11 +102,35 @@ struct PortfolioView: View {
                 Button {
                     showingSheet = true
                 } label: {
-                    HStack {
-                        Image(systemName: "plus.app")
-                            .resizable()
-                            .scaledToFit()
+                    Image(systemName: "plus.app")
+                        .resizable()
+                        .scaledToFit()
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button {
+                        settingsService.setShowActiveStocks()
+                    } label: {
+                        Label("Show Active Stocks", systemImage: settingsService.displayStocks == .showActiveStocks ? "checkmark.circle" : "circle")
                     }
+                    Button {
+                        settingsService.setShowAllStocks()
+                    } label: {
+                        Label("Show All Stocks", systemImage: settingsService.displayStocks == .showAllStocks ? "checkmark.circle" : "circle")
+                    }
+                    Button {
+                        settingsService.setShowSoldStocks()
+                    } label: {
+                        Label("Show Sold Stocks", systemImage: settingsService.displayStocks == .showSoldStocks ? "checkmark.circle" : "circle")
+                    }
+                    Button {
+                        
+                    } label: {
+                        Text("Cancel")
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
                 }
             }
         }
@@ -114,15 +138,29 @@ struct PortfolioView: View {
         .onAppear {
             updatePortfolio()
         }
-
+        .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
+            Button("OK", role: .destructive) {
+                if let item = itemToDelete {
+                    deleteItem(item: item)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
         .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
             AddNewStockToPortfolioView(portfolioName: portfolioName)
+        }
+        .onChange(of: settingsService.displayStocks) { oldValue, newValue in
+            updatePortfolio()
         }
     }
     
     func deleteItem(item: ItemData) {
         Task {
             await firebaseService.deletePortfolioStock(portfolioName: self.portfolioName, stockId: item.firestoreId)
+            let results = await portfolioService.getPortfolio(listName: portfolioName)
+            await MainActor.run {
+                stocks = results.0
+            }
         }
     }
     
