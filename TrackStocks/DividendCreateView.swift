@@ -1,25 +1,24 @@
 //
-//  PortfolioSoldView.swift
-//  TrackStocks
+//  DividendCreateView.swift
+//  Platinum
 //
-//  Created by Larry Shannon on 11/12/24.
+//  Created by Larry Shannon on 7/20/24.
 //
 
 import SwiftUI
 
-struct PortfolioSoldView: View {
+struct DividendCreateView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.dismiss) private var dismiss
     var item: ItemData
     var portfolioName: String
     @State var symbol: String = ""
-    @State var selectedDate = ""
-    @State var soldPrice: Decimal = 0
-    @State var soldDate: String = ""
     @State var firestoreId: String = ""
+    @State var selectedDate = ""
+    @State var dividendAmount = ""
     @State var showingDateSelector: Bool = false
     
-    init(paramters: PortfolioUpdateParameters) {
+    init(paramters: DividendCreateParameters) {
         self.portfolioName = paramters.portfolioName
         self.item = paramters.item
     }
@@ -30,32 +29,32 @@ struct PortfolioSoldView: View {
                 Section {
                     Text(symbol)
                 } header: {
-                    Text("Stock Symbol")
+                    Text("Symbol")
                 }
                 Section {
-                    TextField("Sold Date", text: $selectedDate)
+                    TextField("Dividend Date", text: $selectedDate)
                         .textCase(.uppercase)
                         .disableAutocorrection(true)
                         .simultaneousGesture(TapGesture().onEnded {
                             showingDateSelector = true
                         })
                 } header: {
-                    Text("Sold Date")
+                    Text("Select a date")
                 }
                 Section {
-                    TextField("Sold Price", value: $soldPrice, format: .number.precision(.fractionLength(2)))
+                    TextField("Amount", text: $dividendAmount)
                         .keyboardType(.decimalPad)
                 } header: {
-                    Text("Sold Price")
+                    Text("Enter an Amount")
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Sold")
+        .navigationTitle("Dividend")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    update()
+                    addDividend()
                 } label: {
                     Text("Save")
                 }
@@ -68,22 +67,22 @@ struct PortfolioSoldView: View {
                 }
             }
         }
-        .onAppear {
-            symbol = item.symbol
-            selectedDate = item.purchasedDate
-            soldDate = item.soldDate
-            firestoreId = item.firestoreId
-        }
         .fullScreenCover(isPresented: $showingDateSelector) {
             StockDateSelectorView(selectedDate: $selectedDate)
         }
-    }
-    
-    func update() {
-
-        Task {
-            dismiss()
-            await firebaseService.soldItem(firestoreId: firestoreId, portfolioName: portfolioName, date: selectedDate, price: soldPrice)
+        .onAppear {
+            symbol = item.symbol
+            selectedDate = item.purchasedDate
+            firestoreId = item.firestoreId
         }
     }
+    
+    func addDividend() {
+        dismiss()
+        Task {
+//            await portfolioService.addDividend(listName: key.rawValue, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
+//            await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
+        }
+    }
+
 }

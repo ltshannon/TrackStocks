@@ -79,7 +79,7 @@ struct PortfolioUpdateView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Update Portfolio Item")
+        .navigationTitle("Update")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

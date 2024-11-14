@@ -118,7 +118,7 @@ class PortfolioService: ObservableObject {
         return list
     }
     
-    func getPortfolio(listName: String) async -> ([ItemData], Float, Float, [DividendDisplayData], Float) {
+    func getPortfolio(listName: String) async -> ([ItemData], Float, Float, [DividendDisplayData], Float, Float) {
         
 //        let a = await buildAllStocksList()
         let settingService = SettingsService.shared
@@ -142,14 +142,16 @@ class PortfolioService: ObservableObject {
         
         var total: Float = 0
         var totalBasis: Float = 0
-        let totalPercent: Float = 0
+        var totalSold: Float = 0
+        var totalNotSold: Float = 0
         var dividendList: [DividendDisplayData] = []
-        var list: [String] = []
+        var set: Set <String> = []
         for item in stockList {
             if let value = item.symbol, value.count <= 4 {
-                list.append(value)
+                set.insert(value)
             }
         }
+        let list = Array(set)
         let string: String = list.joined(separator: ",")
         let stockData = await stockDataService.fetchStocks(tickers: string)
         for item in stockData {
@@ -165,6 +167,11 @@ class PortfolioService: ObservableObject {
                     let gainLose = Float(items[index].quantity) * value
                     items[index].gainLose = gainLose
                     total += gainLose
+                    if items[index].isSold == true {
+                        totalSold += gainLose
+                    } else {
+                        totalNotSold += gainLose
+                    }
                     totalBasis += items[index].basis * Float(items[index].quantity)
                     if let dividends = items[index].dividend {
                         let _ = dividends.map {
@@ -196,7 +203,7 @@ class PortfolioService: ObservableObject {
             }
         }
         
-        return (items, total, totalBasis, dividendList, totalPercent)
+        return (items, total, totalBasis, dividendList, totalSold, totalNotSold)
     }
     
     func addSymbol(listName: String, symbol: String) async {

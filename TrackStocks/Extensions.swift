@@ -53,6 +53,9 @@ extension String {
     }
     
     func getChartName(item: ItemData) -> String {
+        if item.isSold {
+            return "star.circle"
+        }
         if let value = item.change, value < 0 {
             return "chart.line.downtrend.xyaxis"
         }
@@ -73,28 +76,3 @@ func getColorOfChange(change: Float?, isSold: Bool = false) -> Color {
     return .green
 }
 
-struct NavigationStyleLayer: UIViewControllerRepresentable {
-    @MainActor
-    final class ViewController: UIViewController {
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            view.backgroundColor = .clear
-            view.isUserInteractionEnabled = false
-        }
-
-        override func didMove(toParent parent: UIViewController?) {
-            super.didMove(toParent: parent)
-            if let navigationController = parent?.navigationController as? UINavigationController {
-            navigationController.navigationBar.standardAppearance.largeTitleTextAttributes = [.font: UIFont.systemFont(ofSize: 30.0)]
-            }
-        }
-    }
-
-    func makeUIViewController(context: Context) -> ViewController {
-        .init()
-    }
-
-    func updateUIViewController(_ uiViewController: ViewController, context: Context) {
-
-    }
-}
