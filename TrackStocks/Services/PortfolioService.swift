@@ -243,7 +243,7 @@ class PortfolioService: ObservableObject {
     
     func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
         
-        await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
+//        await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
     }
     
     func getDividend(key: PortfolioType, symbol: String) async {
@@ -288,7 +288,7 @@ class PortfolioService: ObservableObject {
         await firebaseService.deleteDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData)
     }
     
-    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendDate: Date, dividendAmount: String) async {
+    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendDate: String, dividendAmount: String) async {
         
         await firebaseService.updateDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate)
     }

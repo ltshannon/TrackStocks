@@ -32,10 +32,16 @@ struct PortfolioView: View {
     var body: some View {
         VStack {
             VStack(alignment: .leading) {
-                Text("Total Active: \(totalActive.formatted(.currency(code: "USD")))")
-                Text("Total Sold: \(totalSold.formatted(.currency(code: "USD")))")
-                Text("Total: \(total.formatted(.currency(code: "USD")))")
-                Text("Total Basis: \(totalBasis.formatted(.currency(code: "USD")))")
+                if settingsService.displayStocks == .showAllStocks {
+                    Text("Active Gain/loss: \(totalActive.formatted(.currency(code: "USD")))")
+                    Text("Sold Gain/loss: \(totalSold.formatted(.currency(code: "USD")))")
+                }
+                Text("Gain/Loss: \(total.formatted(.currency(code: "USD")))")
+                Text("Basis: \(totalBasis.formatted(.currency(code: "USD")))")
+                if totalBasis > 0 {
+                    let value = (total / totalBasis) * 100
+                    Text("Percent Change: \(value, specifier: "%.2f")%")
+                }
             } .padding()
             List {
                 ForEach(stocks, id: \.id) { item in

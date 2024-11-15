@@ -13,12 +13,7 @@ struct StockSymbolSelectorView: View {
     @Binding var symbol: String
     @State var symbols: [MarketSymbols] = []
     @State var searchText = ""
-//    @State var selectedStock = ""
-//    @State var showingNotSelectedAlert = false
-//    @FocusState private var isSymbolFocused: Bool
-    
     @FocusState private var fieldFocused: Bool
-    @State private var isSearchFieldFocused: Bool = true
     
     var body: some View {
         NavigationStack {
@@ -41,7 +36,8 @@ struct StockSymbolSelectorView: View {
                     }
                 }
                 .padding([.leading, .trailing], 20)
-                .searchable(text: $searchText, isPresented: $isSearchFieldFocused, prompt: "Enter Stock Symbol")
+                .searchable(text: $searchText, prompt: "Enter Stock Symbol")
+//                .searchFocused($fieldFocused)
             }
             .navigationTitle("Select Stock")
             .toolbar {

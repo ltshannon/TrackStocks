@@ -219,7 +219,7 @@ class FirebaseService: ObservableObject {
                     } else {
                         data.symbol = data.id ?? "n/a"
                     }
-                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName).document(id).collection("dividend").document("dividend").getDocument()
+                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").document(id).collection("dividend").document("dividend").getDocument()
                     if querySnapshot2.exists {
                         let data2 = try querySnapshot2.data(as: DividendData.self)
                         data.dividend = data2.values
@@ -382,29 +382,26 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func buildDividendArrayElement(dividendDate: Date, dividendAmount: String) -> [String] {
+    func buildDividendArrayElement(dividendDate: String, dividendAmount: String) -> [String] {
         
-        let formatter1 = DateFormatter()
-        formatter1.dateStyle = .short
-        var str = formatter1.string(from: dividendDate)
-        str += "," + "\(dividendAmount)"
+        let str = dividendDate + "," + "\(dividendAmount)"
         var array: [String] = []
         array.append(str)
         return array
         
     }
     
-    func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
+    func addDividend(portfolioName: String, firestoreId: String, dividendDate: String, dividendAmount: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
         let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
         do {
-            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array)])
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array)])
         } catch {
             do {
-                try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").setData(["values": FieldValue.arrayUnion(array)])
+                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").setData(["values": FieldValue.arrayUnion(array)])
             } catch {
                 debugPrint(String.boom, "addDividend failed: \(error)")
             }
@@ -428,7 +425,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendAmount: String, dividendDate: Date) async {
+    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendAmount: String, dividendDate: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }

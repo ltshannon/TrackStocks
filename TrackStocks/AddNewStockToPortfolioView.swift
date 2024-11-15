@@ -15,6 +15,7 @@ enum FocusedField: Hashable {
 struct AddNewStockToPortfolioView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.dismiss) var dismiss
+    @AppStorage("showDatePicker") var showDatePicker = false
     var portfolioName: String = ""
     @State var basis: Decimal?
     @State var quantity: Decimal?
@@ -44,12 +45,17 @@ struct AddNewStockToPortfolioView: View {
                         Text("Stock Symbol")
                     }
                     Section {
-                        TextField("Date", text: $selectedDate)
-                            .textCase(.uppercase)
-                            .disableAutocorrection(true)
-                            .simultaneousGesture(TapGesture().onEnded {
-                                showingDateSelector = true
-                            })
+                        if showDatePicker == true {
+                            TextField("Date", text: $selectedDate)
+                                .textCase(.uppercase)
+                                .disableAutocorrection(true)
+                                .simultaneousGesture(TapGesture().onEnded {
+                                    showingDateSelector = true
+                                })
+                        } else {
+                            TextField("Date", text: $selectedDate)
+                                .textCase(.uppercase)
+                        }
                     } header: {
                         Text("Select a date")
                     }

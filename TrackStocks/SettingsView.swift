@@ -13,11 +13,14 @@ struct SettingsView: View {
     @EnvironmentObject var userAuth: Authentication
     @Environment(\.modelContext) var context
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("showDatePicker") var showDatePicker = false
     @Query(sort: \SymbolStorage.symbol) var symbolStorage: [SymbolStorage]
     @State var showSignOut = false
     @State var showDeleteAccount = false
     @State var showingSheet: Bool = false
     @State var showSymbolUpdate = false
+    
+    
     var body: some View {
         
         ZStack {
@@ -78,6 +81,7 @@ struct SettingsView: View {
                 } message: {
                     Text("Are you sure you want to update the Market Symbols, this will take a while?")
                 }
+                Toggle("Use Date Picker", isOn: $showDatePicker)
                 Spacer()
             }
             .padding([.top, .leading, .trailing])

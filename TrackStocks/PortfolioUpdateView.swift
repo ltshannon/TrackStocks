@@ -10,6 +10,7 @@ import SwiftUI
 struct PortfolioUpdateView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("showDatePicker") var showDatePicker = false
     var item: ItemData
     var portfolioName: String
     @State var symbol: String = ""
@@ -38,12 +39,17 @@ struct PortfolioUpdateView: View {
                     Text("Stock Symbol")
                 }
                 Section {
-                    TextField("Date", text: $selectedDate)
-                        .textCase(.uppercase)
-                        .disableAutocorrection(true)
-                        .simultaneousGesture(TapGesture().onEnded {
-                            showingDateSelector = true
-                        })
+                    if showDatePicker == true {
+                        TextField("Date", text: $selectedDate)
+                            .textCase(.uppercase)
+                            .disableAutocorrection(true)
+                            .simultaneousGesture(TapGesture().onEnded {
+                                showingDateSelector = true
+                            })
+                    } else {
+                        TextField("Date", text: $selectedDate)
+                            .textCase(.uppercase)
+                    }
                 } header: {
                     Text("Purchase Date")
                 }

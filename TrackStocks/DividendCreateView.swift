@@ -10,6 +10,7 @@ import SwiftUI
 struct DividendCreateView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("showDatePicker") var showDatePicker = false
     var item: ItemData
     var portfolioName: String
     @State var symbol: String = ""
@@ -32,12 +33,17 @@ struct DividendCreateView: View {
                     Text("Symbol")
                 }
                 Section {
-                    TextField("Dividend Date", text: $selectedDate)
-                        .textCase(.uppercase)
-                        .disableAutocorrection(true)
-                        .simultaneousGesture(TapGesture().onEnded {
-                            showingDateSelector = true
-                        })
+                    if showDatePicker == true {
+                        TextField("Dividend Date", text: $selectedDate)
+                            .textCase(.uppercase)
+                            .disableAutocorrection(true)
+                            .simultaneousGesture(TapGesture().onEnded {
+                                showingDateSelector = true
+                            })
+                    } else {
+                        TextField("Dividend Date", text: $selectedDate)
+                            .textCase(.uppercase)
+                    }
                 } header: {
                     Text("Select a date")
                 }
@@ -80,8 +86,7 @@ struct DividendCreateView: View {
     func addDividend() {
         dismiss()
         Task {
-//            await portfolioService.addDividend(listName: key.rawValue, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
-//            await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
+            await firebaseService.addDividend(portfolioName: portfolioName, firestoreId: firestoreId, dividendDate: selectedDate, dividendAmount: dividendAmount)
         }
     }
 
