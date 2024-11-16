@@ -12,14 +12,22 @@ struct PortfolioDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State var item: ItemData
     @State var portfolioName: String
+    @State var dividendList: [DividendDisplayData]
+    let currencyFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencySymbol = ""
+        return formatter
+    }()
     
     init(paramters: PortfolioDetailParameters) {
         self.item = paramters.item
         self.portfolioName = paramters.portfolioName
+        self.dividendList = paramters.dividendList
     }
     
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             ScrollView(.horizontal) {
                 HStack {
                     Image(systemName: String().getChartName(item: item))
@@ -91,6 +99,14 @@ struct PortfolioDetailView: View {
                     Spacer()
                 }
             }
+            Divider()
+            Text("Dividends")
+            ForEach(dividendList, id: \.id) { dividend in
+                HStack {
+                    Text("\(dividend.date)")
+                    Text(dividend.price, format: .currency(code: "USD"))
+                }
+            }
             Spacer()
         }
         .padding([.leading, .trailing], 20)
@@ -109,4 +125,5 @@ struct PortfolioDetailView: View {
             }
         }
     }
+    
 }

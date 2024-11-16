@@ -20,10 +20,12 @@ struct PortfolioDetailParameters: Identifiable, Hashable, Encodable {
     var id = UUID().uuidString
     var item: ItemData
     var portfolioName: String
+    var dividendList: [DividendDisplayData]
     
-    init(item: ItemData, portfolioName: String) {
+    init(item: ItemData, portfolioName: String,  dividendList: [DividendDisplayData]) {
         self.item = item
         self.portfolioName = portfolioName
+        self.dividendList = dividendList
     }
 }
 

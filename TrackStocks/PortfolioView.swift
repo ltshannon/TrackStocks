@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFunctions
 
 struct PortfolioView: View {
     @EnvironmentObject var stockDataService: StockDataService
@@ -41,6 +43,11 @@ struct PortfolioView: View {
                 if totalBasis > 0 {
                     let value = (total / totalBasis) * 100
                     Text("Percent Change: \(value, specifier: "%.2f")%")
+                }
+                Button {
+                    test()
+                } label: {
+                    Text("test")
                 }
             } .padding()
             List {
@@ -83,7 +90,7 @@ struct PortfolioView: View {
                         }
                         .font(.caption)
                         .onTapGesture {
-                            let parameters = PortfolioDetailParameters(item: item, portfolioName: portfolioName)
+                            let parameters = PortfolioDetailParameters(item: item, portfolioName: portfolioName, dividendList: dividendList)
                             appNavigationState.portfolioDetailView(parameters: parameters)
                         }
                     }
@@ -173,6 +180,25 @@ struct PortfolioView: View {
             .onChange(of: settingsService.displayStocks) { oldValue, newValue in
                 updatePortfolio()
             }
+        }
+    }
+    
+    func test() {
+        lazy var functions = Functions.functions()
+        
+        functions.httpsCallable("test").call(["numberOfDays": "0"]) { result, error in
+            if let error = error as NSError? {
+                if error.domain == FunctionsErrorDomain {
+//                    let code = FunctionsErrorCode(rawValue: error.code)
+//                    let message = error.localizedDescription
+//                    let details = error.userInfo[FunctionsErrorDetailsKey]
+                }
+                // ...
+            }
+            if let data = result?.data {
+                debugPrint("result: \(data)")
+            }
+            
         }
     }
     
