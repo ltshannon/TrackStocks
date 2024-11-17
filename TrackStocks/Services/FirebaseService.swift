@@ -49,7 +49,7 @@ struct DividendDisplayData: Codable, Identifiable, Hashable, Equatable {
     var id = UUID().uuidString
     var symbol = ""
     var date = ""
-    var price: Float = 0
+    var price = ""
 }
 
 struct DividendPlaceholder: Codable, Identifiable, Hashable {
@@ -136,6 +136,20 @@ class FirebaseService: ObservableObject {
         
         do {
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).setData([
+                "name": portfolioName,
+            ])
+        } catch {
+            debugPrint("Error creating addPortfolioCollection name: \(portfolioName) error: \(error)")
+        }
+    }
+    
+    func renamePortfolio(portfolioId: String, portfolioName: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        do {
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioId).updateData([
                 "name": portfolioName,
             ])
         } catch {
@@ -409,7 +423,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func deleteDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData) async {
+    func deleteDividend(portfolioName: String, firestoreId: String, dividendDisplayData: DividendDisplayData) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -418,7 +432,7 @@ class FirebaseService: ObservableObject {
         var array: [String] = []
         array.append(str)
         do {
-            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
         } catch {
             debugPrint(String.boom, "deleteDividend failed: \(error)")
         }
@@ -488,6 +502,14 @@ class FirebaseService: ObservableObject {
             for document in querySnapshot.documents {
                 let item = try document.data(as: StockItem.self)
                 if let id = item.id {
+                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).collection("dividend").getDocuments()
+                    for document2 in querySnapshot2.documents {
+                        let dividend = try document2.data(as: DividendData.self)
+                        if let id2 = dividend.id {
+                            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).collection("dividend").document(id2).delete()
+                        }
+                        try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
+                    }
                     try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
                 }
             }

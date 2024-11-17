@@ -16,9 +16,13 @@ struct PortfolioHomeView: View {
     @Environment(\.modelContext) var context
     @AppStorage("stock-exchange-list") var stockExchangeList: [String] = ["NASDAQ", "NYSE", "AMEX", "OTC"]
     @Query(sort: \SymbolStorage.symbol) var symbolStorage: [SymbolStorage]
-    @State var showAlert = false
+    @State var showAddPortfolioAlert = false
+    @State var showRenamePortfolioAlert = false
+    @State var showDeletePortfolioAlert = false
     @State var portfolioName: String = ""
+    @State var newName: String = ""
     @State var firstTime = true
+    @State var selectedPortfolio: Portfolio = Portfolio(id: "", name: "")
     
     var body: some View {
         NavigationStack(path: $appNavigationState.portfolioNavigation) {
@@ -31,20 +35,31 @@ struct PortfolioHomeView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        let parameters = PortfolioParameters(portfolioName: item.name)
+                        let parameters = PortfolioParameters(portfolio: item)
                         appNavigationState.portfolioView(parameters: parameters)
                     }
+                    .swipeActions(allowsFullSwipe: false) {
+                        Button {
+                            selectedPortfolio = item
+                            showRenamePortfolioAlert = true
+                        } label: {
+                            Text("Rename")
+                        }
+                        .tint(.indigo)
+                        Button(role: .destructive) {
+                            selectedPortfolio = item
+                            showDeletePortfolioAlert = true
+                        } label: {
+                            Text("Delete")
+                        }
+                    }
                 }
-                .onDelete(perform: delete)
-            }
-            .toolbar {
-                EditButton()
             }
             .navigationTitle("Portfolios")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showAlert = true
+                        showAddPortfolioAlert = true
                     } label: {
                         HStack {
                             Image(systemName: "plus.app")
@@ -94,7 +109,7 @@ struct PortfolioHomeView: View {
                 marketSymbolsService.makeList(symbolStorage: symbolStorage)
             }
         }
-        .alert("Add Portfolio", isPresented: $showAlert) {
+        .alert("Add Portfolio", isPresented: $showAddPortfolioAlert) {
             TextField("Name", text: $portfolioName)
                 .keyboardType(.default)
             Button("OK", action: add)
@@ -102,6 +117,23 @@ struct PortfolioHomeView: View {
          } message: {
             Text("Enter the name of the portfolio.")
          }
+         .alert("Rename Portfolio", isPresented: $showRenamePortfolioAlert) {
+             TextField("Name", text: $newName)
+                 .keyboardType(.default)
+             Button("OK") {
+                 rename(item: selectedPortfolio)
+             }
+             Button("Cancel", role: .cancel) { }
+          } message: {
+             Text("Enter the new name of the portfolio")
+          }
+          .alert("Are you sure you want to delete this?", isPresented: $showDeletePortfolioAlert) {
+              Button("OK", role: .destructive) {
+                  debugPrint("😀", "Deleting portfolio: \(selectedPortfolio.name)")
+                  delete(item: selectedPortfolio)
+              }
+              Button("Cancel", role: .cancel) { }
+          }
     }
     
     func add() {
@@ -111,14 +143,16 @@ struct PortfolioHomeView: View {
         }
     }
     
-    func delete(at offsets: IndexSet) {
-        for index in offsets {
-            if index <= firebaseService.portfolioList.count {
-                let portfolio = firebaseService.portfolioList[index]
-                Task {
-                    await firebaseService.deletePortfolio(portfolioName: portfolio.name)
-                }
-            }
+    func rename(item: Portfolio) {
+        Task {
+            await firebaseService.renamePortfolio(portfolioId: item.id ?? "n/a", portfolioName: newName)
+            newName = ""
+        }
+    }
+
+    func delete(item: Portfolio) {
+        Task {
+            await firebaseService.deletePortfolio(portfolioName: item.id ?? "n/a")
         }
     }
 }

@@ -9,45 +9,43 @@ import Foundation
 
 struct PortfolioParameters: Identifiable, Hashable, Encodable {
     var id = UUID().uuidString
-    var portfolioName: String
+    var portfolio: Portfolio
     
-    init(portfolioName: String) {
-        self.portfolioName = portfolioName
+    init(portfolio: Portfolio) {
+        self.portfolio = portfolio
     }
 }
 
 struct PortfolioDetailParameters: Identifiable, Hashable, Encodable {
     var id = UUID().uuidString
     var item: ItemData
-    var portfolioName: String
-    var dividendList: [DividendDisplayData]
+    var portfolio: Portfolio
     
-    init(item: ItemData, portfolioName: String,  dividendList: [DividendDisplayData]) {
+    init(item: ItemData, portfolio: Portfolio) {
         self.item = item
-        self.portfolioName = portfolioName
-        self.dividendList = dividendList
+        self.portfolio = portfolio
     }
 }
 
 struct PortfolioUpdateParameters: Identifiable, Hashable, Encodable {
     var id = UUID().uuidString
     var item: ItemData
-    var portfolioName: String
+    var portfolio: Portfolio
     
-    init(item: ItemData, portfolioName: String) {
+    init(item: ItemData, portfolio: Portfolio) {
         self.item = item
-        self.portfolioName = portfolioName
+        self.portfolio = portfolio
     }
 }
 
 struct DividendCreateParameters: Identifiable, Hashable, Encodable {
     var id = UUID().uuidString
     var item: ItemData
-    var portfolioName: String
+    var portfolio: Portfolio
     
-    init(item: ItemData, portfolioName: String) {
+    init(item: ItemData, portfolio: Portfolio) {
         self.item = item
-        self.portfolioName = portfolioName
+        self.portfolio = portfolio
     }
 }
 

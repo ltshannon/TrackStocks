@@ -9,10 +9,14 @@ import SwiftUI
 
 struct PortfolioDetailView: View {
     @EnvironmentObject var appNavigationState: AppNavigationState
+    @EnvironmentObject var firebaseService: FirebaseService
+    @EnvironmentObject var portfolioService: PortfolioService
     @Environment(\.dismiss) private var dismiss
     @State var item: ItemData
-    @State var portfolioName: String
-    @State var dividendList: [DividendDisplayData]
+    @State var portfolio: Portfolio
+    @State var dividendList: [DividendDisplayData] = []
+    @State var showDeleteDividendAlert = false
+    @State var dividendToDelete: DividendDisplayData = DividendDisplayData()
     let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -22,8 +26,7 @@ struct PortfolioDetailView: View {
     
     init(paramters: PortfolioDetailParameters) {
         self.item = paramters.item
-        self.portfolioName = paramters.portfolioName
-        self.dividendList = paramters.dividendList
+        self.portfolio = paramters.portfolio
     }
     
     var body: some View {
@@ -101,16 +104,42 @@ struct PortfolioDetailView: View {
             }
             Divider()
             Text("Dividends")
-            ForEach(dividendList, id: \.id) { dividend in
-                HStack {
-                    Text("\(dividend.date)")
-                    Text(dividend.price, format: .currency(code: "USD"))
+            List {
+                ForEach(dividendList, id: \.id) { dividend in
+                    HStack {
+                        Text("\(dividend.date)")
+                        if let dec = Float(dividend.price) {
+                            Text(dec, format: .currency(code: "USD"))
+                        } else {
+                            Text("n/a")
+                        }
+                    }
+                    .swipeActions(allowsFullSwipe: false) {
+                        Button {
+                            
+                        } label: {
+                            Text("Update")
+                        }
+                        .tint(.orange)
+                        Button(role: .destructive) {
+                            dividendToDelete = dividend
+                            showDeleteDividendAlert = true
+                        } label: {
+                            Text("Delete")
+                        }
+                    }
+                    .alert("Are you sure you want to delete this?", isPresented: $showDeleteDividendAlert) {
+                        Button("OK", role: .destructive) {
+                            delete(dividend: dividendToDelete)
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    }
                 }
             }
             Spacer()
         }
         .padding([.leading, .trailing], 20)
-        .navigationTitle(portfolioName + " Details")
+        .navigationTitle(portfolio.name + " Details")
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -124,6 +153,28 @@ struct PortfolioDetailView: View {
                 }
             }
         }
+        .onAppear {
+            if let dividends = item.dividend {
+                let _ = dividends.map {
+                    let result = portfolioService.buildDividendList(array: $0, symbol: item.id)
+                    dividendList.append(result.0)
+                }
+            }
+        }
     }
     
+    func delete(dividend: DividendDisplayData) {
+        Task {
+            await firebaseService.deleteDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividend)
+            for item in dividendList {
+                if item.id == dividend.id {
+                    let index = dividendList.firstIndex(of: item)
+                    let _ = await MainActor.run {
+                        dividendList.remove(at: index!)
+                    }
+                }
+            }
+            
+        }
+    }
 }

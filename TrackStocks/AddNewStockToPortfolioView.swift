@@ -55,9 +55,10 @@ struct AddNewStockToPortfolioView: View {
                         } else {
                             TextField("Date", text: $selectedDate)
                                 .textCase(.uppercase)
+                                .keyboardType(.numbersAndPunctuation)
                         }
                     } header: {
-                        Text("Select a date")
+                        Text("Date")
                     }
                     Section {
                         TextField("Quantity", value: $quantity, format: .number.precision(.fractionLength(2)))
@@ -66,10 +67,10 @@ struct AddNewStockToPortfolioView: View {
                         Text("Number of shares")
                     }
                     Section {
-                        TextField("Basis", value: $basis, format: .number.precision(.fractionLength(2)))
+                        TextField("Average Price", value: $basis, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
                     } header: {
-                        Text("Cost Basis")
+                        Text("Average Price per Share")
                     }
                 }
             }

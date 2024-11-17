@@ -15,7 +15,7 @@ struct PortfolioView: View {
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
-    var portfolioName: String
+    var portfolio: Portfolio
     @State var stocks: [ItemData] = []
     @State var change: Float = 0
     @State var total: Float = 0
@@ -24,32 +24,38 @@ struct PortfolioView: View {
     @State var totalActive: Float = 0
     @State var dividendList: [DividendDisplayData] = []
     @State var itemToDelete: ItemData?
-    @State var showingSheet: Bool = false
+    @State var showingAddNewShockSheet: Bool = false
     @State var showingDeleteAlert = false
+    @State var showingProgress = false
     
     init(paramters: PortfolioParameters) {
-        self.portfolioName = paramters.portfolioName
+        self.portfolio = paramters.portfolio
     }
     
     var body: some View {
         VStack {
             VStack(alignment: .leading) {
                 if settingsService.displayStocks == .showAllStocks {
-                    Text("Active Gain/loss: \(totalActive.formatted(.currency(code: "USD")))")
+                    Text("Active Gain/Loss: \(totalActive.formatted(.currency(code: "USD")))")
                     Text("Sold Gain/loss: \(totalSold.formatted(.currency(code: "USD")))")
                 }
                 Text("Gain/Loss: \(total.formatted(.currency(code: "USD")))")
-                Text("Basis: \(totalBasis.formatted(.currency(code: "USD")))")
+                Text("Cost Basis: \(totalBasis.formatted(.currency(code: "USD")))")
                 if totalBasis > 0 {
                     let value = (total / totalBasis) * 100
                     Text("Percent Change: \(value, specifier: "%.2f")%")
                 }
-                Button {
-                    test()
-                } label: {
-                    Text("test")
-                }
+//                Button {
+//                    test()
+//                } label: {
+//                    Text("test")
+//                }
             } .padding()
+            if showingProgress {
+                ProgressView("Loading...")
+                    .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+                    .padding(.trailing, 30)
+            }
             List {
                 ForEach(stocks, id: \.id) { item in
                     HStack {
@@ -63,10 +69,10 @@ struct PortfolioView: View {
                                 .bold()
                         }
                         VStack(alignment: .leading) {
-                            Text(item.price, format: .currency(code: "USD"))
+                            Text(item.price, format: .currency(code: "USD")).bold()
                             if item.isSold == false {
                                 if let change = item.change {
-                                    Text(change, format: .currency(code: "USD"))
+                                    Text(change, format: .currency(code: "USD")).bold()
                                 } else {
                                     Text("n/a")
                                 }
@@ -77,12 +83,14 @@ struct PortfolioView: View {
                         .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
                         VStack(alignment: .leading) {
                             Text("\(String(format: "%.0f", item.quantity))@\(String(format: "%.2f", item.basis))")
+                                .font(.caption)
                             Text(item.gainLose, format: .currency(code: "USD"))
                                 .foregroundStyle(getColorOfChange(change: item.gainLose, isSold: item.isSold))
+                                .bold()
                             Text(item.percent, format: .percent.precision(.fractionLength(2)))
                                 .foregroundStyle(getColorOfChange(change: item.gainLose, isSold: item.isSold))
+                                .font(.caption)
                         }
-                        .font(.caption)
                         Spacer()
                         VStack(alignment: .leading) {
                             Text("Show")
@@ -90,30 +98,30 @@ struct PortfolioView: View {
                         }
                         .font(.caption)
                         .onTapGesture {
-                            let parameters = PortfolioDetailParameters(item: item, portfolioName: portfolioName, dividendList: dividendList)
+                            let parameters = PortfolioDetailParameters(item: item, portfolio: portfolio)
                             appNavigationState.portfolioDetailView(parameters: parameters)
                         }
                     }
                     .swipeActions(allowsFullSwipe: false) {
                         Button {
-                            let parameters = DividendCreateParameters(item: item, portfolioName: portfolioName)
+                            let parameters = DividendCreateParameters(item: item, portfolio: portfolio)
                             appNavigationState.dividendCreateView(parameters: parameters)
                         } label: {
-                            Text("Dividend")
+                            Text("Add Dividend")
                         }
                         .tint(.orange)
                         Button {
-                            let parameters = PortfolioUpdateParameters(item: item, portfolioName: portfolioName)
+                            let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
                             appNavigationState.portfolioUpdateView(parameters: parameters)
                         } label: {
                             Text("Update")
                         }
                         .tint(.yellow)
                         Button {
-                            let parameters = PortfolioUpdateParameters(item: item, portfolioName: portfolioName)
+                            let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
                             appNavigationState.portfolioSoldView(parameters: parameters)
                         } label: {
-                            Text("Sold")
+                            Text("Sell")
                         }
                         .tint(.indigo)
                         Button(role: .destructive) {
@@ -128,7 +136,7 @@ struct PortfolioView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showingSheet = true
+                        showingAddNewShockSheet = true
                     } label: {
                         Image(systemName: "plus.app")
                             .resizable()
@@ -162,7 +170,7 @@ struct PortfolioView: View {
                     }
                 }
             }
-            .navigationTitle(portfolioName)
+            .navigationTitle(portfolio.name)
             .onAppear {
                 updatePortfolio()
             }
@@ -174,10 +182,13 @@ struct PortfolioView: View {
                 }
                 Button("Cancel", role: .cancel) { }
             }
-            .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
-                AddNewStockToPortfolioView(portfolioName: portfolioName)
+            .fullScreenCover(isPresented: $showingAddNewShockSheet, onDismiss: didDismiss) {
+                AddNewStockToPortfolioView(portfolioName: portfolio.id ?? "n/a")
             }
             .onChange(of: settingsService.displayStocks) { oldValue, newValue in
+                updatePortfolio()
+            }
+            .refreshable {
                 updatePortfolio()
             }
         }
@@ -204,8 +215,8 @@ struct PortfolioView: View {
     
     func deleteItem(item: ItemData) {
         Task {
-            await firebaseService.deletePortfolioStock(portfolioName: self.portfolioName, stockId: item.firestoreId)
-            let results = await portfolioService.getPortfolio(listName: portfolioName)
+            await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.name, stockId: item.firestoreId)
+            let results = await portfolioService.getPortfolio(listName: portfolio.name)
             await MainActor.run {
                 stocks = results.0
                 total = results.1
@@ -223,7 +234,10 @@ struct PortfolioView: View {
     
     func updatePortfolio() {
         Task {
-            let results = await portfolioService.getPortfolio(listName: portfolioName)
+            await MainActor.run {
+                showingProgress = true
+            }
+            let results = await portfolioService.getPortfolio(listName: portfolio.id ?? "n/a")
             await MainActor.run {
                 stocks = results.0
                 total = results.1
@@ -231,6 +245,7 @@ struct PortfolioView: View {
                 dividendList = results.3
                 totalSold = results.4
                 totalActive = results.5
+                showingProgress = false
             }
         }
     }

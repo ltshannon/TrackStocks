@@ -241,10 +241,10 @@ class PortfolioService: ObservableObject {
         await firebaseService.deleteItem(portfolioName: listName, symbol: symbol)
     }
     
-    func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
-        
+//    func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
+//        
 //        await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
-    }
+//    }
     
     func getDividend(key: PortfolioType, symbol: String) async {
         
@@ -253,10 +253,8 @@ class PortfolioService: ObservableObject {
         let _ = array.map {
             let value = $0.split(separator: ",")
             if value.count == 2 {
-                if let dec = Float(String(value[1])) {
-                    let item = DividendDisplayData(symbol: symbol, date: String(value[0]), price: dec)
-                    data.append(item)
-                }
+                let item = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]))
+                data.append(item)
             }
         }
         
@@ -284,9 +282,9 @@ class PortfolioService: ObservableObject {
         }
     }
 
-    func deleteDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData) async {
-        await firebaseService.deleteDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData)
-    }
+//    func deleteDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData) async {
+//        await firebaseService.deleteDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData)
+//    }
     
     func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendDate: String, dividendAmount: String) async {
         
@@ -294,12 +292,12 @@ class PortfolioService: ObservableObject {
     }
     
     func buildDividendList(array: String, symbol: String) -> (DividendDisplayData, Float) {
-        var data = DividendDisplayData(date: "", price: 0)
+        var data = DividendDisplayData(date: "", price: "")
         var total: Float = 0
         let value = array.split(separator: ",")
         if value.count == 2 {
+            data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]))
             if let dec = Float(String(value[1])) {
-                data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: dec)
                 total += dec
             }
         }
@@ -309,7 +307,9 @@ class PortfolioService: ObservableObject {
     func computeDividendTotal(list: [DividendDisplayData]) -> Float {
         var total: Float = 0
         let _ = list.map {
-            total += $0.price
+            if let dec = Float(String($0.price)) {
+                total += dec
+            }
         }
         return total
     }

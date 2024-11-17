@@ -12,7 +12,7 @@ struct DividendCreateView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
     var item: ItemData
-    var portfolioName: String
+    var portfolio: Portfolio
     @State var symbol: String = ""
     @State var firestoreId: String = ""
     @State var selectedDate = ""
@@ -20,7 +20,7 @@ struct DividendCreateView: View {
     @State var showingDateSelector: Bool = false
     
     init(paramters: DividendCreateParameters) {
-        self.portfolioName = paramters.portfolioName
+        self.portfolio = paramters.portfolio
         self.item = paramters.item
     }
     
@@ -43,9 +43,10 @@ struct DividendCreateView: View {
                     } else {
                         TextField("Dividend Date", text: $selectedDate)
                             .textCase(.uppercase)
+                            .keyboardType(.numbersAndPunctuation)
                     }
                 } header: {
-                    Text("Select a date")
+                    Text("Date")
                 }
                 Section {
                     TextField("Amount", text: $dividendAmount)
@@ -86,7 +87,7 @@ struct DividendCreateView: View {
     func addDividend() {
         dismiss()
         Task {
-            await firebaseService.addDividend(portfolioName: portfolioName, firestoreId: firestoreId, dividendDate: selectedDate, dividendAmount: dividendAmount)
+            await firebaseService.addDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: firestoreId, dividendDate: selectedDate, dividendAmount: dividendAmount)
         }
     }
 

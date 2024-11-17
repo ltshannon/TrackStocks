@@ -12,7 +12,7 @@ struct PortfolioSoldView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
     var item: ItemData
-    var portfolioName: String
+    var portfolio: Portfolio
     @State var symbol: String = ""
     @State var selectedDate = ""
     @State var soldPrice: Decimal = 0
@@ -21,7 +21,7 @@ struct PortfolioSoldView: View {
     @State var showingDateSelector: Bool = false
     
     init(paramters: PortfolioUpdateParameters) {
-        self.portfolioName = paramters.portfolioName
+        self.portfolio = paramters.portfolio
         self.item = paramters.item
     }
     
@@ -50,15 +50,15 @@ struct PortfolioSoldView: View {
                     Text("Sold Date")
                 }
                 Section {
-                    TextField("Sold Price", value: $soldPrice, format: .number.precision(.fractionLength(2)))
+                    TextField("Sold Price per Share", value: $soldPrice, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
                 } header: {
-                    Text("Sold Price")
+                    Text("Sold Price per Share")
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Sold")
+        .navigationTitle("Sell")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -90,7 +90,7 @@ struct PortfolioSoldView: View {
 
         Task {
             dismiss()
-            await firebaseService.soldItem(firestoreId: firestoreId, portfolioName: portfolioName, date: selectedDate, price: soldPrice)
+            await firebaseService.soldItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", date: selectedDate, price: soldPrice)
         }
     }
 }

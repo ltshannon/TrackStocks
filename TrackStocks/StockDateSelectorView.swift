@@ -23,7 +23,7 @@ struct StockDateSelectorView: View {
                                 .datePickerStyle(GraphicalDatePickerStyle())
                                 .frame(maxHeight: 200)
                         } header: {
-                            Text("Select a date")
+                            Text("Date")
                         }
                         .onChange(of: date) {
                             setDate(date: date)

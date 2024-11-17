@@ -12,7 +12,7 @@ struct PortfolioUpdateView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
     var item: ItemData
-    var portfolioName: String
+    var portfolio:Portfolio
     @State var symbol: String = ""
     @State var selectedDate = ""
     @State var basis: Decimal = 0
@@ -26,7 +26,7 @@ struct PortfolioUpdateView: View {
     @State var showingDateSelector: Bool = false
     
     init(paramters: PortfolioUpdateParameters) {
-        self.portfolioName = paramters.portfolioName
+        self.portfolio = paramters.portfolio
         self.item = paramters.item
     }
 
@@ -60,10 +60,10 @@ struct PortfolioUpdateView: View {
                     Text("Number of shares")
                 }
                 Section {
-                    TextField("Basis", value: $basis, format: .number.precision(.fractionLength(2)))
+                    TextField("Average Price", value: $basis, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
                 } header: {
-                    Text("Cost Basis")
+                    Text("Average Price per Share")
                 }
                 Section {
                     Text(soldDate)
@@ -75,7 +75,11 @@ struct PortfolioUpdateView: View {
                         ForEach(dividendDisplayData, id: \.id) { item in
                             HStack {
                                 Text(item.date)
-                                Text(item.price, format: .currency(code: "USD"))
+                                if let dec = Float(item.price) {
+                                    Text(dec, format: .currency(code: "USD"))
+                                } else {
+                                    Text("n/a")
+                                }
                             }
                         }
                     } header: {
@@ -120,7 +124,7 @@ struct PortfolioUpdateView: View {
 
         Task {
             dismiss()
-            await firebaseService.updateItem(firestoreId: firestoreId, portfolioName: portfolioName, quantity: quantity, basis: basis, date: selectedDate)
+            await firebaseService.updateItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", quantity: quantity, basis: basis, date: selectedDate)
         }
     }
     
