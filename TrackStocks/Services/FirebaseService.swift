@@ -375,14 +375,15 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func getDividend(listName: String, symbol: String) async -> [String] {
+    func getDividend(portfolioName: String, firestoreId: String) async -> [String] {
         var returnVal: [String] = []
         
         guard let user = Auth.auth().currentUser else {
             return returnVal
         }
         
-        let docRef = database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend")
+        let docRef = database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend")
+        
         do {
             let document = try await docRef.getDocument()
             if document.exists {
@@ -397,7 +398,6 @@ class FirebaseService: ObservableObject {
     }
     
     func buildDividendArrayElement(dividendDate: String, dividendAmount: String) -> [String] {
-        
         let str = dividendDate + "," + "\(dividendAmount)"
         var array: [String] = []
         array.append(str)
@@ -439,7 +439,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendAmount: String, dividendDate: String) async {
+    func updateDividend(portfolioName: String, firestoreId: String, dividendDisplayData: DividendDisplayData, dividendAmount: String, dividendDate: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -449,8 +449,10 @@ class FirebaseService: ObservableObject {
         array.append(str)
         let array2 = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
         do {
-            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
-            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array2)])
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
+            
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array2)])
+            
         } catch {
             debugPrint(String.boom, "updateDividend failed: \(error)")
         }

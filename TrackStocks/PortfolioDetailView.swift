@@ -116,7 +116,8 @@ struct PortfolioDetailView: View {
                     }
                     .swipeActions(allowsFullSwipe: false) {
                         Button {
-                            
+                            let parameters = DividendEditParameters(item: item, portfolio: portfolio, dividendDisplayData: dividend)
+                            appNavigationState.dividendEditView(parameters: parameters)
                         } label: {
                             Text("Update")
                         }
@@ -128,12 +129,6 @@ struct PortfolioDetailView: View {
                             Text("Delete")
                         }
                     }
-                    .alert("Are you sure you want to delete this?", isPresented: $showDeleteDividendAlert) {
-                        Button("OK", role: .destructive) {
-                            delete(dividend: dividendToDelete)
-                        }
-                        Button("Cancel", role: .cancel) { }
-                    }
                 }
             }
             Spacer()
@@ -141,6 +136,12 @@ struct PortfolioDetailView: View {
         .padding([.leading, .trailing], 20)
         .navigationTitle(portfolio.name + " Details")
         .navigationBarBackButtonHidden(true)
+        .alert("Are you sure you want to delete this?", isPresented: $showDeleteDividendAlert) {
+            Button("OK", role: .destructive) {
+                delete(dividend: dividendToDelete)
+            }
+            Button("Cancel", role: .cancel) { }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
@@ -154,27 +155,41 @@ struct PortfolioDetailView: View {
             }
         }
         .onAppear {
-            if let dividends = item.dividend {
-                let _ = dividends.map {
-                    let result = portfolioService.buildDividendList(array: $0, symbol: item.id)
-                    dividendList.append(result.0)
-                }
+            dividendList = []
+            Task {
+                await updateDividends()
             }
+        }
+        
+    }
+    
+    func updateDividends() async {
+        let array = await firebaseService.getDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId)
+        var data: [DividendDisplayData] = []
+        let _ = array.map {
+            let value = $0.split(separator: ",")
+            if value.count == 2 {
+                let item = DividendDisplayData(symbol: item.symbol, date: String(value[0]), price: String(value[1]))
+                data.append(item)
+            }
+        }
+        await MainActor.run {
+            dividendList = data
         }
     }
     
     func delete(dividend: DividendDisplayData) {
         Task {
             await firebaseService.deleteDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividend)
-            for item in dividendList {
-                if item.id == dividend.id {
-                    let index = dividendList.firstIndex(of: item)
-                    let _ = await MainActor.run {
-                        dividendList.remove(at: index!)
-                    }
-                }
-            }
-            
+//            for item in dividendList {
+//                if item.id == dividend.id {
+//                    let index = dividendList.firstIndex(of: item)
+//                    let _ = await MainActor.run {
+//                        dividendList.remove(at: index!)
+//                    }
+//                }
+//            }
+            await updateDividends()
         }
     }
 }

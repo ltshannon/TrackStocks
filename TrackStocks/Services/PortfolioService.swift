@@ -246,19 +246,19 @@ class PortfolioService: ObservableObject {
 //        await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
 //    }
     
-    func getDividend(key: PortfolioType, symbol: String) async {
-        
-        let array = await firebaseService.getDividend(listName: key.rawValue, symbol: symbol)
-        var data: [DividendDisplayData] = []
-        let _ = array.map {
-            let value = $0.split(separator: ",")
-            if value.count == 2 {
-                let item = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]))
-                data.append(item)
-            }
-        }
-        
-        var dividendDisplayData: [DividendDisplayData] = []
+//    func getDividend(key: PortfolioType, symbol: String) async {
+//        
+//        let array = await firebaseService.getDividend(listName: key.rawValue, symbol: symbol)
+//        var data: [DividendDisplayData] = []
+//        let _ = array.map {
+//            let value = $0.split(separator: ",")
+//            if value.count == 2 {
+//                let item = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]))
+//                data.append(item)
+//            }
+//        }
+//        
+//        var dividendDisplayData: [DividendDisplayData] = []
 //        switch key {
 //        case .acceleratedProfits:
 //            dividendDisplayData = acceleratedProfitsDividendList
@@ -273,23 +273,23 @@ class PortfolioService: ObservableObject {
 //        case .sell:
 //            dividendDisplayData = sellDividendList
 //        }
-        
-        var temp = dividendDisplayData.filter { $0.symbol != symbol }
-        temp += data
-        temp = temp.sorted { $0.symbol < $1.symbol }
-        await MainActor.run {
-            dividendDisplayData = temp
-        }
-    }
+//        
+//        var temp = dividendDisplayData.filter { $0.symbol != symbol }
+//        temp += data
+//        temp = temp.sorted { $0.symbol < $1.symbol }
+//        await MainActor.run {
+//            dividendDisplayData = temp
+//        }
+//    }
 
 //    func deleteDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData) async {
 //        await firebaseService.deleteDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData)
 //    }
     
-    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendDate: String, dividendAmount: String) async {
-        
-        await firebaseService.updateDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate)
-    }
+//    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendDate: String, dividendAmount: String) async {
+//        
+//        await firebaseService.updateDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate)
+//    }
     
     func buildDividendList(array: String, symbol: String) -> (DividendDisplayData, Float) {
         var data = DividendDisplayData(date: "", price: "")

@@ -79,7 +79,7 @@ struct DividendCreateView: View {
         }
         .onAppear {
             symbol = item.symbol
-            selectedDate = item.purchasedDate
+            selectedDate = ""
             firestoreId = item.firestoreId
         }
     }
