@@ -37,9 +37,9 @@ struct PortfolioView: View {
             VStack(alignment: .leading) {
                 if settingsService.displayStocks == .showAllStocks {
                     Text("Active Gain/Loss: \(totalActive.formatted(.currency(code: "USD")))")
-                    Text("Sold Gain/loss: \(totalSold.formatted(.currency(code: "USD")))")
+                    Text("Sold Gain/Loss: \(totalSold.formatted(.currency(code: "USD")))")
                 }
-                Text("Gain/Loss: \(total.formatted(.currency(code: "USD")))")
+                Text("Total Gain/Loss: \(total.formatted(.currency(code: "USD")))")
                 Text("Cost Basis: \(totalBasis.formatted(.currency(code: "USD")))")
                 if totalBasis > 0 {
                     let value = (total / totalBasis) * 100
@@ -215,8 +215,8 @@ struct PortfolioView: View {
     
     func deleteItem(item: ItemData) {
         Task {
-            await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.name, stockId: item.firestoreId)
-            let results = await portfolioService.getPortfolio(listName: portfolio.name)
+            await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.id ?? "n/a", stockId: item.firestoreId)
+            let results = await portfolioService.getPortfolio(listName: portfolio.id ?? "n/a")
             await MainActor.run {
                 stocks = results.0
                 total = results.1

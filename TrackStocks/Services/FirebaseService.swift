@@ -504,20 +504,31 @@ class FirebaseService: ObservableObject {
             for document in querySnapshot.documents {
                 let item = try document.data(as: StockItem.self)
                 if let id = item.id {
-                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).collection("dividend").getDocuments()
-                    for document2 in querySnapshot2.documents {
-                        let dividend = try document2.data(as: DividendData.self)
-                        if let id2 = dividend.id {
-                            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).collection("dividend").document(id2).delete()
-                        }
-                        try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
+                    do {
+                        try await deleteDividends(portfolioName: portfolioName, stockId: id)
+                    } catch {
+                        debugPrint("", "No dividends to delete for \(portfolioName) \(id)")
                     }
                     try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
                 }
             }
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).delete()
         } catch {
-            debugPrint(String.boom, "deletePortfolio for portfolio; \(portfolioName) \(error)")
+            debugPrint(String.boom, "deletePortfolio for portfolio: \(portfolioName) \(error)")
+        }
+        
+    }
+    
+    func deleteDividends(portfolioName: String, stockId: String) async throws {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).collection("dividend").getDocuments()
+        for document in querySnapshot.documents {
+            let dividend = try document.data(as: DividendData.self)
+            if let id = dividend.id {
+                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).collection("dividend").document(id).delete()
+            }
         }
         
     }
@@ -528,6 +539,11 @@ class FirebaseService: ObservableObject {
         }
         
         do {
+            do {
+                try await deleteDividends(portfolioName: portfolioName, stockId: stockId)
+            } catch {
+                debugPrint("", "No dividends to delete for portfolio: \(portfolioName) sockid: \(stockId)")
+            }
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).delete()
         } catch {
             debugPrint(String.boom, "deletePortfolioStock for portfolio: \(portfolioName) sockid: \(stockId) error: \(error)")
