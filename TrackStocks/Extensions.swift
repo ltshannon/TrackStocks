@@ -8,6 +8,41 @@
 import Foundation
 import SwiftUI
 
+enum StockPicks: String, Codable, CaseIterable, Identifiable, CustomStringConvertible {
+    case topStock = "t.circle"
+    case top5 = "5.circle"
+    case hold = "h.circle"
+    case sell = "s.circle"
+    case new = "n.circle"
+    case none = ""
+    
+    var description: String {
+        switch self {
+        case .topStock: return "Top Stock"
+        case .top5: return "Top 5"
+        case .hold: return "Hold"
+        case .sell: return "Sell"
+        case .new: return "New"
+        case .none: return "None"
+        }
+    }
+    
+    func getStockPick(type: String) -> StockPicks {
+        switch type {
+        case "Top Stock": return .topStock
+        case "Top 5": return .top5
+        case "Hold": return .hold
+        case "Sell": return .sell
+        case "New": return .new
+        default: return .none
+        }
+
+    }
+    
+    var id: Self { self }
+
+}
+
 public extension String {
     //Common
     static var empty: String { "" }
@@ -64,6 +99,22 @@ extension String {
         }
         return "chart.line.flattrend.xyaxis"
     }
+    
+    func getSymbol() -> StockPicks {
+        let sym = StockPicks.random()
+        return sym
+    }
+}
+
+extension CaseIterable {
+    static func random<G: RandomNumberGenerator>(using generator: inout G) -> Self.AllCases.Element {
+        return Self.allCases.randomElement(using: &generator)!
+    }
+
+    static func random() -> Self.AllCases.Element {
+        var g = SystemRandomNumberGenerator()
+        return Self.random(using: &g)
+    }
 }
 
 func getColorOfChange(change: Float?, isSold: Bool = false) -> Color {
@@ -74,5 +125,16 @@ func getColorOfChange(change: Float?, isSold: Bool = false) -> Color {
         return .red
     }
     return .green
+}
+
+func getColorOfStockPick(stockPick: StockPicks) -> Color {
+    switch stockPick {
+    case .hold: return .yellow
+    case .new: return .green
+    case .sell: return .red
+    case .top5: return .teal
+    case .topStock: return .blue
+    case .none: return .clear
+    }
 }
 

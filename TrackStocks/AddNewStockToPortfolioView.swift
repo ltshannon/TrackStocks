@@ -27,6 +27,7 @@ struct AddNewStockToPortfolioView: View {
     @State var showingMissingDate: Bool = false
     @State var showingMissingQuantity: Bool = false
     @State var showingMissingBasis: Bool = false
+    @State private var selectedStockTagOption: StockPicks = .none
     
     @State var navigationLinkTriggerer: Bool? = nil
     
@@ -61,7 +62,7 @@ struct AddNewStockToPortfolioView: View {
                         Text("Date")
                     }
                     Section {
-                        TextField("Quantity", value: $quantity, format: .number.precision(.fractionLength(2)))
+                        TextField("Quantity", value: $quantity, format: .number.precision(.fractionLength(3)))
                             .keyboardType(.decimalPad)
                     } header: {
                         Text("Number of shares")
@@ -72,7 +73,17 @@ struct AddNewStockToPortfolioView: View {
                     } header: {
                         Text("Average Price per Share")
                     }
+                    Section {
+                        Picker("Select a Tag", selection: $selectedStockTagOption) {
+                            ForEach(StockPicks.allCases) { option in
+                                Text(String(describing: option))
+                            }
+                        }
+                    } header: {
+                        Text("Tag")
+                    }
                 }
+                .listSectionSpacing(1)
             }
             .navigationTitle(portfolioName)
             .alert("You are missing a Stock Symbol", isPresented: $showingMissingSymbol) {
@@ -142,7 +153,7 @@ struct AddNewStockToPortfolioView: View {
         let item = ItemData(firestoreId: "", symbol: selectedStock.uppercased(), basis: Float(doubleBasis), price: 0, gainLose: 0, percent: 0, quantity: doubleQuantity, isSold: false, purchasedDate: selectedDate, soldDate: "n/a")
         Task {
             dismiss()
-            await firebaseService.addItem(portfolioName: portfolioName, symbol: item.symbol, quantity: item.quantity, basis: doubleBasis, purchasedDate: item.purchasedDate, soldDate: "n/a")
+            await firebaseService.addItem(portfolioName: portfolioName, symbol: item.symbol, quantity: item.quantity, basis: doubleBasis, purchasedDate: item.purchasedDate, soldDate: "n/a", stockTag: selectedStockTagOption.rawValue)
         }
     }
     

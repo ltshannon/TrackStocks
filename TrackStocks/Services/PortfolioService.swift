@@ -40,6 +40,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var timestamp: Int?
     var purchasedDate: String
     var soldDate: String
+    var stockTag: String?
 }
 
 enum PortfolioType: String, CaseIterable, Identifiable, Encodable {
@@ -136,7 +137,7 @@ class PortfolioService: ObservableObject {
                 soldPrice = value
                 isSold = true
             }
-            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: item.soldDate)
+            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: item.soldDate, stockTag: item.stockTag ?? "None")
             items.append(temp)
         }
         

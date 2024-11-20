@@ -33,6 +33,7 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var price: Float?
     var purchasedDate: String
     var soldDate: String
+    var stockTag: String?
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -354,7 +355,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func addItem(portfolioName: String, symbol: String, quantity: Double, basis: Double, purchasedDate: String, soldDate: String) async {
+    func addItem(portfolioName: String, symbol: String, quantity: Double, basis: Double, purchasedDate: String, soldDate: String, stockTag: String = "None") async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -364,7 +365,8 @@ class FirebaseService: ObservableObject {
             "quantity": quantity,
             "basis": basis,
             "purchasedDate": purchasedDate,
-            "soldDate": soldDate
+            "soldDate": soldDate,
+            "stockTag": stockTag,
         ] as [String : Any]
         
         do {
@@ -459,7 +461,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateItem(firestoreId: String, portfolioName: String, quantity: Decimal, basis: Decimal, date: String) async {
+    func updateItem(firestoreId: String, portfolioName: String, quantity: Decimal, basis: Decimal, date: String, stockTag: String = "None") async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -467,7 +469,8 @@ class FirebaseService: ObservableObject {
         let value = [
             "quantity": quantity,
             "basis": basis,
-            "purchasedDate": date
+            "purchasedDate": date,
+            "stockTag": stockTag,
         ] as [String : Any]
         do {
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)

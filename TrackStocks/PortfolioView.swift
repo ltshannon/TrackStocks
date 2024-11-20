@@ -27,6 +27,7 @@ struct PortfolioView: View {
     @State var showingAddNewShockSheet: Bool = false
     @State var showingDeleteAlert = false
     @State var showingProgress = false
+    @State private var selectedOption: StockPicks = .none
     
     init(paramters: PortfolioParameters) {
         self.portfolio = paramters.portfolio
@@ -67,6 +68,14 @@ struct PortfolioView: View {
                         VStack {
                             Text(item.symbol)
                                 .bold()
+                            if item.isSold == false, let tag = item.stockTag {
+                                let tag = StockPicks.hold.getStockPick(type: tag)
+                                Image(systemName: tag.rawValue)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 25 , height: 25)
+//                                    .foregroundStyle((getColorOfStockPick(stockPick: sym)))
+                            }
                         }
                         VStack(alignment: .leading) {
                             Text(item.price, format: .currency(code: "USD")).bold()

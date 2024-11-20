@@ -24,6 +24,7 @@ struct PortfolioUpdateView: View {
     @State var firestoreId: String = ""
     @State var dividendDisplayData: [DividendDisplayData] = []
     @State var showingDateSelector: Bool = false
+    @State private var selectedOption: StockPicks = .none
     
     init(paramters: PortfolioUpdateParameters) {
         self.portfolio = paramters.portfolio
@@ -54,7 +55,7 @@ struct PortfolioUpdateView: View {
                     Text("Purchase Date")
                 }
                 Section {
-                    TextField("Quantity", value: $quantity, format: .number.precision(.fractionLength(2)))
+                    TextField("Quantity", value: $quantity, format: .number.precision(.fractionLength(3)))
                         .keyboardType(.decimalPad)
                 } header: {
                     Text("Number of shares")
@@ -69,6 +70,17 @@ struct PortfolioUpdateView: View {
                     Text(soldDate)
                 } header: {
                     Text("Sold Date")
+                }
+                if item.isSold == false {
+                    Section {
+                        Picker("Select a Tag", selection: $selectedOption) {
+                            ForEach(StockPicks.allCases) { option in
+                                Text(String(describing: option))
+                            }
+                        }
+                    } header: {
+                        Text("Tag")
+                    }
                 }
                 if dividendDisplayData.count > 0 {
                     Section {
@@ -114,17 +126,20 @@ struct PortfolioUpdateView: View {
             selectedDate = item.purchasedDate
             soldDate = item.soldDate
             firestoreId = item.firestoreId
+            if let stockPick = item.stockTag {
+                selectedOption = selectedOption.getStockPick(type: stockPick)
+            }
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
             StockDateSelectorView(selectedDate: $selectedDate)
         }
+        
     }
 
     func update() {
-
         Task {
             dismiss()
-            await firebaseService.updateItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", quantity: quantity, basis: basis, date: selectedDate)
+            await firebaseService.updateItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", quantity: quantity, basis: basis, date: selectedDate, stockTag: selectedOption.description)
         }
     }
     
