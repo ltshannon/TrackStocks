@@ -16,6 +16,7 @@ struct PortfolioView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
     var portfolio: Portfolio
+    var tempSearchText: String
     @State var stocks: [ItemData] = []
     @State var change: Float = 0
     @State var total: Float = 0
@@ -28,9 +29,20 @@ struct PortfolioView: View {
     @State var showingDeleteAlert = false
     @State var showingProgress = false
     @State private var selectedOption: StockPicks = .none
+    @State var searchText = ""
+    @FocusState private var isSearchFieldFocused: Bool
+    
+    var searchResults: [ItemData] {
+        if searchText.isEmpty {
+            return stocks
+        } else {
+            return stocks.filter { $0.symbol.contains(searchText.uppercased()) }
+        }
+    }
     
     init(paramters: PortfolioParameters) {
         self.portfolio = paramters.portfolio
+        self.tempSearchText = paramters.searchText
     }
     
     var body: some View {
@@ -58,7 +70,7 @@ struct PortfolioView: View {
                     .padding(.trailing, 30)
             }
             List {
-                ForEach(stocks, id: \.id) { item in
+                ForEach(searchResults, id: \.id) { item in
                     HStack {
                         Image(systemName: String().getChartName(item: item))
                             .resizable()
@@ -180,7 +192,10 @@ struct PortfolioView: View {
                 }
             }
             .navigationTitle(portfolio.name)
+            .searchable(text: $searchText, prompt: "Enter Stock Symbol")
+//            .searchFocused($isSearchFieldFocused)
             .onAppear {
+                searchText = tempSearchText
                 updatePortfolio()
             }
             .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
@@ -209,9 +224,7 @@ struct PortfolioView: View {
         functions.httpsCallable("test").call(["numberOfDays": "0"]) { result, error in
             if let error = error as NSError? {
                 if error.domain == FunctionsErrorDomain {
-//                    let code = FunctionsErrorCode(rawValue: error.code)
-//                    let message = error.localizedDescription
-//                    let details = error.userInfo[FunctionsErrorDetailsKey]
+
                 }
                 // ...
             }

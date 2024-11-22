@@ -23,11 +23,28 @@ struct PortfolioHomeView: View {
     @State var newName: String = ""
     @State var firstTime = true
     @State var selectedPortfolio: Portfolio = Portfolio(id: "", name: "")
+    @State var searchText = ""
+    @State var portfolioList: [Portfolio] = []
     
+    var searchResults: [Portfolio] {
+        if searchText.isEmpty {
+            return firebaseService.portfolioList
+        } else {
+            var list: [Portfolio] = []
+            let _ = firebaseService.masterSymbolList.map { item in
+                if item.stockSymbols.filter({ $0.contains(searchText.uppercased()) }).isEmpty == false {
+                    let portfolio = Portfolio(id: item.portfolioId, name: item.portfolioName)
+                    list.append(portfolio)
+                }
+            }
+            return list
+        }
+    }
+
     var body: some View {
         NavigationStack(path: $appNavigationState.portfolioNavigation) {
             List {
-                ForEach(firebaseService.portfolioList, id: \.id) { item in
+                ForEach(searchResults, id: \.id) { item in
                     HStack {
                         Text(item.name)
                             .font(.title2)
@@ -35,7 +52,7 @@ struct PortfolioHomeView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        let parameters = PortfolioParameters(portfolio: item)
+                        let parameters = PortfolioParameters(portfolio: item, searchText: searchText)
                         appNavigationState.portfolioView(parameters: parameters)
                     }
                     .swipeActions(allowsFullSwipe: false) {
@@ -86,10 +103,12 @@ struct PortfolioHomeView: View {
                 }
             }
         }
+        .searchable(text: $searchText, prompt: "Enter Stock Symbol")
         .onAppear {
             if firstTime {
-                if firebaseService.listenerForPortfolios() {
-                    firstTime = false
+                firstTime = false
+                Task {
+                    await firebaseService.listenerForPortfolios()
                 }
             }
             if symbolStorage.isEmpty {
@@ -116,26 +135,55 @@ struct PortfolioHomeView: View {
                 .keyboardType(.default)
             Button("OK", action: add)
             Button("Cancel", role: .cancel) { }
-         } message: {
+        } message: {
             Text("Enter the name of the portfolio.")
-         }
-         .alert("Rename Portfolio", isPresented: $showRenamePortfolioAlert) {
-             TextField("Name", text: $newName)
-                 .keyboardType(.default)
-             Button("OK") {
-                 rename(item: selectedPortfolio)
-             }
-             Button("Cancel", role: .cancel) { }
-          } message: {
-             Text("Enter the new name of the portfolio")
-          }
-          .alert("Are you sure you want to delete this?", isPresented: $showDeletePortfolioAlert) {
-              Button("OK", role: .destructive) {
-                  debugPrint("😀", "Deleting portfolio: \(selectedPortfolio.name)")
-                  delete(item: selectedPortfolio)
-              }
-              Button("Cancel", role: .cancel) { }
-          }
+        }
+        .alert("Rename Portfolio", isPresented: $showRenamePortfolioAlert) {
+            TextField("Name", text: $newName)
+                .keyboardType(.default)
+            Button("OK") {
+                rename(item: selectedPortfolio)
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Enter the new name of the portfolio")
+        }
+        .alert("Are you sure you want to delete this?", isPresented: $showDeletePortfolioAlert) {
+            Button("OK", role: .destructive) {
+                delete(item: selectedPortfolio)
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .onChange(of: firebaseService.portfolioList) { oldValue, newValue in
+            if newValue.count > oldValue.count {
+                let difference = oldValue.difference(from: newValue)
+                for item in difference {
+                    Task {
+                        await firebaseService.listenerForStockSymbols(portfolioId: item.id ?? "n/a", portfolioName: item.name)
+                    }
+                }
+            } else if newValue.count < oldValue.count {
+                let difference = newValue.difference(from: oldValue)
+                for item in difference {
+                    if let id = item.id, let index = firebaseService.masterSymbolList.firstIndex(where: { $0.portfolioId == id }) {
+                        DispatchQueue.main.async {
+                            firebaseService.masterSymbolList.remove(at: index)
+                        }
+                    }
+                }
+            }
+            self.portfolioList = newValue
+        }
+        .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
+//            debugPrint("👤", "onChange masterSymbolList called")
+//            for item in newValue {
+//                debugPrint("🤡", "masterSymbolList: portfolio name: \(item.portfolioName)")
+//                for item2 in item.stockSymbols {
+//                    debugPrint("masterSymbolList: symbol: \(item2)")
+//                }
+//            }
+        }
+
     }
     
     func add() {

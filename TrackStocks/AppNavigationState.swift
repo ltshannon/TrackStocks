@@ -10,9 +10,11 @@ import Foundation
 struct PortfolioParameters: Identifiable, Hashable, Encodable {
     var id = UUID().uuidString
     var portfolio: Portfolio
+    var searchText: String
     
-    init(portfolio: Portfolio) {
+    init(portfolio: Portfolio, searchText: String) {
         self.portfolio = portfolio
+        self.searchText = searchText
     }
 }
 

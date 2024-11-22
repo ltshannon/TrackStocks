@@ -22,6 +22,13 @@ struct Portfolio: Codable, Identifiable, Hashable {
     var name: String
 }
 
+struct MasterSymbolList: Codable, Identifiable, Hashable {
+    var id = UUID().uuidString
+    var portfolioName: String
+    var portfolioId: String
+    var stockSymbols: [String]
+}
+
 struct PortfolioItem: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
     var name: String?
@@ -82,6 +89,7 @@ class FirebaseService: ObservableObject {
     @AppStorage("profile-url") var profileURL: String = ""
     @Published var user: FirebaseUserInformation = FirebaseUserInformation(id: "", displayName: "", email: "", subscription: false)
     @Published var portfolioList: [Portfolio] = []
+    @Published var masterSymbolList: [MasterSymbolList] = []
     var fmc: String = ""
     var userListener: ListenerRegistration?
     var portfolioListener: ListenerRegistration?
@@ -158,9 +166,10 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func listenerForPortfolios() -> Bool {
+    @MainActor
+    func listenerForPortfolios() async {
         guard let user = Auth.auth().currentUser else {
-            return false
+            return
         }
         
         let listener = database.collection("users").document(user.uid).collection("portfolios").whereField("name", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
@@ -168,7 +177,7 @@ class FirebaseService: ObservableObject {
                 debugPrint("🧨", "Error getPortfolios: \(error!)")
                 return
             }
-            
+            debugPrint("👩‍🏭", "listenerForPortfolios called")
             var results: [Portfolio] = []
             
             do {
@@ -185,9 +194,48 @@ class FirebaseService: ObservableObject {
                 debugPrint("🧨", "Error reading getPortfolios: \(error.localizedDescription)")
             }
         }
-        
         self.portfolioListener = listener
-        return true
+
+    }
+    
+    @MainActor
+    func listenerForStockSymbols(portfolioId: String, portfolioName: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        database.collection("users").document(user.uid).collection("portfolios").document(portfolioId).collection("stocks").whereField("symbol", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
+            guard let documents = querySnapshot?.documents else {
+                debugPrint("🧨", "listenerForStocks: \(error!)")
+                return
+            }
+            
+            debugPrint("👨‍🦯‍➡️", "listenerForStockSymbols called")
+            
+            var stockSymbols: Set<String> = []
+            do {
+                for document in documents {
+                    let data = try document.data(as: StockItem.self)
+                    if let symbol = data.symbol {
+                        stockSymbols.insert(symbol)
+                    }
+                }
+                let array = Array(stockSymbols)
+                if let index = self.masterSymbolList.firstIndex(where: {$0.portfolioId == portfolioId}) {
+                    DispatchQueue.main.async {
+                        self.masterSymbolList[index].stockSymbols = array
+                    }
+                } else {
+                    let value = MasterSymbolList(portfolioName: portfolioName, portfolioId: portfolioId, stockSymbols: array)
+                    DispatchQueue.main.async {
+                        self.masterSymbolList.append(value)
+                    }
+                }
+            }
+            catch {
+                debugPrint("🧨", "Error listenerForStocks: portfolioName: \(portfolioName) \(error.localizedDescription)")
+            }
+        }
+
     }
     
     func getStocksFromPortfolio(portfolioName: String) async -> [StockItem] {
