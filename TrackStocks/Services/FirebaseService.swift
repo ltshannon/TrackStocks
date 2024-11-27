@@ -27,6 +27,8 @@ struct MasterSymbolList: Codable, Identifiable, Hashable {
     var portfolioName: String
     var portfolioId: String
     var stockSymbols: [String]
+    var stockItems: [StockItem]
+    var portfolioItems: [PortfolioItem]
 }
 
 struct PortfolioItem: Codable, Identifiable, Hashable {
@@ -34,13 +36,14 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var name: String?
     var quantity: Double
     var basis: Float
-    var dividend: [String]?
+//    var dividend: [String]?
     var symbol: String?
     var isSold: Bool?
     var price: Float?
     var purchasedDate: String
     var soldDate: String
     var stockTag: String?
+    var dividends: [String]?
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -205,69 +208,65 @@ class FirebaseService: ObservableObject {
         }
         database.collection("users").document(user.uid).collection("portfolios").document(portfolioId).collection("stocks").whereField("symbol", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else {
-                debugPrint("🧨", "listenerForStocks: \(error!)")
+                debugPrint("🧨", "listenerForStockSymbols: \(error!)")
                 return
             }
             
             debugPrint("👨‍🦯‍➡️", "listenerForStockSymbols called")
             
             var stockSymbols: Set<String> = []
+            var stockItems: [StockItem] = []
+            var portfolioItems: [PortfolioItem] = []
             do {
                 for document in documents {
-                    let data = try document.data(as: StockItem.self)
+                    let data = try document.data(as: PortfolioItem.self)
                     if let symbol = data.symbol {
                         stockSymbols.insert(symbol)
+                        let stockItem = StockItem(id: data.id ?? "no id", symbol: data.symbol ?? "no symbol")
+                        stockItems.append(stockItem)
+                        portfolioItems.append(data)
                     }
                 }
                 let array = Array(stockSymbols)
                 if let index = self.masterSymbolList.firstIndex(where: {$0.portfolioId == portfolioId}) {
                     DispatchQueue.main.async {
                         self.masterSymbolList[index].stockSymbols = array
+                        self.masterSymbolList[index].stockItems = stockItems
+                        self.masterSymbolList[index].portfolioItems = portfolioItems
                     }
                 } else {
-                    let value = MasterSymbolList(portfolioName: portfolioName, portfolioId: portfolioId, stockSymbols: array)
+                    let value = MasterSymbolList(portfolioName: portfolioName, portfolioId: portfolioId, stockSymbols: array, stockItems: stockItems, portfolioItems: portfolioItems)
                     DispatchQueue.main.async {
                         self.masterSymbolList.append(value)
+                        self.masterSymbolList.sort(by: { $0.portfolioName < $1.portfolioName })
                     }
                 }
             }
             catch {
-                debugPrint("🧨", "Error listenerForStocks: portfolioName: \(portfolioName) \(error.localizedDescription)")
+                debugPrint("🧨", "Error listenerForStockSymbols: portfolioName: \(portfolioName) \(error.localizedDescription)")
             }
         }
 
     }
     
-    func getStocksFromPortfolio(portfolioName: String) async -> [StockItem] {
-        guard let user = Auth.auth().currentUser else {
-            return []
-        }
+    func getPortfolioList(stockList: [StockItem], portfolioName: String, displayStockState: DisplayStockState) async -> [PortfolioItem] {
         
-        var stockItems: [StockItem] = []
-        do {
-            let querySnapshot = try await database.collection("users").document(user.uid).collection(portfolioName).document(portfolioName).getDocument()
-            if querySnapshot.exists {
-                let data = try querySnapshot.data(as: StockItem.self)
-                stockItems.append(data)
+        if let index = self.masterSymbolList.firstIndex(where: {$0.portfolioId == portfolioName}) {
+            let portfolioItems = self.masterSymbolList[index].portfolioItems
+            for item in portfolioItems {
+                debugPrint("🦜", "portfolioItem: \(item.symbol ?? "n/a")")
             }
-        } catch {
-            debugPrint("🧨", "getStocksFromPortfolio \(error.localizedDescription)")
-        }
-        return stockItems
-    }
-    
-    func getPortfolioList(stockList: [StockItem], listName: String, displayStockState: DisplayStockState) async -> [PortfolioItem] {
-        var id: String = ""
-        guard let user = Auth.auth().currentUser else {
+            return portfolioItems.sorted(by: { $0.symbol ?? "" < $1.symbol ?? "" })
+        } else {
+            debugPrint("🙅‍♂️", "Stocks for portfolio \(portfolioName) not found")
             return []
         }
-        
+/*
         var portfolioItems: [PortfolioItem] = []
         for item in stockList {
             do {
                 id = item.id ?? "n/a"
-//                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName).document(id).getDocument()
-                let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").document(id).getDocument()
+                let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).getDocument()
                 
                 if querySnapshot.exists {
                     var data = try querySnapshot.data(as: PortfolioItem.self)
@@ -282,127 +281,33 @@ class FirebaseService: ObservableObject {
                     } else {
                         data.symbol = data.id ?? "n/a"
                     }
-                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").document(id).collection("dividend").document("dividend").getDocument()
+                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).collection("dividend").document("dividend").getDocument()
                     if querySnapshot2.exists {
                         let data2 = try querySnapshot2.data(as: DividendData.self)
-                        data.dividend = data2.values
+                        data.dividends = data2.values
                     }
                     portfolioItems.append(data)
                 }
             }
             catch {
-                debugPrint("🧨", "id: \(id) listName: \(listName) Error reading stock items: \(error.localizedDescription)")
+                debugPrint("🧨", "id: \(id) portfolioName: \(portfolioName) Error reading stock items: \(error.localizedDescription)")
             }
         }
         
         return portfolioItems.sorted(by: { $0.symbol ?? "" < $1.symbol ?? "" })
+*/
     }
     
-    func getStockList(listName: String) async -> [StockItem] {
-        var items: [StockItem] = []
+    func getStockList(portfolioName: String) async -> ([String], [StockItem]) {
         
-        guard let user = Auth.auth().currentUser, listName != "" else {
-            return []
+        if let item = masterSymbolList.filter({ $0.portfolioId == portfolioName }).first {
+            return (item.stockSymbols, item.stockItems)
         }
         
-        
-        do {
-            let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(listName).collection("stocks").getDocuments()
-
-            for document in querySnapshot.documents {
-                let item = try document.data(as: StockItem.self)
-                items.append(item)
-            }
-        }
-        catch {
-            debugPrint("🧨", "Error reading getStockList: \(error.localizedDescription)")
-        }
-        items.sort(by: { $0.id ?? "" < $1.id ?? "" })
-        return items
+        return ([], [])
 
     }
-    
-    func getModelSymbolList(listName: PortfolioType) async -> [String] {
-        var items: [String] = []
-        
-        let docRef = database.collection("ModelPortfolio").document(listName.rawValue)
-        do {
-            let document = try await docRef.getDocument()
-            if document.exists {
-                let data = try document.data(as: ModelStock.self)
-                debugPrint("data: \(data.id ?? "no id")")
-                if let value = data.id {
-                    switch value {
-                    case PortfolioType.acceleratedProfits.rawValue:
-                        if let values = data.AcceleratedProfits {
-                            items = values
-                        }
-                    case PortfolioType.breakthroughStocks.rawValue:
-                        if let values = data.BreakthroughStocks {
-                            items = values
-                        }
-                    case PortfolioType.eliteDividendPayers.rawValue:
-                        if let values = data.EliteDividendPayers {
-                            items = values
-                        }
-                    case PortfolioType.growthInvestor.rawValue:
-                        if let values = data.GrowthInvestor {
-                            items = values
-                        }
-                    case PortfolioType.buy.rawValue:
-                        if let values = data.Buy {
-                            items = values
-                        }
-                    case PortfolioType.sell.rawValue:
-                        if let values = data.Sell {
-                            items = values
-                        }
-                    default:
-                        items = []
-                    }
-                }
-            } else {
-                debugPrint("🧨", "Error reading getModelSymbolList Document does not exist")
-            }
-        } catch {
-            debugPrint("🧨", "Error reading getModelSymbolList \(error.localizedDescription)")
-        }
-        items.sort()
-        return items
 
-    }
-    
-    func addSymbol(listName: String, symbol: String) async {
-        
-        do {
-            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayUnion([symbol])])
-        } catch {
-            debugPrint(String.boom, "addSymbol failed: \(error)")
-        }
-        
-    }
-    
-    func updateSymbol(listName: String, oldSymbol: String, newSymbol: String) async {
-        
-        do {
-            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayRemove([oldSymbol])])
-            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayUnion([newSymbol])])
-        } catch {
-            debugPrint(String.boom, "updateSymbol failed: \(error)")
-        }
-        
-    }
-    
-    func deleteSymbol(listName: String, symbol: String) async {
-
-        do {
-            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayRemove([symbol])])
-        } catch {
-            debugPrint(String.boom, "deleteSymbol failed: \(error)")
-        }
-        
-    }
-    
     func addItem(portfolioName: String, symbol: String, quantity: Double, basis: Double, purchasedDate: String, soldDate: String, stockTag: String = "None") async {
         guard let user = Auth.auth().currentUser else {
             return
@@ -425,28 +330,6 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func getDividend(portfolioName: String, firestoreId: String) async -> [String] {
-        var returnVal: [String] = []
-        
-        guard let user = Auth.auth().currentUser else {
-            return returnVal
-        }
-        
-        let docRef = database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend")
-        
-        do {
-            let document = try await docRef.getDocument()
-            if document.exists {
-                let items = DividendData(snapshot: document.data() ?? [:])
-                returnVal = items.values
-            }
-        } catch {
-            debugPrint(String.boom, "getDividend: \(error)")
-        }
-        return returnVal
-        
-    }
-    
     func buildDividendArrayElement(dividendDate: String, dividendAmount: String) -> [String] {
         let str = dividendDate + "," + "\(dividendAmount)"
         var array: [String] = []
@@ -462,10 +345,10 @@ class FirebaseService: ObservableObject {
         
         let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array)])
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array)])
         } catch {
             do {
-                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").setData(["values": FieldValue.arrayUnion(array)])
+                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).setData(["dividends": FieldValue.arrayUnion(array)])
             } catch {
                 debugPrint(String.boom, "addDividend failed: \(error)")
             }
@@ -482,7 +365,7 @@ class FirebaseService: ObservableObject {
         var array: [String] = []
         array.append(str)
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
         } catch {
             debugPrint(String.boom, "deleteDividend failed: \(error)")
         }
@@ -499,9 +382,8 @@ class FirebaseService: ObservableObject {
         array.append(str)
         let array2 = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
-            
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array2)])
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array2)])
             
         } catch {
             debugPrint(String.boom, "updateDividend failed: \(error)")
@@ -555,11 +437,6 @@ class FirebaseService: ObservableObject {
             for document in querySnapshot.documents {
                 let item = try document.data(as: StockItem.self)
                 if let id = item.id {
-                    do {
-                        try await deleteDividends(portfolioName: portfolioName, stockId: id)
-                    } catch {
-                        debugPrint("", "No dividends to delete for \(portfolioName) \(id)")
-                    }
                     try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
                 }
             }
@@ -570,47 +447,15 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func deleteDividends(portfolioName: String, stockId: String) async throws {
-        guard let user = Auth.auth().currentUser else {
-            return
-        }
-        let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).collection("dividend").getDocuments()
-        for document in querySnapshot.documents {
-            let dividend = try document.data(as: DividendData.self)
-            if let id = dividend.id {
-                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).collection("dividend").document(id).delete()
-            }
-        }
-        
-    }
-    
     func deletePortfolioStock(portfolioName: String, stockId: String) async  {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
         do {
-            do {
-                try await deleteDividends(portfolioName: portfolioName, stockId: stockId)
-            } catch {
-                debugPrint("", "No dividends to delete for portfolio: \(portfolioName) sockid: \(stockId)")
-            }
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).delete()
         } catch {
             debugPrint(String.boom, "deletePortfolioStock for portfolio: \(portfolioName) sockid: \(stockId) error: \(error)")
-        }
-        
-    }
-    
-    func deleteItem(portfolioName: String, symbol: String) async  {
-        guard let user = Auth.auth().currentUser else {
-            return
-        }
-        
-        do {
-          try await database.collection("users").document(user.uid).collection(portfolioName).document(symbol).delete()
-        } catch {
-            debugPrint(String.boom, "deleteItem: \(error)")
         }
         
     }

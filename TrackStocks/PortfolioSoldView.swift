@@ -20,9 +20,9 @@ struct PortfolioSoldView: View {
     @State var firestoreId: String = ""
     @State var showingDateSelector: Bool = false
     
-    init(paramters: PortfolioUpdateParameters) {
-        self.portfolio = paramters.portfolio
-        self.item = paramters.item
+    init(parameters: PortfolioUpdateParameters) {
+        self.portfolio = parameters.portfolio
+        self.item = parameters.item
     }
     
     var body: some View {

@@ -40,9 +40,9 @@ struct PortfolioView: View {
         }
     }
     
-    init(paramters: PortfolioParameters) {
-        self.portfolio = paramters.portfolio
-        self.tempSearchText = paramters.searchText
+    init(parameters: PortfolioParameters) {
+        self.portfolio = parameters.portfolio
+        self.tempSearchText = parameters.searchText
     }
     
     var body: some View {
@@ -238,7 +238,7 @@ struct PortfolioView: View {
     func deleteItem(item: ItemData) {
         Task {
             await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.id ?? "n/a", stockId: item.firestoreId)
-            let results = await portfolioService.getPortfolio(listName: portfolio.id ?? "n/a")
+            let results = await portfolioService.getPortfolio(portfolioName: portfolio.id ?? "n/a")
             await MainActor.run {
                 stocks = results.0
                 total = results.1
@@ -259,7 +259,7 @@ struct PortfolioView: View {
             await MainActor.run {
                 showingProgress = true
             }
-            let results = await portfolioService.getPortfolio(listName: portfolio.id ?? "n/a")
+            let results = await portfolioService.getPortfolio(portfolioName: portfolio.id ?? "n/a")
             await MainActor.run {
                 stocks = results.0
                 total = results.1

@@ -24,9 +24,9 @@ struct PortfolioDetailView: View {
         return formatter
     }()
     
-    init(paramters: PortfolioDetailParameters) {
-        self.item = paramters.item
-        self.portfolio = paramters.portfolio
+    init(parameters: PortfolioDetailParameters) {
+        self.item = parameters.item
+        self.portfolio = parameters.portfolio
     }
     
     var body: some View {
@@ -134,7 +134,7 @@ struct PortfolioDetailView: View {
             Spacer()
         }
         .padding([.leading, .trailing], 20)
-        .navigationTitle(portfolio.name + " Details")
+        .navigationTitle(item.symbol + " Details")
         .navigationBarBackButtonHidden(true)
         .alert("Are you sure you want to delete this?", isPresented: $showDeleteDividendAlert) {
             Button("OK", role: .destructive) {
@@ -155,26 +155,34 @@ struct PortfolioDetailView: View {
             }
         }
         .onAppear {
-            dividendList = []
-            Task {
-                await updateDividends()
+            dividendList = item.dividendList
+        }
+        .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
+            if let masterSymbol = newValue.filter({ $0.portfolioName == self.portfolio.name }).first {
+                let portfolioItems = masterSymbol.portfolioItems
+                if let item = portfolioItems.filter({ $0.symbol == self.item.symbol }).first {
+                    Task {
+                        await updateDividends(array: item.dividends)
+                    }
+                }
             }
         }
         
     }
     
-    func updateDividends() async {
-        let array = await firebaseService.getDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId)
-        var data: [DividendDisplayData] = []
-        let _ = array.map {
-            let value = $0.split(separator: ",")
-            if value.count == 2 {
-                let item = DividendDisplayData(symbol: item.symbol, date: String(value[0]), price: String(value[1]))
-                data.append(item)
+    func updateDividends(array: [String]?) async {
+        if let array = array {
+            var data: [DividendDisplayData] = []
+            let _ = array.map {
+                let value = $0.split(separator: ",")
+                if value.count == 2 {
+                    let item = DividendDisplayData(symbol: item.symbol, date: String(value[0]), price: String(value[1]))
+                    data.append(item)
+                }
             }
-        }
-        await MainActor.run {
-            dividendList = data
+            await MainActor.run {
+                dividendList = data
+            }
         }
     }
     
@@ -189,7 +197,7 @@ struct PortfolioDetailView: View {
 //                    }
 //                }
 //            }
-            await updateDividends()
+//            await updateDividends()
         }
     }
 }

@@ -19,9 +19,9 @@ struct DividendCreateView: View {
     @State var dividendAmount = ""
     @State var showingDateSelector: Bool = false
     
-    init(paramters: DividendCreateParameters) {
-        self.portfolio = paramters.portfolio
-        self.item = paramters.item
+    init(parameters: DividendCreateParameters) {
+        self.portfolio = parameters.portfolio
+        self.item = parameters.item
     }
     
     var body: some View {

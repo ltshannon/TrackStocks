@@ -75,9 +75,6 @@ struct DividendEditView: View {
         }
         .onAppear {
             dividendDate = dividendDisplayData.date
-//            if let dec = Float(dividendDisplayData.price) {
-//                dividendAmount = dec.formatted(.currency(code: "USD"))
-//            }
             dividendAmount = dividendDisplayData.price
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
@@ -87,8 +84,6 @@ struct DividendEditView: View {
     
     func updateDividend() {
         Task {
-//            await portfolioService.updateDividend(listName: key.rawValue, symbol: dividendDisplayData.symbol, dividendDisplayData: dividendDisplayData, dividendDate: dividendDate, dividendAmount: dividendAmount)
-//            await portfolioService.getDividend(key: key, symbol: dividendDisplayData.symbol)
             await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate)
             await MainActor.run {
                 dismiss()

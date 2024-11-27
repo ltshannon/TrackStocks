@@ -89,15 +89,15 @@ struct PortfolioHomeView: View {
             .navigationDestination(for: PortfolioNavDestination.self) { state in
                 switch state {
                 case .portfolioView(let parameters):
-                    PortfolioView(paramters: parameters)
+                    PortfolioView(parameters: parameters)
                 case .portfolioDetailView(let parameters):
-                    PortfolioDetailView(paramters: parameters)
+                    PortfolioDetailView(parameters: parameters)
                 case .portfolioUpdateView(let parameters):
-                    PortfolioUpdateView(paramters: parameters)
+                    PortfolioUpdateView(parameters: parameters)
                 case .portfolioSoldView(let parameters):
-                    PortfolioSoldView(paramters: parameters)
+                    PortfolioSoldView(parameters: parameters)
                 case .dividendCreateView(let parameters):
-                    DividendCreateView(paramters: parameters)
+                    DividendCreateView(parameters: parameters)
                 case .dividendEditView(let parameters):
                     DividendEditView(parameters: parameters)
                 }
