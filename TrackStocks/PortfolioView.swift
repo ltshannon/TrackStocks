@@ -18,12 +18,10 @@ struct PortfolioView: View {
     var portfolio: Portfolio
     var tempSearchText: String
     @State var stocks: [ItemData] = []
-    @State var change: Float = 0
     @State var total: Float = 0
     @State var totalBasis: Float = 0
     @State var totalSold: Float = 0
     @State var totalActive: Float = 0
-    @State var dividendList: [DividendDisplayData] = []
     @State var itemToDelete: ItemData?
     @State var showingAddNewShockSheet: Bool = false
     @State var showingDeleteAlert = false
@@ -215,6 +213,9 @@ struct PortfolioView: View {
             .refreshable {
                 updatePortfolio()
             }
+            .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
+                updatePortfolio()
+            }
         }
     }
     
@@ -238,15 +239,6 @@ struct PortfolioView: View {
     func deleteItem(item: ItemData) {
         Task {
             await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.id ?? "n/a", stockId: item.firestoreId)
-            let results = await portfolioService.getPortfolio(portfolioName: portfolio.id ?? "n/a")
-            await MainActor.run {
-                stocks = results.0
-                total = results.1
-                totalBasis = results.2
-                dividendList = results.3
-                totalSold = results.4
-                totalActive = results.5
-            }
         }
     }
     
@@ -255,20 +247,39 @@ struct PortfolioView: View {
     }
     
     func updatePortfolio() {
-        Task {
-            await MainActor.run {
-                showingProgress = true
+        
+        if let masterSymbol = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
+            var result: [ItemData] = []
+            let displayStockState = settingsService.displayStocks
+            var total: Float = 0
+            var totalBasis: Float = 0
+            var totalSold: Float = 0
+            var totalNotSold: Float = 0
+            for item in masterSymbol.itemsData {
+                if displayStockState == .showSoldStocks && item.isSold == false {
+                    continue
+                }
+                if item.isSold == true, displayStockState == .showActiveStocks {
+                    continue
+                }
+                let gainLose = item.gainLose
+                total += gainLose
+                if item.isSold == true {
+                    totalSold += gainLose
+                } else {
+                    totalNotSold += gainLose
+                }
+                totalBasis += item.basis * Float(item.quantity)
+                result.append(item)
             }
-            let results = await portfolioService.getPortfolio(portfolioName: portfolio.id ?? "n/a")
-            await MainActor.run {
-                stocks = results.0
-                total = results.1
-                totalBasis = results.2
-                dividendList = results.3
-                totalSold = results.4
-                totalActive = results.5
-                showingProgress = false
-            }
+            
+            self.stocks = result
+            self.total = total
+            self.totalBasis = totalBasis
+            self.totalSold = totalSold
+            self.totalActive = totalNotSold
+            
         }
+
     }
 }

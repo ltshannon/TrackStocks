@@ -29,6 +29,8 @@ struct MasterSymbolList: Codable, Identifiable, Hashable {
     var stockSymbols: [String]
     var stockItems: [StockItem]
     var portfolioItems: [PortfolioItem]
+    var itemsData: [ItemData] = []
+    var stocks: [ItemData] = []
 }
 
 struct PortfolioItem: Codable, Identifiable, Hashable {
@@ -36,7 +38,6 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var name: String?
     var quantity: Double
     var basis: Float
-//    var dividend: [String]?
     var symbol: String?
     var isSold: Bool?
     var price: Float?
@@ -89,6 +90,8 @@ struct FirebaseUserInformation: Codable, Identifiable, Hashable {
 
 class FirebaseService: ObservableObject {
     static let shared = FirebaseService()
+    var stockDataService = StockDataService()
+    var settingService = SettingsService.shared
     @AppStorage("profile-url") var profileURL: String = ""
     @Published var user: FirebaseUserInformation = FirebaseUserInformation(id: "", displayName: "", email: "", subscription: false)
     @Published var portfolioList: [Portfolio] = []
@@ -206,6 +209,8 @@ class FirebaseService: ObservableObject {
         guard let user = Auth.auth().currentUser else {
             return
         }
+        
+//        var displayStockState = settingService.displayStocks
         database.collection("users").document(user.uid).collection("portfolios").document(portfolioId).collection("stocks").whereField("symbol", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else {
                 debugPrint("🧨", "listenerForStockSymbols: \(error!)")
@@ -227,23 +232,101 @@ class FirebaseService: ObservableObject {
                         portfolioItems.append(data)
                     }
                 }
-                let array = Array(stockSymbols)
+            }
+            catch {
+                debugPrint("🧨", "Error listenerForStockSymbols: portfolioName: \(portfolioName) \(error.localizedDescription)")
+                return
+            }
+            var items: [ItemData] = []
+//            var total: Float = 0
+//            var totalBasis: Float = 0
+//            var totalSold: Float = 0
+//            var totalNotSold: Float = 0
+            var dividendList: [DividendDisplayData] = []
+            
+            for item in portfolioItems {
+                var value = ""
+                if let symbol = item.symbol {
+                    value = symbol
+                }
+                var soldPrice:Float = 0.0
+                var isSold = false
+                if let value = item.price {
+                    soldPrice = value
+                    isSold = true
+                }
+                let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividends, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: item.soldDate, stockTag: item.stockTag ?? "None")
+                items.append(temp)
+            }
+            let array = Array(stockSymbols)
+            let string: String = array.joined(separator: ",")
+            Task {
+                let stockData = await self.stockDataService.fetchStocks(tickers: string)
+
+                for item in stockData {
+                    items.indices.forEach { index in
+                        if item.id == items[index].symbol {
+                            var price: Float = items[index].price
+                            if items[index].isSold == false {
+                                price = Float(Double(item.price))
+                                items[index].price = price
+                            }
+                            let value = price - items[index].basis
+                            items[index].percent = value / items[index].basis
+                            let gainLose = Float(items[index].quantity) * value
+                            items[index].gainLose = gainLose
+//                            total += gainLose
+//                            if items[index].isSold == true {
+//                                totalSold += gainLose
+//                            } else {
+//                                totalNotSold += gainLose
+//                            }
+//                            totalBasis += items[index].basis * Float(items[index].quantity)
+                            dividendList = []
+                            if let dividends = items[index].dividend {
+                                let _ = dividends.map {
+                                    let result = self.buildDividendList(array: $0, symbol: item.id)
+                                    dividendList.append(result.0)
+                                    items[index].gainLose += result.1
+                                }
+                            }
+                            items[index].dividendList = dividendList
+                            items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
+                            items[index].change = item.change
+                            items[index].dayLow = item.dayLow
+                            items[index].dayHigh = item.dayHigh
+                            items[index].yearLow = item.yearLow
+                            items[index].yearHigh = item.yearHigh
+                            items[index].marketCap = item.marketCap
+                            items[index].priceAvg50 = item.priceAvg50
+                            items[index].priceAvg200 = item.priceAvg200
+                            items[index].exchange = item.exchange
+                            items[index].volume = item.volume
+                            items[index].avgVolume = item.avgVolume
+                            items[index].open = item.open
+                            items[index].previousClose = item.previousClose
+                            items[index].eps = item.eps
+                            items[index].pe = item.pe
+                            items[index].earningsAnnouncement = item.earningsAnnouncement
+                            items[index].sharesOutstanding = item.sharesOutstanding
+                            items[index].timestamp = item.timestamp
+                        }
+                    }
+                }
                 if let index = self.masterSymbolList.firstIndex(where: {$0.portfolioId == portfolioId}) {
                     DispatchQueue.main.async {
                         self.masterSymbolList[index].stockSymbols = array
                         self.masterSymbolList[index].stockItems = stockItems
                         self.masterSymbolList[index].portfolioItems = portfolioItems
+                        self.masterSymbolList[index].itemsData = items
                     }
                 } else {
-                    let value = MasterSymbolList(portfolioName: portfolioName, portfolioId: portfolioId, stockSymbols: array, stockItems: stockItems, portfolioItems: portfolioItems)
+                    let value = MasterSymbolList(portfolioName: portfolioName, portfolioId: portfolioId, stockSymbols: array, stockItems: stockItems, portfolioItems: portfolioItems, itemsData: items)
                     DispatchQueue.main.async {
                         self.masterSymbolList.append(value)
                         self.masterSymbolList.sort(by: { $0.portfolioName < $1.portfolioName })
                     }
                 }
-            }
-            catch {
-                debugPrint("🧨", "Error listenerForStockSymbols: portfolioName: \(portfolioName) \(error.localizedDescription)")
             }
         }
 
@@ -253,49 +336,23 @@ class FirebaseService: ObservableObject {
         
         if let index = self.masterSymbolList.firstIndex(where: {$0.portfolioId == portfolioName}) {
             let portfolioItems = self.masterSymbolList[index].portfolioItems
+            var results: [PortfolioItem] = []
             for item in portfolioItems {
+                if displayStockState == .showSoldStocks && item.isSold == nil {
+                    continue
+                }
+                if let _ = item.isSold, displayStockState == .showActiveStocks {
+                    continue
+                }
                 debugPrint("🦜", "portfolioItem: \(item.symbol ?? "n/a")")
+                results.append(item)
             }
-            return portfolioItems.sorted(by: { $0.symbol ?? "" < $1.symbol ?? "" })
+            return results.sorted(by: { $0.symbol ?? "" < $1.symbol ?? "" })
         } else {
             debugPrint("🙅‍♂️", "Stocks for portfolio \(portfolioName) not found")
             return []
         }
-/*
-        var portfolioItems: [PortfolioItem] = []
-        for item in stockList {
-            do {
-                id = item.id ?? "n/a"
-                let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).getDocument()
-                
-                if querySnapshot.exists {
-                    var data = try querySnapshot.data(as: PortfolioItem.self)
-                    if displayStockState == .showSoldStocks && data.isSold == nil {
-                        continue
-                    }
-                    if let _ = data.isSold, displayStockState == .showActiveStocks {
-                        continue
-                    }
-                    if let stock = data.symbol {
-                        data.symbol = stock
-                    } else {
-                        data.symbol = data.id ?? "n/a"
-                    }
-                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).collection("dividend").document("dividend").getDocument()
-                    if querySnapshot2.exists {
-                        let data2 = try querySnapshot2.data(as: DividendData.self)
-                        data.dividends = data2.values
-                    }
-                    portfolioItems.append(data)
-                }
-            }
-            catch {
-                debugPrint("🧨", "id: \(id) portfolioName: \(portfolioName) Error reading stock items: \(error.localizedDescription)")
-            }
-        }
         
-        return portfolioItems.sorted(by: { $0.symbol ?? "" < $1.symbol ?? "" })
-*/
     }
     
     func getStockList(portfolioName: String) async -> ([String], [StockItem]) {
@@ -336,6 +393,19 @@ class FirebaseService: ObservableObject {
         array.append(str)
         return array
         
+    }
+    
+    func buildDividendList(array: String, symbol: String) -> (DividendDisplayData, Float) {
+        var data = DividendDisplayData(date: "", price: "")
+        var total: Float = 0
+        let value = array.split(separator: ",")
+        if value.count == 2 {
+            data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]))
+            if let dec = Float(String(value[1])) {
+                total += dec
+            }
+        }
+        return (data, total)
     }
     
     func addDividend(portfolioName: String, firestoreId: String, dividendDate: String, dividendAmount: String) async {
@@ -489,5 +559,5 @@ class FirebaseService: ObservableObject {
         }
         
     }
-
+        
 }
