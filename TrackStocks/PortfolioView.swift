@@ -11,7 +11,6 @@ import FirebaseFunctions
 
 struct PortfolioView: View {
     @EnvironmentObject var stockDataService: StockDataService
-    @EnvironmentObject var portfolioService: PortfolioService
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
@@ -211,7 +210,7 @@ struct PortfolioView: View {
                 updatePortfolio()
             }
             .refreshable {
-                updatePortfolio()
+                await refreshPrices()
             }
             .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
                 updatePortfolio()
@@ -246,6 +245,46 @@ struct PortfolioView: View {
         updatePortfolio()
     }
     
+    func refreshPrices() async {
+        
+        if let masterSymbol = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
+            var items = masterSymbol.itemsData
+            let list = masterSymbol.stockSymbols
+            Task {
+                let string: String = list.joined(separator: ",")
+                let stockData = await stockDataService.fetchStocks(tickers: string)
+                for item in stockData {
+                    items.indices.forEach { index in
+                        if item.id == items[index].symbol {
+                            items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
+                            items[index].change = item.change
+                            items[index].dayLow = item.dayLow
+                            items[index].dayHigh = item.dayHigh
+                            items[index].yearLow = item.yearLow
+                            items[index].yearHigh = item.yearHigh
+                            items[index].marketCap = item.marketCap
+                            items[index].priceAvg50 = item.priceAvg50
+                            items[index].priceAvg200 = item.priceAvg200
+                            items[index].exchange = item.exchange
+                            items[index].volume = item.volume
+                            items[index].avgVolume = item.avgVolume
+                            items[index].open = item.open
+                            items[index].previousClose = item.previousClose
+                            items[index].eps = item.eps
+                            items[index].pe = item.pe
+                            items[index].earningsAnnouncement = item.earningsAnnouncement
+                            items[index].sharesOutstanding = item.sharesOutstanding
+                            items[index].timestamp = item.timestamp
+                        }
+                    }
+                }
+                updatePortfolio()
+            }
+        }
+        
+    }
+    
+    @MainActor
     func updatePortfolio() {
         
         if let masterSymbol = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {

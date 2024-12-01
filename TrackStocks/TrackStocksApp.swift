@@ -22,7 +22,6 @@ struct TrackStocksApp: App {
     @StateObject var userAuth = Authentication.shared
     @StateObject var firebaseService = FirebaseService.shared
     @StateObject var stockDataService = StockDataService.shared
-    @StateObject var portfolioService = PortfolioService.shared
     @StateObject var marketSymbolsService = MarketSymbolsService.shared
     @StateObject var appNavigationState = AppNavigationState()
     @StateObject var settingsService = SettingsService.shared
@@ -34,7 +33,6 @@ struct TrackStocksApp: App {
                 .environmentObject(userAuth)
                 .environmentObject(firebaseService)
                 .environmentObject(stockDataService)
-                .environmentObject(portfolioService)
                 .environmentObject(marketSymbolsService)
                 .environmentObject(appNavigationState)
                 .environmentObject(settingsService)

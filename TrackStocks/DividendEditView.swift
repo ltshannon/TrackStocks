@@ -9,7 +9,6 @@ import SwiftUI
 
 struct DividendEditView: View {
     @EnvironmentObject var firebaseService: FirebaseService
-    @EnvironmentObject var portfolioService: PortfolioService
     @Environment(\.dismiss) private var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
     var item: ItemData

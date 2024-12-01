@@ -10,7 +10,6 @@ import SwiftUI
 struct PortfolioDetailView: View {
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var firebaseService: FirebaseService
-    @EnvironmentObject var portfolioService: PortfolioService
     @Environment(\.dismiss) private var dismiss
     @State var item: ItemData
     @State var portfolio: Portfolio
@@ -189,15 +188,6 @@ struct PortfolioDetailView: View {
     func delete(dividend: DividendDisplayData) {
         Task {
             await firebaseService.deleteDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividend)
-//            for item in dividendList {
-//                if item.id == dividend.id {
-//                    let index = dividendList.firstIndex(of: item)
-//                    let _ = await MainActor.run {
-//                        dividendList.remove(at: index!)
-//                    }
-//                }
-//            }
-//            await updateDividends()
         }
     }
 }

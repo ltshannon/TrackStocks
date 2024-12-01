@@ -12,6 +12,42 @@ import FirebaseAuth
 
 let database = Firestore.firestore()
 
+struct ItemData: Identifiable, Encodable, Decodable, Hashable {
+    var id: String = UUID().uuidString
+    var firestoreId: String
+    var symbol: String
+    var basis: Float
+    var price: Float
+    var gainLose: Float
+    var percent: Float
+    var quantity: Double
+    var dividend: [String]?
+    var isSold: Bool
+    var changesPercentage: Float?
+    var change: Float?
+    var dayLow: Float?
+    var dayHigh: Float?
+    var yearLow: Float?
+    var yearHigh: Float?
+    var marketCap: Int?
+    var priceAvg50: Float?
+    var priceAvg200: Float?
+    var exchange: String?
+    var volume: Int?
+    var avgVolume: Int?
+    var open: Float?
+    var previousClose: Float?
+    var eps: Float?
+    var pe: Float?
+    var earningsAnnouncement: String?
+    var sharesOutstanding: Float?
+    var timestamp: Int?
+    var purchasedDate: String
+    var soldDate: String
+    var stockTag: String?
+    var dividendList: [DividendDisplayData] = []
+}
+
 struct StockItem: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
     var symbol: String?
