@@ -69,50 +69,17 @@ struct PortfolioView: View {
             List {
                 ForEach(searchResults, id: \.id) { item in
                     HStack {
-                        Image(systemName: String().getChartName(item: item))
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50 , height: 50)
-                            .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
-                        VStack {
-                            Text(item.symbol)
-                                .bold()
-                            if item.isSold == false, let tag = item.stockTag {
-                                let tag = StockPicks.hold.getStockPick(type: tag)
-                                Image(systemName: tag.rawValue)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 25 , height: 25)
-//                                    .foregroundStyle((getColorOfStockPick(stockPick: sym)))
-                            }
+                        if UIDevice.current.userInterfaceIdiom == .pad {
+                            PortfolioBasicInfoView(item: item)
+                            PortfolioDetailInfoView(item: item)
                         }
-                        VStack(alignment: .leading) {
-                            Text(item.price, format: .currency(code: "USD")).bold()
-                            if item.isSold == false {
-                                if let change = item.change {
-                                    Text(change, format: .currency(code: "USD")).bold()
-                                } else {
-                                    Text("n/a")
-                                }
-                                Text(item.changesPercentage ?? 0, format: .percent.precision(.fractionLength(2)))
-                            }
-                        }
-                        .font(.caption)
-                        .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
-                        VStack(alignment: .leading) {
-                            Text("\(String(format: "%.0f", item.quantity))@\(String(format: "%.2f", item.basis))")
-                                .font(.caption)
-                            Text(item.gainLose, format: .currency(code: "USD"))
-                                .foregroundStyle(getColorOfChange(change: item.gainLose, isSold: item.isSold))
-                                .bold()
-                            Text(item.percent, format: .percent.precision(.fractionLength(2)))
-                                .foregroundStyle(getColorOfChange(change: item.gainLose, isSold: item.isSold))
-                                .font(.caption)
+                        else {
+                            PortfolioBasicInfoView(item: item)
                         }
                         Spacer()
                         VStack(alignment: .leading) {
                             Text("Show")
-                            Text("Detail")
+                            Text(UIDevice.current.userInterfaceIdiom == .pad ? "Dividends" : "Detail")
                         }
                         .font(.caption)
                         .onTapGesture {

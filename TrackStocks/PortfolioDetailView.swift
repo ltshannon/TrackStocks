@@ -30,79 +30,13 @@ struct PortfolioDetailView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            ScrollView(.horizontal) {
-                HStack {
-                    Image(systemName: String().getChartName(item: item))
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50 , height: 50)
-                        .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
-                    VStack {
-                        Text(item.symbol)
-                            .bold()
-                    }
-                    VStack(alignment: .leading) {
-                        Text(String(format: "%.2f", item.price))
-                        Text(item.change != nil ? String(format: "%.2f", item.change!) : "n/a")
-                        Text(item.changesPercentage ?? 0, format: .percent.precision(.fractionLength(2)))
-                    }
-                    .font(.caption)
-                    VStack(alignment: .leading) {
-                        Text("Bought: \(item.purchasedDate)")
-                        Text("Sold: \(item.soldDate)")
-                        Text("")
-                    }
-                    .font(.caption)
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("Open")
-                            Text(item.open != nil ? String(format: "%.2f", item.open!) : "n/a")
-                        }
-                        HStack {
-                            Text("High")
-                            Text(item.dayHigh != nil ? String(format: "%.2f", item.dayHigh!) : "n/a")
-                        }
-                        HStack {
-                            Text("Low")
-                            Text(item.dayLow != nil ? String(format: "%.2f", item.dayLow!) : "n/a")
-                        }
-                    }
-                    .font(.caption)
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("52W H")
-                            Text(item.yearHigh != nil ? String(format: "%.2f", item.yearHigh!) : "n/a")
-                        }
-                        HStack {
-                            Text("52W L")
-                            Text(item.yearLow != nil ? String(format: "%.2f", item.yearLow!) : "n/a")
-                        }
-                        HStack {
-                            Text("Avg Vol")
-                            Text(item.avgVolume != nil ? String(format: "%.2f", item.avgVolume!) : "n/a")
-                        }
-                    }
-                    .font(.caption)
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("Vol")
-                            Text(item.volume != nil ? String(format: "%.2f", item.volume!) : "n/a")
-                        }
-                        HStack {
-                            Text("P/E")
-                            Text(item.pe != nil ? String(format: "%.2f", item.pe!) : "n/a")
-                        }
-                        HStack {
-                            Text("Mkt Cap")
-                            Text(item.marketCap != nil ? String(format: "%.2f", item.marketCap!) : "n/a")
-                        }
-                    }
-                    .font(.caption)
-                    Spacer()
+            if UIDevice.current.userInterfaceIdiom != .pad {
+                ScrollView(.horizontal) {
+                    PortfolioDetailInfoView(item: item)
                 }
+                Divider()
+                Text("Dividends")
             }
-            Divider()
-            Text("Dividends")
             List {
                 ForEach(dividendList, id: \.id) { dividend in
                     HStack {
@@ -133,7 +67,7 @@ struct PortfolioDetailView: View {
             Spacer()
         }
         .padding([.leading, .trailing], 20)
-        .navigationTitle(item.symbol + " Details")
+        .navigationTitle(UIDevice.current.userInterfaceIdiom == .pad ? item.symbol + " Dividends" : item.symbol + " Details")
         .navigationBarBackButtonHidden(true)
         .alert("Are you sure you want to delete this?", isPresented: $showDeleteDividendAlert) {
             Button("OK", role: .destructive) {
