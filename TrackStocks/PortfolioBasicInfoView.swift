@@ -15,17 +15,19 @@ struct PortfolioBasicInfoView: View {
             Image(systemName: String().getChartName(item: item))
                 .resizable()
                 .scaledToFit()
-                .frame(width: 50 , height: 50)
+                .frame(width: 40 , height: 40)
                 .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
             VStack {
                 Text(item.symbol)
                     .bold()
                 if item.isSold == false, let tag = item.stockTag {
                     let tag = StockPicks.hold.getStockPick(type: tag)
-                    Image(systemName: tag.rawValue)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 25 , height: 25)
+                    if tag != .none {
+                        Image(systemName: tag.rawValue)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 25 , height: 25)
+                    }
                     //                                    .foregroundStyle((getColorOfStockPick(stockPick: sym)))
                 }
             }

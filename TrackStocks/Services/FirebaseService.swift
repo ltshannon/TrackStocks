@@ -98,22 +98,13 @@ struct DividendDisplayData: Codable, Identifiable, Hashable, Equatable {
     var symbol = ""
     var date = ""
     var price = ""
-}
-
-struct DividendPlaceholder: Codable, Identifiable, Hashable {
-    @DocumentID var id: String?
-    var dividend: DividendData
-}
-
-struct DividendData: Codable, Identifiable, Hashable {
-    @DocumentID var id: String?
-    var values: [String]
-}
-
-extension DividendData {
-    init(snapshot: Dictionary<String, Any>) {
-        let item = snapshot["values"] as? [String] ?? []
-        values = item
+    var quantity = ""
+    
+    init(symbol: String = "", date: String = "", price: String = "", quantity: String = "") {
+        self.symbol = symbol
+        self.date = date
+        self.price = price
+        self.quantity = quantity
     }
 }
 
@@ -423,8 +414,11 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func buildDividendArrayElement(dividendDate: String, dividendAmount: String) -> [String] {
-        let str = dividendDate + "," + "\(dividendAmount)"
+    func buildDividendArrayElement(dividendDate: String, dividendAmount: String, dividendQuantity: String) -> [String] {
+        var str = dividendDate + "," + dividendAmount
+        if dividendQuantity.isNotEmpty {
+            str += "," + dividendQuantity
+        }
         var array: [String] = []
         array.append(str)
         return array
@@ -432,24 +426,45 @@ class FirebaseService: ObservableObject {
     }
     
     func buildDividendList(array: String, symbol: String) -> (DividendDisplayData, Float) {
-        var data = DividendDisplayData(date: "", price: "")
+        var data = DividendDisplayData(date: "", price: "", quantity: "")
         var total: Float = 0
         let value = array.split(separator: ",")
         if value.count == 2 {
             data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]))
-            if let dec = Float(String(value[1])) {
-                total += dec
-            }
+        }
+        if value.count == 3 {
+            data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]), quantity: String(value[2]))
+        }
+        if let dec = Float(String(value[1])) {
+            total += dec
         }
         return (data, total)
     }
     
-    func addDividend(portfolioName: String, firestoreId: String, dividendDate: String, dividendAmount: String) async {
+    func addCashDividend(portfolioName: String, firestoreId: String, dividendDate: String, dividendAmount: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
-        let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
+        let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: "")
+        do {
+            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array)])
+        } catch {
+            do {
+                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).setData(["dividends": FieldValue.arrayUnion(array)])
+            } catch {
+                debugPrint(String.boom, "addDividend failed: \(error)")
+            }
+        }
+        
+    }
+    
+    func addSharesDividend(portfolioName: String, firestoreId: String, dividendDate: String, dividendAmount: String, numberOfShares: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: numberOfShares)
         do {
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array)])
         } catch {
@@ -467,7 +482,10 @@ class FirebaseService: ObservableObject {
             return
         }
         
-        let str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        var str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        if dividendDisplayData.quantity.isNotEmpty {
+            str += ",\(dividendDisplayData.quantity)"
+        }
         var array: [String] = []
         array.append(str)
         do {
@@ -478,15 +496,18 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateDividend(portfolioName: String, firestoreId: String, dividendDisplayData: DividendDisplayData, dividendAmount: String, dividendDate: String) async {
+    func updateDividend(portfolioName: String, firestoreId: String, dividendDisplayData: DividendDisplayData, dividendAmount: String, dividendDate: String, numberOfShares: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
         
-        let str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        var str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        if numberOfShares.isNotEmpty {
+            str += ",\(numberOfShares)"
+        }
         var array: [String] = []
         array.append(str)
-        let array2 = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
+        let array2 = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: numberOfShares)
         do {
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array2)])

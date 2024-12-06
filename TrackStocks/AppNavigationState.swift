@@ -44,10 +44,12 @@ struct DividendCreateParameters: Identifiable, Hashable, Encodable {
     var id = UUID().uuidString
     var item: ItemData
     var portfolio: Portfolio
+    var isOnlyShares: Bool
     
-    init(item: ItemData, portfolio: Portfolio) {
+    init(item: ItemData, portfolio: Portfolio, isOnlyShares: Bool = false) {
         self.item = item
         self.portfolio = portfolio
+        self.isOnlyShares = isOnlyShares
     }
 }
 

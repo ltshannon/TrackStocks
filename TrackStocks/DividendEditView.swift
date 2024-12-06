@@ -16,6 +16,7 @@ struct DividendEditView: View {
     var dividendDisplayData: DividendDisplayData
     @State var dividendAmount = ""
     @State var dividendDate = ""
+    @State var quantity = ""
     @State var showingDateSelector: Bool = false
     
     init(parameters: DividendEditParameters) {
@@ -47,11 +48,26 @@ struct DividendEditView: View {
             } header: {
                 Text("Select a date")
             }
-            Section {
-                TextField("Amount", text: $dividendAmount)
-                    .keyboardType(.decimalPad)
-            } header: {
-                Text("Enter an Amount")
+            if quantity.isEmpty {
+                Section {
+                    TextField("Amount", text: $dividendAmount)
+                        .keyboardType(.decimalPad)
+                } header: {
+                    Text("Enter an Amount")
+                }
+            } else {
+                Section {
+                    TextField("Quantity", text: $quantity)
+                        .keyboardType(.decimalPad)
+                } header: {
+                    Text("Number of shares")
+                }
+                Section {
+                    TextField("Average Price", text: $dividendAmount)
+                        .keyboardType(.decimalPad)
+                } header: {
+                    Text("Average Price per Share")
+                }
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -75,6 +91,7 @@ struct DividendEditView: View {
         .onAppear {
             dividendDate = dividendDisplayData.date
             dividendAmount = dividendDisplayData.price
+            quantity = dividendDisplayData.quantity
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
             StockDateSelectorView(selectedDate: $dividendDate)
@@ -83,7 +100,11 @@ struct DividendEditView: View {
     
     func updateDividend() {
         Task {
-            await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate)
+            if quantity.isEmpty {
+                await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate, numberOfShares: "")
+            } else {
+                await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount,  dividendDate: dividendDate, numberOfShares: quantity)
+            }
             await MainActor.run {
                 dismiss()
             }

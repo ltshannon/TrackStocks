@@ -14,6 +14,8 @@ struct PortfolioView: View {
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
+    @AppStorage("showDatePicker") var showDatePicker = false
+    @AppStorage("simpleDisplay") var simpleDataDisplay = false
     var portfolio: Portfolio
     var tempSearchText: String
     @State var stocks: [ItemData] = []
@@ -27,7 +29,6 @@ struct PortfolioView: View {
     @State var showingProgress = false
     @State private var selectedOption: StockPicks = .none
     @State var searchText = ""
-    @FocusState private var isSearchFieldFocused: Bool
     
     var searchResults: [ItemData] {
         if searchText.isEmpty {
@@ -55,11 +56,6 @@ struct PortfolioView: View {
                     let value = (total / totalBasis) * 100
                     Text("Percent Change: \(value, specifier: "%.2f")%")
                 }
-//                Button {
-//                    test()
-//                } label: {
-//                    Text("test")
-//                }
             } .padding()
             if showingProgress {
                 ProgressView("Loading...")
@@ -67,53 +63,64 @@ struct PortfolioView: View {
                     .padding(.trailing, 30)
             }
             List {
-                ForEach(searchResults, id: \.id) { item in
-                    HStack {
-                        if UIDevice.current.userInterfaceIdiom == .pad {
-                            PortfolioBasicInfoView(item: item)
-                            PortfolioDetailInfoView(item: item)
+                if simpleDataDisplay == true {
+                    SimplePortfolioView(items: searchResults)
+                } else {
+                    ForEach(searchResults, id: \.id) { item in
+                        HStack {
+                            if UIDevice.current.userInterfaceIdiom == .pad {
+                                PortfolioBasicInfoView(item: item)
+                                PortfolioDetailInfoView(item: item)
+                            }
+                            else {
+                                PortfolioBasicInfoView(item: item)
+                            }
+                            Spacer()
+                            VStack(alignment: .leading) {
+                                Text("Show")
+                                Text(UIDevice.current.userInterfaceIdiom == .pad ? "Dividends" : "Detail")
+                            }
+                            .font(.caption)
+                            .onTapGesture {
+                                let parameters = PortfolioDetailParameters(item: item, portfolio: portfolio)
+                                appNavigationState.portfolioDetailView(parameters: parameters)
+                            }
                         }
-                        else {
-                            PortfolioBasicInfoView(item: item)
-                        }
-                        Spacer()
-                        VStack(alignment: .leading) {
-                            Text("Show")
-                            Text(UIDevice.current.userInterfaceIdiom == .pad ? "Dividends" : "Detail")
-                        }
-                        .font(.caption)
-                        .onTapGesture {
-                            let parameters = PortfolioDetailParameters(item: item, portfolio: portfolio)
-                            appNavigationState.portfolioDetailView(parameters: parameters)
-                        }
-                    }
-                    .swipeActions(allowsFullSwipe: false) {
-                        Button {
-                            let parameters = DividendCreateParameters(item: item, portfolio: portfolio)
-                            appNavigationState.dividendCreateView(parameters: parameters)
-                        } label: {
-                            Text("Add Dividend")
-                        }
-                        .tint(.orange)
-                        Button {
-                            let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
-                            appNavigationState.portfolioUpdateView(parameters: parameters)
-                        } label: {
-                            Text("Update")
-                        }
-                        .tint(.yellow)
-                        Button {
-                            let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
-                            appNavigationState.portfolioSoldView(parameters: parameters)
-                        } label: {
-                            Text("Sell")
-                        }
-                        .tint(.indigo)
-                        Button(role: .destructive) {
-                            itemToDelete = item
-                            showingDeleteAlert = true
-                        } label: {
-                            Label("Delete", systemImage: "trash.fill")
+                        .swipeActions(allowsFullSwipe: false) {
+                            Button {
+                                let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
+                                appNavigationState.dividendCreateView(parameters: parameters)
+                            } label: {
+                                Text("Add to \n Position").lineLimit(nil)
+                            }
+                            .tint(.green)
+                            Button {
+                                let parameters = DividendCreateParameters(item: item, portfolio: portfolio)
+                                appNavigationState.dividendCreateView(parameters: parameters)
+                            } label: {
+                                Text("Add \n Dividend").lineLimit(nil)
+                            }
+                            .tint(.orange)
+                            Button {
+                                let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
+                                appNavigationState.portfolioUpdateView(parameters: parameters)
+                            } label: {
+                                Text("Update")
+                            }
+                            .tint(.yellow)
+                            Button {
+                                let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
+                                appNavigationState.portfolioSoldView(parameters: parameters)
+                            } label: {
+                                Text("Sell")
+                            }
+                            .tint(.indigo)
+                            Button(role: .destructive) {
+                                itemToDelete = item
+                                showingDeleteAlert = true
+                            } label: {
+                                Label("Delete", systemImage: "trash.fill")
+                            }
                         }
                     }
                 }
@@ -157,10 +164,9 @@ struct PortfolioView: View {
             }
             .navigationTitle(portfolio.name)
             .searchable(text: $searchText, prompt: "Enter Stock Symbol")
-//            .searchFocused($isSearchFieldFocused)
             .onAppear {
                 searchText = tempSearchText
-                updatePortfolio()
+                refreshPrices()
             }
             .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
                 Button("OK", role: .destructive) {
@@ -177,28 +183,11 @@ struct PortfolioView: View {
                 updatePortfolio()
             }
             .refreshable {
-                await refreshPrices()
+                refreshPrices()
             }
             .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
                 updatePortfolio()
             }
-        }
-    }
-    
-    func test() {
-        lazy var functions = Functions.functions()
-        
-        functions.httpsCallable("test").call(["numberOfDays": "0"]) { result, error in
-            if let error = error as NSError? {
-                if error.domain == FunctionsErrorDomain {
-
-                }
-                // ...
-            }
-            if let data = result?.data {
-                debugPrint("result: \(data)")
-            }
-            
         }
     }
     
@@ -212,7 +201,7 @@ struct PortfolioView: View {
         updatePortfolio()
     }
     
-    func refreshPrices() async {
+    func refreshPrices() {
         
         if let masterSymbol = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
             var items = masterSymbol.itemsData
@@ -223,6 +212,16 @@ struct PortfolioView: View {
                 for item in stockData {
                     items.indices.forEach { index in
                         if item.id == items[index].symbol {
+                            debugPrint("", "symbol: \(item.id) price: \(item.price)")
+                            var price: Float = items[index].price
+                            if items[index].isSold == false {
+                                price = Float(Double(item.price))
+                                items[index].price = price
+                            }
+                            let value = price - items[index].basis
+                            items[index].percent = value / items[index].basis
+                            let gainLose = Float(items[index].quantity) * value
+                            items[index].gainLose = gainLose
                             items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
                             items[index].change = item.change
                             items[index].dayLow = item.dayLow
@@ -245,47 +244,53 @@ struct PortfolioView: View {
                         }
                     }
                 }
-                updatePortfolio()
+                await computeTotals(itemsData: items)
             }
         }
         
     }
     
-    @MainActor
     func updatePortfolio() {
-        
         if let masterSymbol = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
-            var result: [ItemData] = []
-            let displayStockState = settingsService.displayStocks
-            var total: Float = 0
-            var totalBasis: Float = 0
-            var totalSold: Float = 0
-            var totalNotSold: Float = 0
-            for item in masterSymbol.itemsData {
-                if displayStockState == .showSoldStocks && item.isSold == false {
-                    continue
-                }
-                if item.isSold == true, displayStockState == .showActiveStocks {
-                    continue
-                }
-                let gainLose = item.gainLose
-                total += gainLose
-                if item.isSold == true {
-                    totalSold += gainLose
-                } else {
-                    totalNotSold += gainLose
-                }
-                totalBasis += item.basis * Float(item.quantity)
-                result.append(item)
+            Task {
+                await computeTotals(itemsData: masterSymbol.itemsData)
             }
-            
+        }
+
+    }
+    
+    func computeTotals(itemsData: [ItemData]) async {
+        var result: [ItemData] = []
+        let displayStockState = settingsService.displayStocks
+        var total: Float = 0
+        var totalBasis: Float = 0
+        var totalSold: Float = 0
+        var totalNotSold: Float = 0
+        for item in itemsData {
+            if displayStockState == .showSoldStocks && item.isSold == false {
+                continue
+            }
+            if item.isSold == true, displayStockState == .showActiveStocks {
+                continue
+            }
+            let gainLose = item.gainLose
+            total += gainLose
+            if item.isSold == true {
+                totalSold += gainLose
+            } else {
+                totalNotSold += gainLose
+            }
+            totalBasis += item.basis * Float(item.quantity)
+            result.append(item)
+        }
+        
+        await MainActor.run {
             self.stocks = result
             self.total = total
             self.totalBasis = totalBasis
             self.totalSold = totalSold
             self.totalActive = totalNotSold
-            
         }
-
+        
     }
 }

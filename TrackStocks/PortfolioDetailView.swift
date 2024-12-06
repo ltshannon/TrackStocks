@@ -38,31 +38,71 @@ struct PortfolioDetailView: View {
                 Text("Dividends")
             }
             List {
-                ForEach(dividendList, id: \.id) { dividend in
-                    HStack {
-                        Text("\(dividend.date)")
-                        if let dec = Float(dividend.price) {
-                            Text(dec, format: .currency(code: "USD"))
-                        } else {
-                            Text("n/a")
+                    Section {
+                        ForEach(dividendList, id: \.id) { dividend in
+                            if dividend.quantity.isEmpty == true {
+                                HStack {
+                                    Text("\(dividend.date)")
+                                    if let dec = Float(dividend.price) {
+                                        Text(dec, format: .currency(code: "USD"))
+                                    } else {
+                                        Text("n/a")
+                                    }
+                                }
+                                .swipeActions(allowsFullSwipe: false) {
+                                    Button {
+                                        let parameters = DividendEditParameters(item: item, portfolio: portfolio, dividendDisplayData: dividend)
+                                        appNavigationState.dividendEditView(parameters: parameters)
+                                    } label: {
+                                        Text("Update")
+                                    }
+                                    .tint(.orange)
+                                    Button(role: .destructive) {
+                                        dividendToDelete = dividend
+                                        showDeleteDividendAlert = true
+                                    } label: {
+                                        Text("Delete")
+                                    }
+                                }
+                            }
                         }
+                    } header: {
+                        Text("Cash")
                     }
-                    .swipeActions(allowsFullSwipe: false) {
-                        Button {
-                            let parameters = DividendEditParameters(item: item, portfolio: portfolio, dividendDisplayData: dividend)
-                            appNavigationState.dividendEditView(parameters: parameters)
-                        } label: {
-                            Text("Update")
+            }
+            List {
+                    Section {
+                        ForEach(dividendList, id: \.id) { dividend in
+                            if dividend.quantity.isNotEmpty {
+                                HStack {
+                                    Text("\(dividend.date)")
+                                    Text("\(dividend.quantity)")
+                                    if let dec = Float(dividend.price) {
+                                        Text(dec, format: .currency(code: "USD"))
+                                    } else {
+                                        Text("n/a")
+                                    }
+                                }
+                                .swipeActions(allowsFullSwipe: false) {
+                                    Button {
+                                        let parameters = DividendEditParameters(item: item, portfolio: portfolio, dividendDisplayData: dividend)
+                                        appNavigationState.dividendEditView(parameters: parameters)
+                                    } label: {
+                                        Text("Update")
+                                    }
+                                    .tint(.orange)
+                                    Button(role: .destructive) {
+                                        dividendToDelete = dividend
+                                        showDeleteDividendAlert = true
+                                    } label: {
+                                        Text("Delete")
+                                    }
+                                }
+                            }
                         }
-                        .tint(.orange)
-                        Button(role: .destructive) {
-                            dividendToDelete = dividend
-                            showDeleteDividendAlert = true
-                        } label: {
-                            Text("Delete")
-                        }
+                    } header: {
+                        Text("Shares")
                     }
-                }
             }
             Spacer()
         }
@@ -110,6 +150,10 @@ struct PortfolioDetailView: View {
                 let value = $0.split(separator: ",")
                 if value.count == 2 {
                     let item = DividendDisplayData(symbol: item.symbol, date: String(value[0]), price: String(value[1]))
+                    data.append(item)
+                }
+                if value.count == 3 {
+                    let item = DividendDisplayData(symbol: item.symbol, date: String(value[0]), price: String(value[1]), quantity: String(value[2]))
                     data.append(item)
                 }
             }
