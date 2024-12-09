@@ -11,7 +11,7 @@ import SwiftData
 
 struct StockData: Identifiable, Codable, Hashable {
     var id: String
-    var name: String
+    var name: String?
     var price: Float
     var changesPercentage: Float?
     var change: Float?
@@ -119,25 +119,41 @@ class SymbolStorage {
 class StockDataService: ObservableObject {
     static let shared = StockDataService()
     
-    func fetchStocks(tickers: String) async -> [StockData] {
+    func fetchFullQuoteStocks(tickers: String) async -> [StockData] {
         do {
-            if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-order/" + tickers + "?apikey=ebsEkpswwWUGa5RgJG6YlMzG2lC0Tljf") {
+            if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-order/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
-                debugPrint("response: \(response.0)")
+                debugPrint("fetchFullQuoteStocks response: \(response.0)")
                 let data = try JSONDecoder().decode([StockData].self, from: response.0)
                 return data
             }
         }
         catch {
-            debugPrint("StockDataService error for tickers: \(tickers) error: \(error)")
+            debugPrint("fetchFullQuoteStocks error for tickers: \(tickers) error: \(error)")
+        }
+        return []
+    }
+    
+    func fetchShortQuoteStocks(tickers: String) async -> [StockData] {
+        do {
+            if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-short/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
+                let session = URLSession(configuration: .default)
+                let response = try await session.data(from: url)
+                debugPrint("fetchShortQuoteStocks response: \(response.0)")
+                let data = try JSONDecoder().decode([StockData].self, from: response.0)
+                return data
+            }
+        }
+        catch {
+            debugPrint("fetchShortQuoteStocks error for tickers: \(tickers) error: \(error)")
         }
         return []
     }
     
     func fetchSymbols() async -> [SymbolData] {
         do {
-            if let url = URL(string: "https://financialmodelingprep.com/api/v3/stock/list?apikey=ebsEkpswwWUGa5RgJG6YlMzG2lC0Tljf") {
+            if let url = URL(string: "https://financialmodelingprep.com/api/v3/stock/list?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
                 debugPrint("response: \(response.0)")
@@ -146,7 +162,7 @@ class StockDataService: ObservableObject {
             }
         }
         catch {
-            debugPrint("StockDataService error for fetchSymbols error: \(error)")
+            debugPrint("fetchSymbols error for fetchSymbols error: \(error)")
         }
         return []
     }

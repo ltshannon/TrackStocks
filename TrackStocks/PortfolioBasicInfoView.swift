@@ -7,15 +7,30 @@
 
 import SwiftUI
 
+struct DividendShares {
+    var id = UUID().uuidString
+    var string = ""
+}
+
 struct PortfolioBasicInfoView: View {
     var item: ItemData
+    @State var dividendAmount: Float = 0
+    @State var dividendShares: [DividendShares] = []
+    @State var dividendSharesAmount: Float = 0
+    let columns: [GridItem] = [
+                                GridItem(.fixed(55), spacing: 1),
+                                GridItem(.fixed(48), spacing: 1),
+                                GridItem(.fixed(78), spacing: 1),
+                                GridItem(.fixed(78), spacing: 1),
+                                GridItem(.fixed(100), spacing: 1),
+                                ]
     
     var body: some View {
         HStack {
             Image(systemName: String().getChartName(item: item))
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40 , height: 40)
+                .frame(width: 25 , height: 25)
                 .foregroundStyle(getColorOfChange(change: item.change, isSold: item.isSold))
             VStack {
                 Text(item.symbol)
@@ -53,6 +68,41 @@ struct PortfolioBasicInfoView: View {
                 Text(item.percent, format: .percent.precision(.fractionLength(2)))
                     .foregroundStyle(getColorOfChange(change: item.gainLose, isSold: item.isSold))
                     .font(.caption)
+            }
+            if dividendAmount > 0 {
+                VStack(alignment: .leading) {
+                    Text("Cash")
+                    Text(dividendAmount, format: .currency(code: "USD"))
+                    Text("")
+                }
+                .font(.caption)
+            }
+            if dividendShares.count > 0 {
+                VStack(alignment: .leading) {
+                    Text("Shares")
+                    ForEach(dividendShares, id: \.id) { item in
+                        Text(item.string)
+                    }
+                    Text("")
+                }
+                .font(.caption)
+            }
+        }
+        .onAppear {
+            dividendAmount = 0
+            dividendShares = []
+            dividendSharesAmount = 0
+            for dividend in item.dividendList {
+                if let dec = Float(dividend.price) {
+                    if let quantity = Float(dividend.quantity) {
+                        dividendSharesAmount += (dec * quantity) - item.price
+                        let str = String(quantity) + "@" + String(dec)
+                        let item = DividendShares(string: str)
+                        dividendShares.append(item)
+                    } else {
+                        dividendAmount += dec
+                    }
+                }
             }
         }
     }

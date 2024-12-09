@@ -94,13 +94,14 @@ struct ModelStock: Codable, Identifiable, Hashable {
 }
 
 struct DividendDisplayData: Codable, Identifiable, Hashable, Equatable {
-    var id = UUID().uuidString
+    var id = ""
     var symbol = ""
     var date = ""
     var price = ""
     var quantity = ""
     
-    init(symbol: String = "", date: String = "", price: String = "", quantity: String = "") {
+    init(id: String = "", symbol: String = "", date: String = "", price: String = "", quantity: String = "") {
+        self.id = id
         self.symbol = symbol
         self.date = date
         self.price = price
@@ -244,7 +245,7 @@ class FirebaseService: ObservableObject {
                 return
             }
             
-            debugPrint("👨‍🦯‍➡️", "listenerForStockSymbols called")
+            debugPrint("👨‍🦯‍➡️", "listenerForStockSymbols called for \(portfolioName)")
             
             var stockSymbols: Set<String> = []
             var stockItems: [StockItem] = []
@@ -288,7 +289,7 @@ class FirebaseService: ObservableObject {
             let array = Array(stockSymbols)
             let string: String = array.joined(separator: ",")
             Task {
-                let stockData = await self.stockDataService.fetchStocks(tickers: string)
+                let stockData = await self.stockDataService.fetchFullQuoteStocks(tickers: string)
 
                 for item in stockData {
                     items.indices.forEach { index in
@@ -302,19 +303,11 @@ class FirebaseService: ObservableObject {
                             items[index].percent = value / items[index].basis
                             let gainLose = Float(items[index].quantity) * value
                             items[index].gainLose = gainLose
-//                            total += gainLose
-//                            if items[index].isSold == true {
-//                                totalSold += gainLose
-//                            } else {
-//                                totalNotSold += gainLose
-//                            }
-//                            totalBasis += items[index].basis * Float(items[index].quantity)
                             dividendList = []
                             if let dividends = items[index].dividend {
                                 let _ = dividends.map {
                                     let result = self.buildDividendList(array: $0, symbol: item.id)
-                                    dividendList.append(result.0)
-                                    items[index].gainLose += result.1
+                                    dividendList.append(result)
                                 }
                             }
                             items[index].dividendList = dividendList
@@ -414,8 +407,8 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func buildDividendArrayElement(dividendDate: String, dividendAmount: String, dividendQuantity: String) -> [String] {
-        var str = dividendDate + "," + dividendAmount
+    func buildDividendArrayElement(id: String = UUID().uuidString, dividendDate: String, dividendAmount: String, dividendQuantity: String) -> [String] {
+        var str = id + "," + dividendDate + "," + dividendAmount
         if dividendQuantity.isNotEmpty {
             str += "," + dividendQuantity
         }
@@ -425,20 +418,17 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func buildDividendList(array: String, symbol: String) -> (DividendDisplayData, Float) {
-        var data = DividendDisplayData(date: "", price: "", quantity: "")
-        var total: Float = 0
+    func buildDividendList(array: String, symbol: String) -> DividendDisplayData {
+        var data = DividendDisplayData(id: "", date: "", price: "", quantity: "")
         let value = array.split(separator: ",")
-        if value.count == 2 {
-            data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]))
-        }
         if value.count == 3 {
-            data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: String(value[1]), quantity: String(value[2]))
+            data = DividendDisplayData(id: String(value[0]), symbol: symbol, date: String(value[1]), price: String(value[2]))
         }
-        if let dec = Float(String(value[1])) {
-            total += dec
+        if value.count == 4 {
+            data = DividendDisplayData(id: String(value[0]), symbol: symbol, date: String(value[1]), price: String(value[2]), quantity: String(value[3]))
         }
-        return (data, total)
+
+        return data
     }
     
     func addCashDividend(portfolioName: String, firestoreId: String, dividendDate: String, dividendAmount: String) async {
@@ -482,7 +472,7 @@ class FirebaseService: ObservableObject {
             return
         }
         
-        var str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        var str = dividendDisplayData.id + "," + dividendDisplayData.date + ",\(dividendDisplayData.price)"
         if dividendDisplayData.quantity.isNotEmpty {
             str += ",\(dividendDisplayData.quantity)"
         }
@@ -501,13 +491,14 @@ class FirebaseService: ObservableObject {
             return
         }
         
-        var str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        var str = dividendDisplayData.id + "," + dividendDisplayData.date + ",\(dividendDisplayData.price)"
         if numberOfShares.isNotEmpty {
             str += ",\(numberOfShares)"
         }
         var array: [String] = []
         array.append(str)
-        let array2 = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: numberOfShares)
+        let array2 = buildDividendArrayElement(id: dividendDisplayData.id, dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: numberOfShares)
+        
         do {
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
             try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array2)])

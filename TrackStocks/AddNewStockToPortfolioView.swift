@@ -85,7 +85,8 @@ struct AddNewStockToPortfolioView: View {
                 }
                 .listSectionSpacing(1)
             }
-            .navigationTitle(portfolioName)
+            .navigationTitle("Add a stock to \(portfolioName)")
+            .navigationBarTitleDisplayMode(.inline)
             .alert("You are missing a Stock Symbol", isPresented: $showingMissingSymbol) {
                 Button("Cancel", role: .cancel) { }
             }

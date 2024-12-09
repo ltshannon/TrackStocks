@@ -125,6 +125,7 @@ struct PortfolioView: View {
                     }
                 }
             }
+            .listStyle(.plain)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -163,6 +164,7 @@ struct PortfolioView: View {
                 }
             }
             .navigationTitle(portfolio.name)
+            .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Enter Stock Symbol")
             .onAppear {
                 searchText = tempSearchText
@@ -208,12 +210,27 @@ struct PortfolioView: View {
             let list = masterSymbol.stockSymbols
             Task {
                 let string: String = list.joined(separator: ",")
-                let stockData = await stockDataService.fetchStocks(tickers: string)
+                var stockData: [StockData] = []
+                if simpleDataDisplay == true {
+                    stockData = await stockDataService.fetchShortQuoteStocks(tickers: string)
+                } else {
+                    stockData = await stockDataService.fetchFullQuoteStocks(tickers: string)
+                }
                 for item in stockData {
                     items.indices.forEach { index in
                         if item.id == items[index].symbol {
                             debugPrint("", "symbol: \(item.id) price: \(item.price)")
                             var price: Float = items[index].price
+                            var dividendAmount: Float = 0
+                            for dividend in items[index].dividendList {
+                                if let dec = Float(dividend.price) {
+                                    if let quantity = Float(dividend.quantity) {
+                                        dividendAmount += (dec * quantity) - price
+                                    } else {
+                                        dividendAmount += dec
+                                    }
+                                }
+                            }
                             if items[index].isSold == false {
                                 price = Float(Double(item.price))
                                 items[index].price = price
@@ -221,26 +238,28 @@ struct PortfolioView: View {
                             let value = price - items[index].basis
                             items[index].percent = value / items[index].basis
                             let gainLose = Float(items[index].quantity) * value
-                            items[index].gainLose = gainLose
-                            items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
-                            items[index].change = item.change
-                            items[index].dayLow = item.dayLow
-                            items[index].dayHigh = item.dayHigh
-                            items[index].yearLow = item.yearLow
-                            items[index].yearHigh = item.yearHigh
-                            items[index].marketCap = item.marketCap
-                            items[index].priceAvg50 = item.priceAvg50
-                            items[index].priceAvg200 = item.priceAvg200
-                            items[index].exchange = item.exchange
-                            items[index].volume = item.volume
-                            items[index].avgVolume = item.avgVolume
-                            items[index].open = item.open
-                            items[index].previousClose = item.previousClose
-                            items[index].eps = item.eps
-                            items[index].pe = item.pe
-                            items[index].earningsAnnouncement = item.earningsAnnouncement
-                            items[index].sharesOutstanding = item.sharesOutstanding
-                            items[index].timestamp = item.timestamp
+                            items[index].gainLose = gainLose + (simpleDataDisplay == true ? dividendAmount : 0.0)
+                            if simpleDataDisplay == false {
+                                items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
+                                items[index].change = item.change
+                                items[index].dayLow = item.dayLow
+                                items[index].dayHigh = item.dayHigh
+                                items[index].yearLow = item.yearLow
+                                items[index].yearHigh = item.yearHigh
+                                items[index].marketCap = item.marketCap
+                                items[index].priceAvg50 = item.priceAvg50
+                                items[index].priceAvg200 = item.priceAvg200
+                                items[index].exchange = item.exchange
+                                items[index].volume = item.volume
+                                items[index].avgVolume = item.avgVolume
+                                items[index].open = item.open
+                                items[index].previousClose = item.previousClose
+                                items[index].eps = item.eps
+                                items[index].pe = item.pe
+                                items[index].earningsAnnouncement = item.earningsAnnouncement
+                                items[index].sharesOutstanding = item.sharesOutstanding
+                                items[index].timestamp = item.timestamp
+                            }
                         }
                     }
                 }
@@ -251,10 +270,8 @@ struct PortfolioView: View {
     }
     
     func updatePortfolio() {
-        if let masterSymbol = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
-            Task {
-                await computeTotals(itemsData: masterSymbol.itemsData)
-            }
+        if let _ = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
+            refreshPrices()
         }
 
     }
@@ -266,6 +283,7 @@ struct PortfolioView: View {
         var totalBasis: Float = 0
         var totalSold: Float = 0
         var totalNotSold: Float = 0
+
         for item in itemsData {
             if displayStockState == .showSoldStocks && item.isSold == false {
                 continue
@@ -273,6 +291,7 @@ struct PortfolioView: View {
             if item.isSold == true, displayStockState == .showActiveStocks {
                 continue
             }
+
             let gainLose = item.gainLose
             total += gainLose
             if item.isSold == true {

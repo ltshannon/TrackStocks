@@ -148,12 +148,12 @@ struct PortfolioDetailView: View {
             var data: [DividendDisplayData] = []
             let _ = array.map {
                 let value = $0.split(separator: ",")
-                if value.count == 2 {
-                    let item = DividendDisplayData(symbol: item.symbol, date: String(value[0]), price: String(value[1]))
+                if value.count == 3 {
+                    let item = DividendDisplayData(id: String(value[0]), symbol: item.symbol, date: String(value[1]), price: String(value[2]))
                     data.append(item)
                 }
-                if value.count == 3 {
-                    let item = DividendDisplayData(symbol: item.symbol, date: String(value[0]), price: String(value[1]), quantity: String(value[2]))
+                if value.count == 4 {
+                    let item = DividendDisplayData(id: String(value[0]), symbol: item.symbol, date: String(value[1]), price: String(value[2]), quantity: String(value[3]))
                     data.append(item)
                 }
             }

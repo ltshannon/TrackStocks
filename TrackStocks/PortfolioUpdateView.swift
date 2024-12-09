@@ -35,11 +35,6 @@ struct PortfolioUpdateView: View {
         VStack {
             Form {
                 Section {
-                    Text(symbol)
-                } header: {
-                    Text("Stock Symbol")
-                }
-                Section {
                     if showDatePicker == true {
                         TextField("Date", text: $selectedDate)
                             .textCase(.uppercase)
@@ -101,7 +96,8 @@ struct PortfolioUpdateView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Update")
+        .navigationTitle("Update \(symbol)")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

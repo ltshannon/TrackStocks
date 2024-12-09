@@ -13,9 +13,9 @@ struct SimplePortfolioView: View {
     @State var isPercent: Bool = false
     let columns: [GridItem] = [
                                 GridItem(.fixed(55), spacing: 1),
-                                GridItem(.fixed(50), spacing: 1),
-                                GridItem(.fixed(80), spacing: 1),
-                                GridItem(.fixed(80), spacing: 1),
+                                GridItem(.fixed(48), spacing: 1),
+                                GridItem(.fixed(78), spacing: 1),
+                                GridItem(.fixed(78), spacing: 1),
                                 GridItem(.fixed(100), spacing: 1),
                                 ]
     
@@ -51,7 +51,7 @@ struct SimplePortfolioView: View {
                 }
             }
         }
-        .padding(1)
+        .padding(.leading, 20)
     }
 }
 

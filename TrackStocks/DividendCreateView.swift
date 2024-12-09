@@ -44,23 +44,6 @@ struct DividendCreateView: View {
     var body: some View {
         VStack {
             Form {
-                if isOnlyShares == false {
-                    Section {
-                        Picker("Select Dividend Type", selection: $dividendType) {
-                            ForEach(DividendType.allCases) { item in
-                                Text("\(item.rawValue)")
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                    } header: {
-                        Text("Select Dividend Type")
-                    }
-                }
-                Section {
-                    Text(symbol)
-                } header: {
-                    Text("Symbol")
-                }
                 Section {
                     if showDatePicker == true {
                         TextField("Dividend Date", text: $selectedDate)
@@ -76,6 +59,18 @@ struct DividendCreateView: View {
                     }
                 } header: {
                     Text("Date")
+                }
+                if isOnlyShares == false {
+                    Section {
+                        Picker("Select Dividend Type", selection: $dividendType) {
+                            ForEach(DividendType.allCases) { item in
+                                Text("\(item.rawValue)")
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    } header: {
+                        Text("Select Dividend Type")
+                    }
                 }
                 if dividendType == .cash {
                     Section {
@@ -101,7 +96,8 @@ struct DividendCreateView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Dividend")
+        .navigationTitle(isOnlyShares ? "Add shares to \(symbol)" : "Dividend for \(symbol)")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

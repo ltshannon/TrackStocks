@@ -29,11 +29,6 @@ struct PortfolioSoldView: View {
         VStack {
             Form {
                 Section {
-                    Text(symbol)
-                } header: {
-                    Text("Stock Symbol")
-                }
-                Section {
 
                     if showDatePicker == true {
                         TextField("Sold Date", text: $selectedDate)
@@ -58,7 +53,8 @@ struct PortfolioSoldView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Sell")
+        .navigationTitle("Sell \(symbol)")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

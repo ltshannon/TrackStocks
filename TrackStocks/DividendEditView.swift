@@ -14,6 +14,7 @@ struct DividendEditView: View {
     var item: ItemData
     var portfolio: Portfolio
     var dividendDisplayData: DividendDisplayData
+    @State var dividendId = ""
     @State var dividendAmount = ""
     @State var dividendDate = ""
     @State var quantity = ""
@@ -89,6 +90,7 @@ struct DividendEditView: View {
             }
         }
         .onAppear {
+            dividendId = dividendDisplayData.id
             dividendDate = dividendDisplayData.date
             dividendAmount = dividendDisplayData.price
             quantity = dividendDisplayData.quantity
