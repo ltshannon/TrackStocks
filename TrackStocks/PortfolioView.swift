@@ -64,7 +64,7 @@ struct PortfolioView: View {
             }
             Group {
                 if simpleDataDisplay == true {
-                    SimplePortfolioView(items: searchResults)
+                    SimplePortfolioView(portfolio: portfolio, items: searchResults)
                 } else {
                     PortfolioBasicInfo2View(portfolio: portfolio, items: searchResults)
                 }
@@ -162,7 +162,7 @@ struct PortfolioView: View {
                 for item in stockData {
                     items.indices.forEach { index in
                         if item.id == items[index].symbol {
-                            debugPrint("", "symbol: \(item.id) price: \(item.price)")
+                            debugPrint("🏓", "symbol: \(item.id) price: \(item.price)")
                             var price: Float = items[index].price
                             var dividendAmount: Float = 0
                             for dividend in items[index].dividendList {

@@ -107,7 +107,7 @@ struct View3: View {
             Text(item.percent, format: .percent.precision(.fractionLength(2)))
         }
         .font(.caption)
-        .foregroundStyle(item.isSold ? .orange : (item.gainLose > 0 ? .green : .red))
+        .foregroundStyle(item.isSold ? .orange : (item.gainLose >= 0 ? .green : .red))
     }
 }
 
@@ -120,7 +120,7 @@ struct View4: View {
             Text(total, format: .currency(code: "USD"))
                 .font(.caption)
             .bold()
-            .foregroundStyle(item.isSold ? .orange : (total > 0 ? .green : .red))
+            .foregroundStyle(item.isSold ? .orange : (total >= 0 ? .green : .red))
         }
         .onAppear {
             var countOfShares: Float = 0
@@ -130,7 +130,7 @@ struct View4: View {
                 if let dec = Float(dividend.price) {
                     if let quantity = Float(dividend.quantity) {
                         countOfShares += quantity
-                        sharePrice += dec
+                        sharePrice += dec * quantity
                     } else {
                         dividendAmount += dec
                     }
@@ -141,7 +141,7 @@ struct View4: View {
                 total += dividendAmount
             }
             if countOfShares > 0 {
-                total += (sharePrice / countOfShares)
+                total += ((sharePrice / countOfShares) - item.price) * countOfShares
             }
         }
     }
@@ -155,8 +155,8 @@ struct View6: View {
     @State var showingDeleteAlert = false
     
     var body: some View {
-        VStack {
-            Menu("Edit") {
+        Group {
+            Menu("EDIT") {
                 Button {
                     let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
                     appNavigationState.dividendCreateView(parameters: parameters)
@@ -188,6 +188,7 @@ struct View6: View {
                 }
             }
             .font(.caption)
+            .padding(0)
         }
         .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
             Button("OK", role: .destructive) {
