@@ -62,70 +62,13 @@ struct PortfolioView: View {
                     .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
                     .padding(.trailing, 30)
             }
-            List {
+            Group {
                 if simpleDataDisplay == true {
                     SimplePortfolioView(items: searchResults)
                 } else {
-                    ForEach(searchResults, id: \.id) { item in
-                        HStack {
-                            if UIDevice.current.userInterfaceIdiom == .pad {
-                                PortfolioBasicInfoView(item: item)
-                                PortfolioDetailInfoView(item: item)
-                            }
-                            else {
-                                PortfolioBasicInfoView(item: item)
-                            }
-                            Spacer()
-                            VStack(alignment: .leading) {
-                                Text("Show")
-                                Text(UIDevice.current.userInterfaceIdiom == .pad ? "Dividends" : "Detail")
-                            }
-                            .font(.caption)
-                            .onTapGesture {
-                                let parameters = PortfolioDetailParameters(item: item, portfolio: portfolio)
-                                appNavigationState.portfolioDetailView(parameters: parameters)
-                            }
-                        }
-                        .swipeActions(allowsFullSwipe: false) {
-                            Button {
-                                let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
-                                appNavigationState.dividendCreateView(parameters: parameters)
-                            } label: {
-                                Text("Add to \n Position").lineLimit(nil)
-                            }
-                            .tint(.green)
-                            Button {
-                                let parameters = DividendCreateParameters(item: item, portfolio: portfolio)
-                                appNavigationState.dividendCreateView(parameters: parameters)
-                            } label: {
-                                Text("Add \n Dividend").lineLimit(nil)
-                            }
-                            .tint(.orange)
-                            Button {
-                                let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
-                                appNavigationState.portfolioUpdateView(parameters: parameters)
-                            } label: {
-                                Text("Update")
-                            }
-                            .tint(.yellow)
-                            Button {
-                                let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
-                                appNavigationState.portfolioSoldView(parameters: parameters)
-                            } label: {
-                                Text("Sell")
-                            }
-                            .tint(.indigo)
-                            Button(role: .destructive) {
-                                itemToDelete = item
-                                showingDeleteAlert = true
-                            } label: {
-                                Label("Delete", systemImage: "trash.fill")
-                            }
-                        }
-                    }
+                    PortfolioBasicInfo2View(portfolio: portfolio, items: searchResults)
                 }
             }
-            .listStyle(.plain)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

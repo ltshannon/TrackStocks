@@ -30,13 +30,13 @@ struct PortfolioDetailView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            if UIDevice.current.userInterfaceIdiom != .pad {
+//            if UIDevice.current.userInterfaceIdiom != .pad {
                 ScrollView(.horizontal) {
                     PortfolioDetailInfoView(item: item)
                 }
                 Divider()
                 Text("Dividends")
-            }
+//            }
             List {
                     Section {
                         ForEach(dividendList, id: \.id) { dividend in
@@ -109,6 +109,7 @@ struct PortfolioDetailView: View {
         .padding([.leading, .trailing], 20)
         .navigationTitle(UIDevice.current.userInterfaceIdiom == .pad ? item.symbol + " Dividends" : item.symbol + " Details")
         .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
         .alert("Are you sure you want to delete this?", isPresented: $showDeleteDividendAlert) {
             Button("OK", role: .destructive) {
                 delete(dividend: dividendToDelete)
