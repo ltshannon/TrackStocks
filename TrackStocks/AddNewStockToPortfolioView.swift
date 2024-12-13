@@ -17,8 +17,8 @@ struct AddNewStockToPortfolioView: View {
     @Environment(\.dismiss) var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
     var portfolioName: String = ""
-    @State var basis: Decimal?
-    @State var quantity: Decimal?
+    @State var basis: Double?
+    @State var quantity: Double?
     @State var selectedStock = ""
     @State var selectedDate = ""
     @State var showingStockSelector: Bool = false
@@ -145,13 +145,19 @@ struct AddNewStockToPortfolioView: View {
         }
         var doubleQuantity: Double = 0
         if let a = quantity {
-            doubleQuantity = Double(truncating: a as NSNumber)
+            doubleQuantity = a
+        } else {
+            showingMissingQuantity = true
+            return
         }
         var doubleBasis: Double = 0
         if let a = basis {
-            doubleBasis = Double(truncating: a as NSNumber)
+            doubleBasis = a
+        } else {
+            showingMissingBasis = true
+            return
         }
-        let item = ItemData(firestoreId: "", symbol: selectedStock.uppercased(), basis: Float(doubleBasis), price: 0, gainLose: 0, percent: 0, quantity: doubleQuantity, isSold: false, purchasedDate: selectedDate, soldDate: "n/a")
+        let item = ItemData(firestoreId: "", symbol: selectedStock.uppercased(), basis: doubleBasis, price: 0, gainLose: 0, percent: 0, quantity: doubleQuantity, isSold: false, purchasedDate: selectedDate, soldDate: "n/a")
         Task {
             dismiss()
             await firebaseService.addItem(portfolioName: portfolioName, symbol: item.symbol, quantity: item.quantity, basis: doubleBasis, purchasedDate: item.purchasedDate, soldDate: "n/a", stockTag: selectedStockTagOption.rawValue)

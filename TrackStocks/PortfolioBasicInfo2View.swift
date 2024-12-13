@@ -102,7 +102,7 @@ struct View3: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text("\(String(format: "%.0f", item.quantity))@\(String(format: "%.2f", item.basis))")
+            Text("\(String(format: "%.2f", item.quantity))@\n\(String(format: "%.2f", item.basis))")
             Text(item.gainLose, format: .currency(code: "USD"))
             Text(item.percent, format: .percent.precision(.fractionLength(2)))
         }
@@ -113,7 +113,7 @@ struct View3: View {
 
 struct View4: View {
     var item: ItemData
-    @State var total: Float = 0
+    @State var total: Double = 0
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -123,25 +123,16 @@ struct View4: View {
             .foregroundStyle(item.isSold ? .orange : (total >= 0 ? .green : .red))
         }
         .onAppear {
-            var countOfShares: Float = 0
-            var sharePrice: Float = 0
-            var dividendAmount: Float = 0
+            var dividendAmount: Double = 0
             for dividend in item.dividendList {
-                if let dec = Float(dividend.price) {
-                    if let quantity = Float(dividend.quantity) {
-                        countOfShares += quantity
-                        sharePrice += dec * quantity
-                    } else {
-                        dividendAmount += dec
-                    }
+                let dec = (dividend.price as NSString).doubleValue
+                if dec > 0 {
+                    dividendAmount += dec
                 }
             }
             total = item.gainLose
             if dividendAmount > 0 {
                 total += dividendAmount
-            }
-            if countOfShares > 0 {
-                total += ((sharePrice / countOfShares) - item.price) * countOfShares
             }
         }
     }

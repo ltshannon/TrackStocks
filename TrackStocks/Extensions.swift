@@ -117,7 +117,7 @@ extension CaseIterable {
     }
 }
 
-func getColorOfChange(change: Float?, isSold: Bool = false) -> Color {
+func getColorOfChange(change: Double?, isSold: Bool = false) -> Color {
     if isSold {
         return .orange
     }

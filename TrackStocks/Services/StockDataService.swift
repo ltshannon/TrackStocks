@@ -12,9 +12,9 @@ import SwiftData
 struct StockData: Identifiable, Codable, Hashable {
     var id: String
     var name: String?
-    var price: Float
+    var price: Double
     var changesPercentage: Float?
-    var change: Float?
+    var change: Double?
     var dayLow: Float?
     var dayHigh: Float?
     var yearLow: Float?
@@ -116,6 +116,43 @@ class SymbolStorage {
     }
 }
 
+struct FetchChartData: Codable, Hashable {
+    var date: String
+    var open: Float
+    var low: Float
+    var high: Float
+    var close: Float
+    var volume: Float
+    
+    init(date: String, open: Float, low: Float, high: Float, close: Float, volume: Float) {
+        self.date = date
+        self.open = open
+        self.low = low
+        self.high = high
+        self.close = close
+        self.volume = volume
+    }
+}
+
+struct ChartData: Identifiable, Codable, Hashable {
+    var id = UUID().uuidString
+    var date: Date
+    var open: Float
+    var low: Float
+    var high: Float
+    var close: Float
+    var volume: Float
+    
+    init(date: Date, open: Float, low: Float, high: Float, close: Float, volume: Float) {
+        self.date = date
+        self.open = open
+        self.low = low
+        self.high = high
+        self.close = close
+        self.volume = volume
+    }
+}
+
 class StockDataService: ObservableObject {
     static let shared = StockDataService()
     
@@ -163,6 +200,30 @@ class StockDataService: ObservableObject {
         }
         catch {
             debugPrint("fetchSymbols error for fetchSymbols error: \(error)")
+        }
+        return []
+    }
+    
+    func fetchChartData(symbol: String) async -> [ChartData] {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
+        do {
+            if let url = URL(string: "https://financialmodelingprep.com/api/v3/historical-chart/5min/" + symbol + "?from=2024-12-11&to=2024-12-11&apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
+                let session = URLSession(configuration: .default)
+                let response = try await session.data(from: url)
+                debugPrint("response: \(response.0)")
+                let fetchChartData = try JSONDecoder().decode([FetchChartData].self, from: response.0)
+                
+                var chartData = fetchChartData.map {
+                    let date = dateFormatter.date(from: $0.date) ?? Date()
+                    return ChartData(date: date, open: $0.open, low: $0.low, high: $0.high, close: $0.close, volume: $0.volume)
+                }
+                chartData = chartData.reversed()
+                return chartData
+            }
+        } catch {
+            debugPrint("fetchChartData error for Symbol \(symbol) error: \(error)")
         }
         return []
     }

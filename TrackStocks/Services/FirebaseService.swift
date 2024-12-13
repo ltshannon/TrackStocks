@@ -16,15 +16,15 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var id: String = UUID().uuidString
     var firestoreId: String
     var symbol: String
-    var basis: Float
-    var price: Float
-    var gainLose: Float
-    var percent: Float
+    var basis: Double
+    var price: Double
+    var gainLose: Double
+    var percent: Double
     var quantity: Double
     var dividend: [String]?
     var isSold: Bool
     var changesPercentage: Float?
-    var change: Float?
+    var change: Double?
     var dayLow: Float?
     var dayHigh: Float?
     var yearLow: Float?
@@ -73,10 +73,10 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
     var name: String?
     var quantity: Double
-    var basis: Float
+    var basis: Double
     var symbol: String?
     var isSold: Bool?
-    var price: Float?
+    var price: Double?
     var purchasedDate: String
     var soldDate: String
     var stockTag: String?
@@ -277,7 +277,7 @@ class FirebaseService: ObservableObject {
                 if let symbol = item.symbol {
                     value = symbol
                 }
-                var soldPrice:Float = 0.0
+                var soldPrice: Double = 0
                 var isSold = false
                 if let value = item.price {
                     soldPrice = value
@@ -294,14 +294,14 @@ class FirebaseService: ObservableObject {
                 for item in stockData {
                     items.indices.forEach { index in
                         if item.id == items[index].symbol {
-                            var price: Float = items[index].price
+                            var price = items[index].price
                             if items[index].isSold == false {
-                                price = Float(Double(item.price))
+                                price = item.price
                                 items[index].price = price
                             }
                             let value = price - items[index].basis
                             items[index].percent = value / items[index].basis
-                            let gainLose = Float(items[index].quantity) * value
+                            let gainLose = items[index].quantity * value
                             items[index].gainLose = gainLose
                             dividendList = []
                             if let dividends = items[index].dividend {

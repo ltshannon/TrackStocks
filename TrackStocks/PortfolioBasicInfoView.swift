@@ -14,9 +14,9 @@ struct DividendShares {
 
 struct PortfolioBasicInfoView: View {
     var item: ItemData
-    @State var dividendAmount: Float = 0
+    @State var dividendAmount: Double = 0
     @State var dividendShares: [DividendShares] = []
-    @State var dividendSharesAmount: Float = 0
+    @State var dividendSharesAmount: Double = 0
     let columns: [GridItem] = [
                                 GridItem(.fixed(55), spacing: 1),
                                 GridItem(.fixed(48), spacing: 1),
@@ -93,8 +93,10 @@ struct PortfolioBasicInfoView: View {
             dividendShares = []
             dividendSharesAmount = 0
             for dividend in item.dividendList {
-                if let dec = Float(dividend.price) {
-                    if let quantity = Float(dividend.quantity) {
+                let dec = (dividend.price as NSString).doubleValue
+                if dec > 0 {
+                    let quantity = (dividend.quantity as NSString).doubleValue
+                    if quantity > 0 {
                         dividendSharesAmount += (dec * quantity) - item.price
                         let str = String(quantity) + "@" + String(dec)
                         let item = DividendShares(string: str)

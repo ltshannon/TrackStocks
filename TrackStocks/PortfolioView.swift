@@ -15,14 +15,14 @@ struct PortfolioView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
     @AppStorage("showDatePicker") var showDatePicker = false
-    @AppStorage("simpleDisplay") var simpleDataDisplay = false
+    @AppStorage("simpleDisplay") var simpleDataDisplay = true
     var portfolio: Portfolio
     var tempSearchText: String
     @State var stocks: [ItemData] = []
-    @State var total: Float = 0
-    @State var totalBasis: Float = 0
-    @State var totalSold: Float = 0
-    @State var totalActive: Float = 0
+    @State var total: Double = 0
+    @State var totalBasis: Double = 0.0
+    @State var totalSold: Double = 0.0
+    @State var totalActive: Double = 0.0
     @State var itemToDelete: ItemData?
     @State var showingAddNewShockSheet: Bool = false
     @State var showingDeleteAlert = false
@@ -154,55 +154,55 @@ struct PortfolioView: View {
             Task {
                 let string: String = list.joined(separator: ",")
                 var stockData: [StockData] = []
-                if simpleDataDisplay == true {
-                    stockData = await stockDataService.fetchShortQuoteStocks(tickers: string)
-                } else {
-                    stockData = await stockDataService.fetchFullQuoteStocks(tickers: string)
-                }
+                stockData = await stockDataService.fetchFullQuoteStocks(tickers: string)
                 for item in stockData {
                     items.indices.forEach { index in
                         if item.id == items[index].symbol {
                             debugPrint("🏓", "symbol: \(item.id) price: \(item.price)")
-                            var price: Float = items[index].price
-                            var dividendAmount: Float = 0
+                            var price = items[index].price
                             for dividend in items[index].dividendList {
-                                if let dec = Float(dividend.price) {
-                                    if let quantity = Float(dividend.quantity) {
-                                        dividendAmount += (dec * quantity) - price
-                                    } else {
-                                        dividendAmount += dec
+                                let dec = (dividend.price as NSString).doubleValue
+                                if dec > 0 {
+                                    let dividendQuantity = (dividend.quantity as NSString).doubleValue
+                                    if dividendQuantity > 0 {
+                                        let a = items[index].quantity * items[index].basis
+                                        let b = dividendQuantity * dec
+                                        let d = dividendQuantity + items[index].quantity
+                                        if d > 0 {
+                                            let c = (a + b) / d
+                                            items[index].quantity = d
+                                            items[index].basis = c
+                                        }
                                     }
                                 }
                             }
                             if items[index].isSold == false {
-                                price = Float(Double(item.price))
+                                price = item.price
                                 items[index].price = price
                             }
                             let value = price - items[index].basis
                             items[index].percent = value / items[index].basis
-                            let gainLose = Float(items[index].quantity) * value
-                            items[index].gainLose = gainLose + (simpleDataDisplay == true ? dividendAmount : 0.0)
-                            if simpleDataDisplay == false {
-                                items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
-                                items[index].change = item.change
-                                items[index].dayLow = item.dayLow
-                                items[index].dayHigh = item.dayHigh
-                                items[index].yearLow = item.yearLow
-                                items[index].yearHigh = item.yearHigh
-                                items[index].marketCap = item.marketCap
-                                items[index].priceAvg50 = item.priceAvg50
-                                items[index].priceAvg200 = item.priceAvg200
-                                items[index].exchange = item.exchange
-                                items[index].volume = item.volume
-                                items[index].avgVolume = item.avgVolume
-                                items[index].open = item.open
-                                items[index].previousClose = item.previousClose
-                                items[index].eps = item.eps
-                                items[index].pe = item.pe
-                                items[index].earningsAnnouncement = item.earningsAnnouncement
-                                items[index].sharesOutstanding = item.sharesOutstanding
-                                items[index].timestamp = item.timestamp
-                            }
+                            let gainLose = items[index].quantity * value
+                            items[index].gainLose = gainLose
+                            items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
+                            items[index].change = item.change
+                            items[index].dayLow = item.dayLow
+                            items[index].dayHigh = item.dayHigh
+                            items[index].yearLow = item.yearLow
+                            items[index].yearHigh = item.yearHigh
+                            items[index].marketCap = item.marketCap
+                            items[index].priceAvg50 = item.priceAvg50
+                            items[index].priceAvg200 = item.priceAvg200
+                            items[index].exchange = item.exchange
+                            items[index].volume = item.volume
+                            items[index].avgVolume = item.avgVolume
+                            items[index].open = item.open
+                            items[index].previousClose = item.previousClose
+                            items[index].eps = item.eps
+                            items[index].pe = item.pe
+                            items[index].earningsAnnouncement = item.earningsAnnouncement
+                            items[index].sharesOutstanding = item.sharesOutstanding
+                            items[index].timestamp = item.timestamp
                         }
                     }
                 }
@@ -222,10 +222,10 @@ struct PortfolioView: View {
     func computeTotals(itemsData: [ItemData]) async {
         var result: [ItemData] = []
         let displayStockState = settingsService.displayStocks
-        var total: Float = 0
-        var totalBasis: Float = 0
-        var totalSold: Float = 0
-        var totalNotSold: Float = 0
+        var total: Double = 0
+        var totalBasis: Double = 0
+        var totalSold: Double = 0
+        var totalNotSold: Double = 0
 
         for item in itemsData {
             if displayStockState == .showSoldStocks && item.isSold == false {
@@ -242,7 +242,7 @@ struct PortfolioView: View {
             } else {
                 totalNotSold += gainLose
             }
-            totalBasis += item.basis * Float(item.quantity)
+            totalBasis += item.basis * item.quantity
             result.append(item)
         }
         

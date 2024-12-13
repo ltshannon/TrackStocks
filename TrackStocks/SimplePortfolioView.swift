@@ -12,11 +12,12 @@ struct SimplePortfolioView: View {
     var items: [ItemData]
     @State var searchText = ""
     @State var isPercent: Bool = false
+    @State var isCurrent: Bool = false
     let columns: [GridItem] = [
+                                GridItem(.fixed(55), spacing: 1),
                                 GridItem(.fixed(50), spacing: 1),
-                                GridItem(.fixed(70), spacing: 1),
                                 GridItem(.fixed(65), spacing: 1),
-                                GridItem(.fixed(65), spacing: 1),
+                                GridItem(.fixed(64), spacing: 5),
                                 GridItem(.fixed(75), spacing: 1),
                                 GridItem(.fixed(35), spacing: 1),
                                 ]
@@ -26,9 +27,14 @@ struct SimplePortfolioView: View {
             LazyVGrid(columns: columns, alignment: .leading) {
                 Group {
                     Text("Sym")
-                    Text("Position")
+                    Text("Hold")
                     Text("Price")
-                    Text("Change")
+                    Button {
+                        isCurrent.toggle()
+                    } label: {
+                        Text(isCurrent ? "Current" : "Change")
+                            .underline()
+                    }
                     Button {
                         isPercent.toggle()
                     } label: {
@@ -41,15 +47,20 @@ struct SimplePortfolioView: View {
                 ForEach(items, id: \.id) { item in
                     Text("\(item.symbol)")
                         .foregroundStyle(item.isSold ? .orange : .primary)
-                    Text(item.quantity.truncatingRemainder(dividingBy: 1) > 0 ? "\(item.quantity, specifier: "%.2f")" : "\(item.quantity, specifier: "%.0f")\n$\(String(format: "%.2f", item.basis))")
-                        .font(.caption)
+                    View8(item: item)
                     Text("\(String(format: "%.2f", item.price))").bold()
-                    Text("\(String(format: "%.2f", item.change ?? 0))")
-                        .frame(maxWidth: .infinity)
-                        .foregroundStyle(.white)
-                        .background(
-                            RoundedRectangle(cornerRadius: 5, style: .continuous).fill(item.change ?? 0 < 0 ?.red : .green)
-                        )
+                    if isCurrent == true {
+                        let value = item.price * item.quantity
+                        Text("\(value, specifier: "%.2f")")
+                            .font(.caption)
+                    } else {
+                        Text("\(String(format: "%.2f", item.change ?? 0))")
+                            .frame(maxWidth: .infinity)
+                            .foregroundStyle(.white)
+                            .background(
+                                RoundedRectangle(cornerRadius: 5, style: .continuous).fill(item.change ?? 0 < 0 ?.red : .green)
+                            )
+                    }
                     if isPercent {
                         Text(item.percent, format: .number.precision(.fractionLength(2)))
                                 //.percent.precision(.fractionLength(2)))
@@ -65,5 +76,17 @@ struct SimplePortfolioView: View {
             }
         }
         .padding(.leading, 10)
+    }
+}
+
+struct View8: View {
+    var item: ItemData
+    
+    var body: some View {
+        VStack {
+            Text("\(item.quantity, specifier: "%.2f")@")
+            Text("\(item.basis, specifier: "%.2f")")
+        }
+        .font(.caption)
     }
 }
