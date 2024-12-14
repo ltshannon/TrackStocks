@@ -77,6 +77,15 @@ struct SymbolData: Identifiable, Codable, Hashable {
     }
 }
 
+enum TimeFrame: String {
+    case oneMin = "1min"
+    case fiveMin = "5min"
+    case fifteenMin = "15min"
+    case thirtyMin = "30min"
+    case oneHour = "1hour"
+    case fourHour = "4hour"
+}
+
 struct MarketSymbols: Identifiable, Codable, Hashable {
     var id = UUID().uuidString
     var symbol: String
@@ -118,13 +127,13 @@ class SymbolStorage {
 
 struct FetchChartData: Codable, Hashable {
     var date: String
-    var open: Float
-    var low: Float
-    var high: Float
-    var close: Float
-    var volume: Float
+    var open: Double
+    var low: Double
+    var high: Double
+    var close: Double
+    var volume: Double
     
-    init(date: String, open: Float, low: Float, high: Float, close: Float, volume: Float) {
+    init(date: String, open: Double, low: Double, high: Double, close: Double, volume: Double) {
         self.date = date
         self.open = open
         self.low = low
@@ -137,13 +146,13 @@ struct FetchChartData: Codable, Hashable {
 struct ChartData: Identifiable, Codable, Hashable {
     var id = UUID().uuidString
     var date: Date
-    var open: Float
-    var low: Float
-    var high: Float
-    var close: Float
-    var volume: Float
+    var open: Double
+    var low: Double
+    var high: Double
+    var close: Double
+    var volume: Double
     
-    init(date: Date, open: Float, low: Float, high: Float, close: Float, volume: Float) {
+    init(date: Date, open: Double, low: Double, high: Double, close: Double, volume: Double) {
         self.date = date
         self.open = open
         self.low = low
@@ -204,28 +213,68 @@ class StockDataService: ObservableObject {
         return []
     }
     
-    func fetchChartData(symbol: String) async -> [ChartData] {
+    func fetchChartData(symbol: String, timeFrame: TimeFrame) async -> (Double, Double, [ChartData]) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
 
         do {
-            if let url = URL(string: "https://financialmodelingprep.com/api/v3/historical-chart/5min/" + symbol + "?from=2024-12-11&to=2024-12-11&apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
+//            var date = Date()
+//            if let lastWeekDate = NSCalendar.current.date(byAdding: .weekOfYear, value: -1, to: Date()) {
+//                date = lastWeekDate
+//            }
+//            var components = date.get(.day, .month, .year)
+//            var strMonth = convertMonthToString(month: components.month ?? 1)
+//            var strDay = convertDayToString(day: components.day ?? 1)
+//            let startDate = "\(String(components.year ?? 1969))-\(strMonth)-\(strDay)"
+            let components = Date().get(.day, .month, .year)
+            let strMonth = convertMonthToString(month: components.month ?? 1)
+            let strDay = convertDayToString(day: components.day ?? 1)
+            let startDate = "\(String(components.year ?? 1969))-\(strMonth)-\(strDay)"
+            let endDate = "\(String(components.year ?? 1969))-\(strMonth)-\(strDay)"
+            let string = "https://financialmodelingprep.com/api/v3/historical-chart/" + timeFrame.rawValue + "/" + symbol + "?from=" + startDate + "&to=" + endDate + "&apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q"
+            if let url = URL(string: string) {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
                 debugPrint("response: \(response.0)")
                 let fetchChartData = try JSONDecoder().decode([FetchChartData].self, from: response.0)
                 
+                var low: Double = 0
+                var high: Double = 0
+                var firstTime = true
                 var chartData = fetchChartData.map {
+                    if firstTime == true {
+                        low = $0.open
+                        high = $0.open
+                        firstTime = false
+                    }
+                    if $0.open < low { low = $0.open }
+                    if $0.open > high { high = $0.open }
                     let date = dateFormatter.date(from: $0.date) ?? Date()
                     return ChartData(date: date, open: $0.open, low: $0.low, high: $0.high, close: $0.close, volume: $0.volume)
                 }
                 chartData = chartData.reversed()
-                return chartData
+                return (high, low, chartData)
             }
         } catch {
             debugPrint("fetchChartData error for Symbol \(symbol) error: \(error)")
         }
-        return []
+        return (0, 0, [])
+    }
+    
+    func convertMonthToString(month: Int) -> String {
+        var strMonth = String(month)
+        if month < 10 {
+            strMonth = "0" + strMonth
+        }
+        return strMonth
+    }
+    
+    func convertDayToString(day: Int) -> String {
+        var strDay = String(day)
+        if day < 10 {
+            strDay = "0" + strDay
+        }
+        return strDay
     }
     
 }
@@ -247,25 +296,6 @@ class MarketSymbolsService: ObservableObject {
         DispatchQueue.main.async {
             self.marketSymbols = array
         }
-    }
-}
-
-extension Array: @retroactive RawRepresentable where Element: Codable {
-
-    public init?(rawValue: String) {
-        guard
-            let data = rawValue.data(using: .utf8),
-            let result = try? JSONDecoder().decode([Element].self, from: data)
-        else { return nil }
-        self = result
-    }
-
-    public var rawValue: String {
-        guard
-            let data = try? JSONEncoder().encode(self),
-            let result = String(data: data, encoding: .utf8)
-        else { return "" }
-        return result
     }
 }
 

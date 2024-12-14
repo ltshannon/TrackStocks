@@ -106,6 +106,25 @@ extension String {
     }
 }
 
+extension Array: @retroactive RawRepresentable where Element: Codable {
+
+    public init?(rawValue: String) {
+        guard
+            let data = rawValue.data(using: .utf8),
+            let result = try? JSONDecoder().decode([Element].self, from: data)
+        else { return nil }
+        self = result
+    }
+
+    public var rawValue: String {
+        guard
+            let data = try? JSONEncoder().encode(self),
+            let result = String(data: data, encoding: .utf8)
+        else { return "" }
+        return result
+    }
+}
+
 extension CaseIterable {
     static func random<G: RandomNumberGenerator>(using generator: inout G) -> Self.AllCases.Element {
         return Self.allCases.randomElement(using: &generator)!
@@ -145,4 +164,16 @@ extension Array where Element: Hashable {
         return Array(thisSet.symmetricDifference(otherSet))
     }
 }
+
+extension Date {
+    func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
+        return calendar.dateComponents(Set(components), from: self)
+    }
+
+    func get(_ component: Calendar.Component, calendar: Calendar = Calendar.current) -> Int {
+        return calendar.component(component, from: self)
+    }
+}
+
+
 
