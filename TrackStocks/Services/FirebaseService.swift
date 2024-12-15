@@ -352,6 +352,105 @@ class FirebaseService: ObservableObject {
 
     }
     
+    func refreshPortfolio(portfolioName: String) async -> ([ItemData], Double, Double, Double, Double) {
+        if let masterSymbol = masterSymbolList.filter({ $0.portfolioName == portfolioName }).first {
+            
+            var items = masterSymbol.itemsData
+            let list = masterSymbol.stockSymbols
+//            Task {
+                let string: String = list.joined(separator: ",")
+                var stockData: [StockData] = []
+                stockData = await stockDataService.fetchFullQuoteStocks(tickers: string)
+                for item in stockData {
+                    items.indices.forEach { index in
+                        if item.id == items[index].symbol {
+                            debugPrint("🏓", "symbol: \(item.id) price: \(item.price)")
+                            var price = items[index].price
+                            for dividend in items[index].dividendList {
+                                let dec = (dividend.price as NSString).doubleValue
+                                if dec > 0 {
+                                    let dividendQuantity = (dividend.quantity as NSString).doubleValue
+                                    if dividendQuantity > 0 {
+                                        let a = items[index].quantity * items[index].basis
+                                        let b = dividendQuantity * dec
+                                        let d = dividendQuantity + items[index].quantity
+                                        if d > 0 {
+                                            let c = (a + b) / d
+                                            items[index].quantity = d
+                                            items[index].basis = c
+                                        }
+                                    }
+                                }
+                            }
+                            if items[index].isSold == false {
+                                price = item.price
+                                items[index].price = price
+                            }
+                            let value = price - items[index].basis
+                            items[index].percent = (value / items[index].basis) * 100
+                            let gainLose = items[index].quantity * value
+                            items[index].gainLose = gainLose
+                            items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
+                            items[index].change = item.change
+                            items[index].dayLow = item.dayLow
+                            items[index].dayHigh = item.dayHigh
+                            items[index].yearLow = item.yearLow
+                            items[index].yearHigh = item.yearHigh
+                            items[index].marketCap = item.marketCap
+                            items[index].priceAvg50 = item.priceAvg50
+                            items[index].priceAvg200 = item.priceAvg200
+                            items[index].exchange = item.exchange
+                            items[index].volume = item.volume
+                            items[index].avgVolume = item.avgVolume
+                            items[index].open = item.open
+                            items[index].previousClose = item.previousClose
+                            items[index].eps = item.eps
+                            items[index].pe = item.pe
+                            items[index].earningsAnnouncement = item.earningsAnnouncement
+                            items[index].sharesOutstanding = item.sharesOutstanding
+                            items[index].timestamp = item.timestamp
+                        }
+                    }
+                }
+                let results = await computeTotals(itemsData: items)
+                return (results.0, results.1, results.2, results.3, results.4)
+//            }
+        } else {
+            return ([], 0, 0 ,0, 0)
+        }
+    }
+    
+    func computeTotals(itemsData: [ItemData]) async -> ([ItemData], Double, Double, Double, Double) {
+        var result: [ItemData] = []
+        let displayStockState = settingService.displayStocks
+        var total: Double = 0
+        var totalBasis: Double = 0
+        var totalSold: Double = 0
+        var totalNotSold: Double = 0
+
+        for item in itemsData {
+            if displayStockState == .showSoldStocks && item.isSold == false {
+                continue
+            }
+            if item.isSold == true, displayStockState == .showActiveStocks {
+                continue
+            }
+
+            let gainLose = item.gainLose
+            total += gainLose
+            if item.isSold == true {
+                totalSold += gainLose
+            } else {
+                totalNotSold += gainLose
+            }
+            totalBasis += item.basis * item.quantity
+            result.append(item)
+        }
+        
+        return (result, total, totalBasis, totalSold, totalNotSold)
+        
+    }
+    
     func getPortfolioList(stockList: [StockItem], portfolioName: String, displayStockState: DisplayStockState) async -> [PortfolioItem] {
         
         if let index = self.masterSymbolList.firstIndex(where: {$0.portfolioId == portfolioName}) {

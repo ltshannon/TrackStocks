@@ -79,32 +79,7 @@ struct PortfolioView: View {
                             .scaledToFit()
                     }
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        Button {
-                            settingsService.setShowActiveStocks()
-                        } label: {
-                            Label("Show Active Stocks", systemImage: settingsService.displayStocks == .showActiveStocks ? "checkmark.circle" : "circle")
-                        }
-                        Button {
-                            settingsService.setShowAllStocks()
-                        } label: {
-                            Label("Show All Stocks", systemImage: settingsService.displayStocks == .showAllStocks ? "checkmark.circle" : "circle")
-                        }
-                        Button {
-                            settingsService.setShowSoldStocks()
-                        } label: {
-                            Label("Show Sold Stocks", systemImage: settingsService.displayStocks == .showSoldStocks ? "checkmark.circle" : "circle")
-                        }
-                        Button {
-                            
-                        } label: {
-                            Text("Cancel")
-                        }
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                    }
-                }
+                ShowStockToolbar()
             }
             .navigationTitle(portfolio.name)
             .navigationBarTitleDisplayMode(.inline)
@@ -121,17 +96,17 @@ struct PortfolioView: View {
                 }
                 Button("Cancel", role: .cancel) { }
             }
-            .fullScreenCover(isPresented: $showingAddNewShockSheet, onDismiss: didDismiss) {
+            .fullScreenCover(isPresented: $showingAddNewShockSheet, onDismiss: refreshPrices) {
                 AddNewStockToPortfolioView(portfolioName: portfolio.id ?? "n/a")
             }
             .onChange(of: settingsService.displayStocks) { oldValue, newValue in
-                updatePortfolio()
+                refreshPrices()
             }
             .refreshable {
                 refreshPrices()
             }
             .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
-                updatePortfolio()
+                refreshPrices()
             }
         }
     }
@@ -142,12 +117,22 @@ struct PortfolioView: View {
         }
     }
     
-    func didDismiss() {
-        updatePortfolio()
+    func refreshPrices() {
+        Task {
+            let results = await firebaseService.refreshPortfolio(portfolioName: self.portfolio.name)
+            
+            await MainActor.run {
+                self.stocks = results.0
+                self.total = results.1
+                self.totalBasis = results.2
+                self.totalSold = results.3
+                self.totalActive = results.4
+            }
+        }
     }
     
+/*
     func refreshPrices() {
-        
         if let masterSymbol = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
             var items = masterSymbol.itemsData
             let list = masterSymbol.stockSymbols
@@ -181,7 +166,7 @@ struct PortfolioView: View {
                                 items[index].price = price
                             }
                             let value = price - items[index].basis
-                            items[index].percent = value / items[index].basis
+                            items[index].percent = (value / items[index].basis) * 100
                             let gainLose = items[index].quantity * value
                             items[index].gainLose = gainLose
                             items[index].changesPercentage = item.changesPercentage != nil ? item.changesPercentage! / 100 : 0
@@ -211,14 +196,9 @@ struct PortfolioView: View {
         }
         
     }
+*/
     
-    func updatePortfolio() {
-        if let _ = firebaseService.masterSymbolList.filter({ $0.portfolioName == self.portfolio.name }).first {
-            refreshPrices()
-        }
-
-    }
-    
+/*
     func computeTotals(itemsData: [ItemData]) async {
         var result: [ItemData] = []
         let displayStockState = settingsService.displayStocks
@@ -255,4 +235,6 @@ struct PortfolioView: View {
         }
         
     }
+*/
+    
 }

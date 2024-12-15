@@ -19,6 +19,10 @@ struct ContentView: View {
                     Label("Portfolios", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(2)
+            TotalsView()
+                .tabItem {
+                    Label("Totals", systemImage: "dollarsign.bank.building")
+                }
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
