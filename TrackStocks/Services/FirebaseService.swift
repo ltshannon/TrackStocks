@@ -591,8 +591,8 @@ class FirebaseService: ObservableObject {
         }
         
         var str = dividendDisplayData.id + "," + dividendDisplayData.date + ",\(dividendDisplayData.price)"
-        if numberOfShares.isNotEmpty {
-            str += ",\(numberOfShares)"
+        if dividendDisplayData.quantity.isNotEmpty {
+            str += ",\(dividendDisplayData.quantity)"
         }
         var array: [String] = []
         array.append(str)

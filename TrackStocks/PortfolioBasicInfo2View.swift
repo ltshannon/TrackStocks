@@ -16,13 +16,11 @@ struct PortfolioBasicInfo2View: View {
     @State var dividendSharesAmount: Float = 0
     @State var isPercent: Bool = false
     let columns: [GridItem] = [
-                                GridItem(.fixed(55), spacing: 1),
                                 GridItem(.fixed(60), spacing: 1),
-                                GridItem(.fixed(90), spacing: 1),
-//                                GridItem(.fixed(60), spacing: 1),
-                                GridItem(.fixed(80), spacing: 1),
-                                GridItem(.fixed(35), spacing: 1),
-                                GridItem(.fixed(35), spacing: 1),
+                                GridItem(.fixed(65), spacing: 1),
+                                GridItem(.fixed(95), spacing: 1),
+                                GridItem(.fixed(85), spacing: 1),
+                                GridItem(.fixed(50), spacing: 1),
                                 ]
     
     var body: some View {
@@ -34,9 +32,7 @@ struct PortfolioBasicInfo2View: View {
                     Text("Position")
                     Text("Plus Div")
                     Text("")
-                    Text("")
                 }
-                .font(.caption)
                     .underline()
                 ForEach(items, id: \.id) { item in
                     Group {
@@ -44,8 +40,7 @@ struct PortfolioBasicInfo2View: View {
                         View2(item: item)
                         View3(item: item)
                         View4(item: item)
-                        View6(portfolio: portfolio, item: item)
-                        View7(portfolio: portfolio, item: item)
+                        View5(portfolio: portfolio, item: item)
                     }
 
                 }
@@ -61,7 +56,7 @@ struct View1: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(item.symbol)
-            .font(.caption)
+//            .font(.caption)
             .bold()
             .foregroundStyle(item.isSold ? .orange : .primary)
             if item.isSold == false, let tag = item.stockTag {
@@ -125,9 +120,11 @@ struct View4: View {
         .onAppear {
             var dividendAmount: Double = 0
             for dividend in item.dividendList {
-                let dec = (dividend.price as NSString).doubleValue
-                if dec > 0 {
-                    dividendAmount += dec
+                if dividend.quantity.isEmpty {
+                    let dec = (dividend.price as NSString).doubleValue
+                    if dec > 0 {
+                        dividendAmount += dec
+                    }
                 }
             }
             total = item.gainLose
@@ -138,7 +135,7 @@ struct View4: View {
     }
 }
 
-struct View6: View {
+struct View5: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var appNavigationState: AppNavigationState
     var portfolio: Portfolio
@@ -147,7 +144,13 @@ struct View6: View {
     
     var body: some View {
         Group {
-            Menu("EDIT") {
+            Menu {
+                Button {
+                    let parameters = PortfolioDetailParameters(item: item, portfolio: portfolio)
+                    appNavigationState.portfolioDetailView(parameters: parameters)
+                } label: {
+                    Text("Stock Details").lineLimit(nil)
+                }
                 Button {
                     let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
                     appNavigationState.dividendCreateView(parameters: parameters)
@@ -177,6 +180,16 @@ struct View6: View {
                 } label: {
                     Label("Delete", systemImage: "trash.fill")
                 }
+            } label: {
+                Circle()
+                    .fill(.gray.opacity(0.15))
+                    .frame(width: 30, height: 30)
+                    .overlay {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 13.0, weight: .semibold))
+                            .foregroundColor(.blue)
+                            .padding()
+                    }
             }
             .font(.caption)
             .padding(0)
@@ -197,7 +210,7 @@ struct View6: View {
     
 }
 
-struct View7: View {
+struct View6: View {
     var portfolio: Portfolio
     var item: ItemData
     @EnvironmentObject var appNavigationState: AppNavigationState

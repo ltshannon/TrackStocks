@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ShowStockToolbar: ToolbarContent {
     @EnvironmentObject var settingsService: SettingsService
+    var simpleDataDisplay = false
     
     var body: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {

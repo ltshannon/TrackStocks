@@ -15,7 +15,7 @@ struct PortfolioView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
     @AppStorage("showDatePicker") var showDatePicker = false
-    @AppStorage("simpleDisplay") var simpleDataDisplay = true
+    @AppStorage("dividendDisplay") var isDividendDisplay = false
     var portfolio: Portfolio
     var tempSearchText: String
     @State var stocks: [ItemData] = []
@@ -63,10 +63,10 @@ struct PortfolioView: View {
                     .padding(.trailing, 30)
             }
             Group {
-                if simpleDataDisplay == true {
-                    SimplePortfolioView(portfolio: portfolio, items: searchResults)
-                } else {
+                if isDividendDisplay == true {
                     PortfolioBasicInfo2View(portfolio: portfolio, items: searchResults)
+                } else {
+                    SimplePortfolioView(portfolio: portfolio, items: searchResults)
                 }
             }
             .toolbar {

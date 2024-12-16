@@ -18,8 +18,8 @@ struct SimplePortfolioView: View {
                                 GridItem(.fixed(50), spacing: 1),
                                 GridItem(.fixed(65), spacing: 1),
                                 GridItem(.fixed(64), spacing: 5),
-                                GridItem(.fixed(75), spacing: 1),
-                                GridItem(.fixed(35), spacing: 1),
+                                GridItem(.fixed(80), spacing: 1),
+                                GridItem(.fixed(50), spacing: 1),
                                 ]
     
     var body: some View {
@@ -71,7 +71,7 @@ struct SimplePortfolioView: View {
                                 //.currency(code: "USD"))
                             .foregroundStyle(item.gainLose < 0 ?.red : .green)
                     }
-                    View6(portfolio: portfolio, item: item)
+                    View5(portfolio: portfolio, item: item)
                 }
             }
         }

@@ -14,7 +14,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) var context
     @Environment(\.dismiss) private var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
-    @AppStorage("simpleDisplay") var simpleDataDisplay = false
+    @AppStorage("dividendDisplay") var isDividendDisplay = false
     @Query(sort: \SymbolStorage.symbol) var symbolStorage: [SymbolStorage]
     @State var showSignOut = false
     @State var showDeleteAccount = false
@@ -83,7 +83,7 @@ struct SettingsView: View {
                     Text("Are you sure you want to update the Market Symbols, this will take a while?")
                 }
                 Toggle("Use Date Picker", isOn: $showDatePicker)
-                Toggle("Simple Data View", isOn: $simpleDataDisplay)
+                Toggle("Dividend view", isOn: $isDividendDisplay)
                 Spacer()
             }
             .padding([.top, .leading, .trailing])
