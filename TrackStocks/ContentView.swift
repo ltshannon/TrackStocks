@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
-//    @EnvironmentObject var userAuth: Authentication
-//    @EnvironmentObject var firebaseService: FirebaseService
+    @EnvironmentObject var userAuth: Authentication
+    @EnvironmentObject var firebaseService: FirebaseService
     @State private var showSignIn: Bool = false
 
     var body: some View {
@@ -28,6 +28,13 @@ struct ContentView: View {
                     Label("Settings", systemImage: "gear")
                 }
                 .tag(3)
+        }
+        .onReceive(userAuth.$fcmToken) { token in
+            if token.isNotEmpty {
+                Task {
+                    await firebaseService.updateAddFCM(token: token)
+                }
+            }
         }
 //        .onReceive(userAuth.$state) { state in
 //            debugPrint("😍", "ContentView onReceive userAtuh.state: \(state)")

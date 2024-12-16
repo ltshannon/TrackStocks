@@ -26,9 +26,22 @@
 		B13E6EED2CD2F6D100FEAAF4 /* TrackStocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrackStocks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B13465862D0FBCAC009F6625 /* Exceptions for "TrackStocks" folder in "TrackStocks" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B13E6EEC2CD2F6D100FEAAF4 /* TrackStocks */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B13E6EEF2CD2F6D100FEAAF4 /* TrackStocks */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B13465862D0FBCAC009F6625 /* Exceptions for "TrackStocks" folder in "TrackStocks" target */,
+			);
 			path = TrackStocks;
 			sourceTree = "<group>";
 		};
@@ -300,6 +313,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TrackStocks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Track Stocks";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -345,6 +359,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TrackStocks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Track Stocks";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

@@ -677,7 +677,7 @@ class FirebaseService: ObservableObject {
         
     }
 
-    func updateAddFCMToUser(token: String) async {
+    func updateAddFCM(token: String) async {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
         self.fmc = token
