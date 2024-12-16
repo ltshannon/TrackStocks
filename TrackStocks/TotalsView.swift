@@ -85,6 +85,9 @@ struct TotalsView: View {
         .refreshable {
             refreshTotals()
         }
+        .onChange(of: settingsService.displayStocks) { oldValue, newValue in
+            recomputeTotals()
+        }
     }
     
     func recomputeTotals() {
