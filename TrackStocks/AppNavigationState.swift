@@ -66,6 +66,16 @@ struct DividendEditParameters: Identifiable, Hashable, Encodable  {
     }
 }
 
+struct StocksNotificationParameters: Identifiable, Hashable, Encodable {
+    var id = UUID().uuidString
+
+}
+
+struct DetailStocksNotificationParameters: Identifiable, Hashable, Encodable {
+    var id = UUID().uuidString
+    var notificationData: NotificationData
+}
+
 enum PortfolioNavDestination: Hashable {
     case portfolioView(PortfolioParameters)
     case portfolioDetailView(PortfolioDetailParameters)
@@ -73,10 +83,20 @@ enum PortfolioNavDestination: Hashable {
     case portfolioSoldView(PortfolioUpdateParameters)
     case dividendCreateView(DividendCreateParameters)
     case dividendEditView(DividendEditParameters)
+    case stocksNotificationView(StocksNotificationParameters)
+    case detailStocksNotificationView(DetailStocksNotificationParameters)
 }
 
 class AppNavigationState: ObservableObject {
     @Published var portfolioNavigation: [PortfolioNavDestination] = []
+    
+    func detailStocksNotificationView(parameters: DetailStocksNotificationParameters) {
+        portfolioNavigation.append(PortfolioNavDestination.detailStocksNotificationView(parameters))
+    }
+    
+    func stocksNotificationView(parameters: StocksNotificationParameters) {
+        portfolioNavigation.append(PortfolioNavDestination.stocksNotificationView(parameters))
+    }
     
     func portfolioView(parameters: PortfolioParameters) {
         portfolioNavigation.append(PortfolioNavDestination.portfolioView(parameters))

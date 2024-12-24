@@ -100,10 +100,14 @@ struct PortfolioHomeView: View {
                     DividendCreateView(parameters: parameters)
                 case .dividendEditView(let parameters):
                     DividendEditView(parameters: parameters)
+                case .stocksNotificationView(let parameters):
+                    StockNotificationView(parameters: parameters)
+                case .detailStocksNotificationView(let parameters):
+                    DetailStockNotificationView(parameters: parameters)
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Enter Stock Symbol")
+        .searchable(text: $searchText, prompt: "Enter Portfolio Name")
         .onAppear {
             if firstTime {
                 firstTime = false

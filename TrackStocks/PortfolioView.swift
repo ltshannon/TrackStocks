@@ -97,7 +97,7 @@ struct PortfolioView: View {
                 Button("Cancel", role: .cancel) { }
             }
             .fullScreenCover(isPresented: $showingAddNewShockSheet, onDismiss: refreshPrices) {
-                AddNewStockToPortfolioView(portfolioName: portfolio.id ?? "n/a")
+                AddStockToPortfolioView(portfolioName: portfolio.id ?? "n/a")
             }
             .onChange(of: settingsService.displayStocks) { oldValue, newValue in
                 refreshPrices()

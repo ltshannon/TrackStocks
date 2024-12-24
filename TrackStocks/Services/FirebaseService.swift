@@ -116,6 +116,30 @@ struct FirebaseUserInformation: Codable, Identifiable, Hashable {
     var subscription: Bool?
 }
 
+struct StocksNotificationData: Codable, Identifiable, Hashable {
+    var id = UUID().uuidString
+    var notifications: [String] = []
+}
+
+struct NotificationData: Codable, Identifiable, Hashable {
+    var id: String = UUID().uuidString
+    var symbol: String = ""
+    var action: NotificationAction = .notSelected
+    var amount: Double = 0
+}
+
+enum NotificationAction: String, Codable, CaseIterable, Identifiable, Hashable {
+    case equalTo = "="
+    case lessThan = "<"
+    case lessThanOrEqualTo = "<="
+    case greaterThan = ">"
+    case greaterThanOrEqualTo = ">="
+    case notSelected = "Not Selected"
+    
+    var id: Self { self }
+    
+}
+
 class FirebaseService: ObservableObject {
     static let shared = FirebaseService()
     var stockDataService = StockDataService()
@@ -160,18 +184,29 @@ class FirebaseService: ObservableObject {
         }
         
         let data = ["email": user.email ?? "no email",
-                "id": user.displayName ?? user.uid,
-                "fcm": token
-               ]
+                    "id": user.displayName ?? user.uid,
+                    "fcm": token,
+                   ]
         do {
-            try await database.collection("users").document(user.uid).setData(data)
-            debugPrint(String.bell, "users successfully written!")
+            try await database.collection("users").document(user.uid).updateData(data)
+            debugPrint(String.bell, "users updated!")
         } catch {
-            debugPrint(String.fatal, "users: Error writing users: \(error)")
-            return
+            do {
+                let array: [String] = []
+                let data = ["email": user.email ?? "no email",
+                            "id": user.displayName ?? user.uid,
+                            "fcm": token,
+                            "notifications": array
+                           ] as [String : Any]
+                try await database.collection("users").document(user.uid).setData(data)
+                debugPrint(String.bell, "users successfully written!")
+            } catch {
+                debugPrint(String.fatal, "users: Error writing users: \(error)")
+                return
+            }
         }
     }
-    
+
     func addPortfolio(portfolioName: String) async {
         guard let user = Auth.auth().currentUser else {
             return
@@ -676,7 +711,89 @@ class FirebaseService: ObservableObject {
         }
         
     }
+    
+    func getStocksNotification() async -> [NotificationData] {
+        guard let user = Auth.auth().currentUser else { return [] }
+        
+        do {
+            let data = try await database.collection("users").document(user.uid).getDocument(as: StocksNotificationData.self)
+            var notificationData: [NotificationData] = []
+            for item in data.notifications {
+                let value = item.split(separator: ",")
+                if value.count == 3 {
+                    let action = String(value[1])
+                    let result = await NotificationData(symbol: String(value[0]), action: getNotificationActionFromString(action: action), amount: Double(value[2]) ?? 0)
+                    notificationData.append(result)
+                }
+                
+            }
+            return notificationData
+        } catch {
+            debugPrint("Error getStocksNotification: \(error)")
+        }
+        
+        return []
+    }
+    
+    func addStocksNotification(symbol: String, action: NotificationAction, amount: Double) async {
+        guard let user = Auth.auth().currentUser else { return }
+        
+        let string = symbol + "," + action.rawValue + "," + String(amount)
 
+        do {
+            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayUnion([string])])
+        } catch {
+            debugPrint(String.bell, "Error addStocksNotification: \(error)")
+            return
+        }
+    }
+    
+    func updateStocksNotification(oldNotificationData: NotificationData, newNotificationData: NotificationData) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        let string = oldNotificationData.symbol + "," + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount)
+        let string2 = newNotificationData.symbol + "," + newNotificationData.action.rawValue + "," + String(newNotificationData.amount)
+        
+        do {
+            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayRemove([string])])
+            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayUnion([string2])])
+            
+        } catch {
+            debugPrint(String.boom, "Error updateStocksNotification: \(error)")
+        }
+        
+    }
+    
+    func deleteStockNotification(item: NotificationData) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let string = item.symbol + "," + item.action.rawValue + "," + String(item.amount)
+        var array: [String] = []
+        array.append(string)
+        do {
+            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayRemove(array)])
+        } catch {
+            debugPrint(String.boom, "deleteStockNotification failed: \(error)")
+        }
+        
+    }
+
+    
+    func getNotificationActionFromString(action: String) async -> NotificationAction {
+        switch action {
+        case NotificationAction.lessThan.rawValue : return .lessThan
+        case NotificationAction.greaterThan.rawValue : return .greaterThan
+        case NotificationAction.equalTo.rawValue : return .equalTo
+        case NotificationAction.lessThanOrEqualTo.rawValue : return .lessThanOrEqualTo
+        case NotificationAction.greaterThanOrEqualTo.rawValue : return .greaterThanOrEqualTo
+        default: return .notSelected
+        }
+        
+    }
+    
     func updateAddFCM(token: String) async {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         

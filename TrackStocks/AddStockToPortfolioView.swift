@@ -1,5 +1,5 @@
 //
-//  AddNewStockToPortfolioView.swift
+//  AddStockToPortfolioView.swift
 //  TrackStocks
 //
 //  Created by Larry Shannon on 11/3/24.
@@ -12,7 +12,7 @@ enum FocusedField: Hashable {
     case symbol, date, quantity, basis
 }
 
-struct AddNewStockToPortfolioView: View {
+struct AddStockToPortfolioView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.dismiss) var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
@@ -113,8 +113,6 @@ struct AddNewStockToPortfolioView: View {
                         Text("Cancel")
                     }
                 }
-            }
-            .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         add()
@@ -167,5 +165,5 @@ struct AddNewStockToPortfolioView: View {
 }
 
 #Preview {
-    AddNewStockToPortfolioView()
+    AddStockToPortfolioView()
 }
