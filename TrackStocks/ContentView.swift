@@ -11,12 +11,19 @@ struct ContentView: View {
     @EnvironmentObject var userAuth: Authentication
     @EnvironmentObject var firebaseService: FirebaseService
     @State private var showSignIn: Bool = false
+//    var parameters = DetailStocksNotificationParameters(notificationData: NotificationData(symbol: "", action: .notSelected, amount: 0))
+    var parameters = StocksNotificationParameters()
 
     var body: some View {
         TabView {
             PortfolioHomeView()
                 .tabItem {
                     Label("Portfolios", systemImage: "rectangle.grid.2x2")
+                }
+                .tag(1)
+            StockNotificationView(parameters: parameters)
+                .tabItem {
+                    Label("Notifications", systemImage: "bell")
                 }
                 .tag(2)
             TotalsView()

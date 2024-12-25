@@ -83,19 +83,23 @@ enum PortfolioNavDestination: Hashable {
     case portfolioSoldView(PortfolioUpdateParameters)
     case dividendCreateView(DividendCreateParameters)
     case dividendEditView(DividendEditParameters)
+}
+
+enum NavigationNavDestination: Hashable {
     case stocksNotificationView(StocksNotificationParameters)
     case detailStocksNotificationView(DetailStocksNotificationParameters)
 }
 
 class AppNavigationState: ObservableObject {
     @Published var portfolioNavigation: [PortfolioNavDestination] = []
+    @Published var navigationNavigation: [NavigationNavDestination] = []
     
     func detailStocksNotificationView(parameters: DetailStocksNotificationParameters) {
-        portfolioNavigation.append(PortfolioNavDestination.detailStocksNotificationView(parameters))
+        navigationNavigation.append(NavigationNavDestination.detailStocksNotificationView(parameters))
     }
     
     func stocksNotificationView(parameters: StocksNotificationParameters) {
-        portfolioNavigation.append(PortfolioNavDestination.stocksNotificationView(parameters))
+        navigationNavigation.append(NavigationNavDestination.stocksNotificationView(parameters))
     }
     
     func portfolioView(parameters: PortfolioParameters) {
