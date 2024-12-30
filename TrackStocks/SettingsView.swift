@@ -11,6 +11,7 @@ import FirebaseAuth
 
 struct SettingsView: View {
     @EnvironmentObject var userAuth: Authentication
+    @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.modelContext) var context
     @Environment(\.dismiss) private var dismiss
     @AppStorage("showDatePicker") var showDatePicker = false
@@ -84,6 +85,11 @@ struct SettingsView: View {
                 }
                 Toggle("Use Date Picker", isOn: $showDatePicker)
                 Toggle("Dividend view", isOn: $isDividendDisplay)
+                Button {
+                    firebaseService.callFirebaseCallableFunction(data: "This is a test")
+                } label: {
+                    Text("Test")
+                }
                 Spacer()
             }
             .padding([.top, .leading, .trailing])

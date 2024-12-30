@@ -175,12 +175,6 @@ struct View5: View {
                 } label: {
                     Text("Sell")
                 }
-//                Button {
-//                    let parameters = StocksNotificationParameters()
-//                    appNavigationState.stocksNotificationView(parameters: parameters)
-//                } label: {
-//                    Text("Stock Notifications")
-//                }
                 Button(role: .destructive) {
                     showingDeleteAlert = true
                 } label: {

@@ -103,7 +103,7 @@ struct PortfolioHomeView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Enter Portfolio Name")
+        .searchable(text: $searchText, prompt: "Find a Stock")
         .onAppear {
             if firstTime {
                 firstTime = false

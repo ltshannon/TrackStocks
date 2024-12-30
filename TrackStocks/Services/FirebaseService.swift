@@ -9,6 +9,7 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 import FirebaseAuth
+import FirebaseFunctions
 
 let database = Firestore.firestore()
 
@@ -124,6 +125,7 @@ struct StocksNotificationData: Codable, Identifiable, Hashable {
 struct NotificationData: Codable, Identifiable, Hashable {
     var id: String = UUID().uuidString
     var symbol: String = ""
+    var notificationType: NotificationType = .price
     var action: NotificationAction = .notSelected
     var amount: Double = 0
 }
@@ -720,9 +722,10 @@ class FirebaseService: ObservableObject {
             var notificationData: [NotificationData] = []
             for item in data.notifications {
                 let value = item.split(separator: ",")
-                if value.count == 3 {
-                    let action = String(value[1])
-                    let result = await NotificationData(symbol: String(value[0]), action: getNotificationActionFromString(action: action), amount: Double(value[2]) ?? 0)
+                if value.count == 4 {
+                    let notificationType = await getNotificationTypeFromString(action: String(value[1]))
+                    let action = await getNotificationActionFromString(action: String(value[2]))
+                    let result = NotificationData(symbol: String(value[0]), notificationType: notificationType, action: action, amount: Double(value[3]) ?? 0)
                     notificationData.append(result)
                 }
                 
@@ -735,10 +738,10 @@ class FirebaseService: ObservableObject {
         return []
     }
     
-    func addStocksNotification(symbol: String, action: NotificationAction, amount: Double) async {
+    func addStocksNotification(symbol: String, notificationType: NotificationType, action: NotificationAction, amount: Double) async {
         guard let user = Auth.auth().currentUser else { return }
         
-        let string = symbol + "," + action.rawValue + "," + String(amount)
+        let string = symbol + "," + notificationType.rawValue + "," + action.rawValue + "," + String(amount)
 
         do {
             try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayUnion([string])])
@@ -752,8 +755,8 @@ class FirebaseService: ObservableObject {
         guard let user = Auth.auth().currentUser else {
             return
         }
-        let string = oldNotificationData.symbol + "," + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount)
-        let string2 = newNotificationData.symbol + "," + newNotificationData.action.rawValue + "," + String(newNotificationData.amount)
+        let string = oldNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + ","  + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount)
+        let string2 = newNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + ","  + newNotificationData.action.rawValue + "," + String(newNotificationData.amount)
         
         do {
             try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayRemove([string])])
@@ -770,7 +773,7 @@ class FirebaseService: ObservableObject {
             return
         }
         
-        let string = item.symbol + "," + item.action.rawValue + "," + String(item.amount)
+        let string = item.symbol + "," + item.notificationType.rawValue + ","  + item.action.rawValue + "," + String(item.amount)
         var array: [String] = []
         array.append(string)
         do {
@@ -790,6 +793,15 @@ class FirebaseService: ObservableObject {
         case NotificationAction.lessThanOrEqualTo.rawValue : return .lessThanOrEqualTo
         case NotificationAction.greaterThanOrEqualTo.rawValue : return .greaterThanOrEqualTo
         default: return .notSelected
+        }
+        
+    }
+    
+    func getNotificationTypeFromString(action: String) async -> NotificationType {
+        switch action {
+        case NotificationType.price.rawValue : return .price
+        case NotificationType.volume.rawValue : return .volume
+        default: return .price
         }
         
     }
@@ -822,6 +834,21 @@ class FirebaseService: ObservableObject {
             debugPrint(String.boom, "updateAddUserProfileImage: \(error)")
         }
         
+    }
+    
+    func callFirebaseCallableFunction(data: String) {
+        lazy var functions = Functions.functions()
+        
+        functions.httpsCallable("test").call(["body": data]) { result, error in
+            if let error = error {
+                debugPrint("🧨", "error: \(error.localizedDescription)")
+                return
+            }
+            if let data = result?.data {
+                debugPrint("😀", "result: \(data)")
+            }
+            
+        }
     }
         
 }

@@ -7,13 +7,20 @@
 
 import SwiftUI
 
+enum NotificationType: String, Codable, CaseIterable, Identifiable, Hashable {
+    case price = "Price"
+    case volume = "Volume"
+    
+    var id: Self { self }
+    
+}
+
 struct StockNotificationView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var appNavigationState: AppNavigationState
     @State var notificationData: [NotificationData] = []
     @State var showingAddNewStockNotification: Bool = false
     @State var selectedStockNotification: NotificationData = NotificationData()
-    @State var showUpdateStockNotification = false
     @State var showDeleteStockNotificationAlert = false
     
     init(parameters: StocksNotificationParameters) {
@@ -23,30 +30,24 @@ struct StockNotificationView: View {
     var body: some View {
         NavigationStack(path: $appNavigationState.navigationNavigation) {
             VStack {
-                List {
+                Form {
                     Section {
                         ForEach(notificationData, id: \.id) { item in
-                            HStack {
-                                Text(item.symbol)
-                                Text(item.action.rawValue)
-                                Text("\(String(format: "%.2f", item.amount))")
-                            }
-                            .swipeActions(allowsFullSwipe: false) {
-                                Button {
-                                    let parameters = DetailStocksNotificationParameters(notificationData: item)
-                                    appNavigationState.detailStocksNotificationView(parameters: parameters)
-                                } label: {
-                                    Text("Update")
-                                }
-                                .tint(.indigo)
-                                Button(role: .destructive) {
-                                    selectedStockNotification = item
-                                    showDeleteStockNotificationAlert = true
-                                } label: {
-                                    Text("Delete")
-                                }
+                            if item.notificationType == .price {
+                                DisplaynotificationDataView(item: item, selectedStockNotification: $selectedStockNotification, showDeleteStockNotificationAlert: $showDeleteStockNotificationAlert)
                             }
                         }
+                    } header: {
+                        Text("Action by Price")
+                    }
+                    Section {
+                        ForEach(notificationData, id: \.id) { item in
+                            if item.notificationType == .volume {
+                                DisplaynotificationDataView(item: item, selectedStockNotification: $selectedStockNotification, showDeleteStockNotificationAlert: $showDeleteStockNotificationAlert)
+                            }
+                        }
+                    } header: {
+                        Text("Action by Volume")
                     }
                 }
             }
@@ -79,10 +80,6 @@ struct StockNotificationView: View {
                 let parameters = DetailStocksNotificationParameters(notificationData: notificationData)
                 DetailStockNotificationView(parameters: parameters)
             }
-            .fullScreenCover(isPresented: $showUpdateStockNotification, onDismiss: updateDisplay) {
-                let parameters = DetailStocksNotificationParameters(notificationData: selectedStockNotification)
-                DetailStockNotificationView(parameters: parameters)
-            }
             .navigationDestination(for: NavigationNavDestination.self) { state in
                 switch state {
                 case .stocksNotificationView(let parameters):
@@ -111,3 +108,37 @@ struct StockNotificationView: View {
     }
     
 }
+
+struct DisplaynotificationDataView: View {
+    @EnvironmentObject var appNavigationState: AppNavigationState
+    var item: NotificationData
+    @Binding var selectedStockNotification: NotificationData
+    @Binding var showDeleteStockNotificationAlert: Bool
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text(item.symbol)
+                Text(item.action.rawValue)
+                Text("\(String(format: item.notificationType == .price ? "%.2f" : "%.0f", item.amount))")
+            }
+            .swipeActions(allowsFullSwipe: false) {
+                Button {
+                    let parameters = DetailStocksNotificationParameters(notificationData: item)
+                    appNavigationState.detailStocksNotificationView(parameters: parameters)
+                } label: {
+                    Text("Update")
+                }
+                .tint(.indigo)
+                Button(role: .destructive) {
+                    selectedStockNotification = item
+                    showDeleteStockNotificationAlert = true
+                } label: {
+                    Text("Delete")
+                }
+            }
+        }
+    }
+    
+}
+
