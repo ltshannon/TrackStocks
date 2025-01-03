@@ -13,11 +13,13 @@ struct DetailStockNotificationView: View {
     @AppStorage("showDatePicker") var showDatePicker = false
     var oldSymbol = ""
     var oldNotificationType: NotificationType = .price
+    var oldNotificationFrequency: NotificationFrequency = .once
     var oldAction: NotificationAction = .notSelected
     var oldAmount: Double = 0
     @State var selectedStock = ""
     @State var selectedNotificationType: NotificationType = .price
     @State var selectedNotificationAction: NotificationAction = .notSelected
+    @State var selectedNotificationFrequency: NotificationFrequency = .once
     @State var amount: Double?
     @State var showingStockSelector: Bool = false
     @State var showingMissingSymbol: Bool = false
@@ -26,10 +28,11 @@ struct DetailStockNotificationView: View {
     
     init(parameters: DetailStocksNotificationParameters) {
         let notificationData = parameters.notificationData
-        oldSymbol = notificationData.symbol
-        oldNotificationType = notificationData.notificationType
-        oldAction = notificationData.action
-        oldAmount = notificationData.amount
+        self.oldSymbol = notificationData.symbol
+        self.oldNotificationType = notificationData.notificationType
+        self.oldNotificationFrequency = notificationData.notificationFrequency
+        self.oldAction = notificationData.action
+        self.oldAmount = notificationData.amount
     }
     
     var body: some View {
@@ -56,7 +59,16 @@ struct DetailStockNotificationView: View {
                     Text("Select Notification Type")
                 }
                 Section {
-                    Picker("Select a Action", selection: $selectedNotificationAction) {
+                    Picker("Frequency", selection: $selectedNotificationFrequency) {
+                        ForEach(NotificationFrequency.allCases) { option in
+                            Text(option.rawValue)
+                        }
+                    }
+                } header: {
+                    Text("Select Notification Frequency")
+                }
+                Section {
+                    Picker("Action", selection: $selectedNotificationAction) {
                         ForEach(NotificationAction.allCases) { option in
                             Text(option.rawValue)
                         }
@@ -87,6 +99,7 @@ struct DetailStockNotificationView: View {
         .onAppear {
             self.selectedStock = oldSymbol
             self.selectedNotificationType = oldNotificationType
+            self.selectedNotificationFrequency = oldNotificationFrequency
             self.selectedNotificationAction = oldAction
             self.amount = oldAmount
         }
@@ -126,11 +139,11 @@ struct DetailStockNotificationView: View {
         }
 
         Task {
-            if oldSymbol == "" && oldNotificationType == .price && oldAction == .notSelected && oldAmount == 0 {
-                await firebaseService.addStocksNotification(symbol: selectedStock, notificationType: selectedNotificationType, action: selectedNotificationAction, amount: doubleAmount)
+            if oldSymbol == "" && oldNotificationType == .price && oldAction == .notSelected && oldAmount == 0 && oldNotificationFrequency == .once {
+                await firebaseService.addStocksNotification(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: doubleAmount)
             } else {
-                let oldNotificationData = NotificationData(symbol: oldSymbol, notificationType: oldNotificationType, action: oldAction, amount: oldAmount)
-                let newNotificationData = NotificationData(symbol: selectedStock, notificationType: selectedNotificationType,  action: selectedNotificationAction, amount: doubleAmount)
+                let oldNotificationData = NotificationData(symbol: oldSymbol, notificationType: oldNotificationType, notificationFrequency: oldNotificationFrequency, action: oldAction, amount: oldAmount)
+                let newNotificationData = NotificationData(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: doubleAmount)
                 await firebaseService.updateStocksNotification(oldNotificationData: oldNotificationData, newNotificationData: newNotificationData)
             }
             dismiss()

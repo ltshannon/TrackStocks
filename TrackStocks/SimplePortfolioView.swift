@@ -8,11 +8,14 @@
 import SwiftUI
 
 struct SimplePortfolioView: View {
+    @EnvironmentObject var firebaseService: FirebaseService
     var portfolio: Portfolio
     var items: [ItemData]
     @State var searchText = ""
     @State var isPercent: Bool = false
     @State var isCurrent: Bool = false
+    @State var showingDeleteAlert = false
+    @State var firestoreId: String = ""
     let columns: [GridItem] = [
                                 GridItem(.fixed(55), spacing: 1),
                                 GridItem(.fixed(50), spacing: 1),
@@ -71,12 +74,25 @@ struct SimplePortfolioView: View {
                                 //.currency(code: "USD"))
                             .foregroundStyle(item.gainLose < 0 ?.red : .green)
                     }
-                    View5(portfolio: portfolio, item: item)
+                    View5(portfolio: portfolio, item: item, showingDeleteAlert: $showingDeleteAlert, firestoreId: $firestoreId)
                 }
             }
         }
         .padding(.leading, 10)
+        .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
+            Button("OK", role: .destructive) {
+                deleteItem(firestoreId: firestoreId)
+            }
+            Button("Cancel", role: .cancel) { }
+        }
     }
+    
+    func deleteItem(firestoreId: String) {
+        Task {
+            await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.id ?? "n/a", stockId: firestoreId)
+        }
+    }
+    
 }
 
 struct View8: View {

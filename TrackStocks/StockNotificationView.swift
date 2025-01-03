@@ -15,6 +15,14 @@ enum NotificationType: String, Codable, CaseIterable, Identifiable, Hashable {
     
 }
 
+enum NotificationFrequency: String, Codable, CaseIterable, Identifiable, Hashable {
+    case once = "Once"
+    case repeated = "Repeated"
+    
+    var id: Self { self }
+    
+}
+
 struct StockNotificationView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var appNavigationState: AppNavigationState

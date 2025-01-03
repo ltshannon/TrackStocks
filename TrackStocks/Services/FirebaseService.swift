@@ -126,6 +126,7 @@ struct NotificationData: Codable, Identifiable, Hashable {
     var id: String = UUID().uuidString
     var symbol: String = ""
     var notificationType: NotificationType = .price
+    var notificationFrequency: NotificationFrequency = .once
     var action: NotificationAction = .notSelected
     var amount: Double = 0
 }
@@ -146,6 +147,7 @@ class FirebaseService: ObservableObject {
     static let shared = FirebaseService()
     var stockDataService = StockDataService()
     var settingService = SettingsService.shared
+    var debugService = DebugService.shared
     @AppStorage("profile-url") var profileURL: String = ""
     @Published var user: FirebaseUserInformation = FirebaseUserInformation(id: "", displayName: "", email: "", subscription: false)
     @Published var portfolioList: [Portfolio] = []
@@ -160,10 +162,15 @@ class FirebaseService: ObservableObject {
             return
         }
         
-        let listener = database.collection("users").document(user.uid).addSnapshotListener { documentSnapshot, error in
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let listener = database.collection("users").document(uid).addSnapshotListener { documentSnapshot, error in
 
             guard let document = documentSnapshot, let _ = document.data() else {
-                print("getUser: Error fetching document: \(user.uid)")
+                print("getUser: Error fetching document: \(uid)")
                 return
             }
             do {
@@ -185,22 +192,27 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         let data = ["email": user.email ?? "no email",
-                    "id": user.displayName ?? user.uid,
+                    "id": user.displayName ?? uid,
                     "fcm": token,
                    ]
         do {
-            try await database.collection("users").document(user.uid).updateData(data)
+            try await database.collection("users").document(uid).updateData(data)
             debugPrint(String.bell, "users updated!")
         } catch {
             do {
                 let array: [String] = []
                 let data = ["email": user.email ?? "no email",
-                            "id": user.displayName ?? user.uid,
+                            "id": user.displayName ?? uid,
                             "fcm": token,
                             "notifications": array
                            ] as [String : Any]
-                try await database.collection("users").document(user.uid).setData(data)
+                try await database.collection("users").document(uid).setData(data)
                 debugPrint(String.bell, "users successfully written!")
             } catch {
                 debugPrint(String.fatal, "users: Error writing users: \(error)")
@@ -214,8 +226,13 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).setData([
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).setData([
                 "name": portfolioName,
             ])
         } catch {
@@ -228,8 +245,13 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioId).updateData([
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioId).updateData([
                 "name": portfolioName,
             ])
         } catch {
@@ -243,7 +265,12 @@ class FirebaseService: ObservableObject {
             return
         }
         
-        let listener = database.collection("users").document(user.uid).collection("portfolios").whereField("name", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let listener = database.collection("users").document(uid).collection("portfolios").whereField("name", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else {
                 debugPrint("🧨", "Error getPortfolios: \(error!)")
                 return
@@ -275,8 +302,12 @@ class FirebaseService: ObservableObject {
             return
         }
         
-//        var displayStockState = settingService.displayStocks
-        database.collection("users").document(user.uid).collection("portfolios").document(portfolioId).collection("stocks").whereField("symbol", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        database.collection("users").document(uid).collection("portfolios").document(portfolioId).collection("stocks").whereField("symbol", isNotEqualTo: "").addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else {
                 debugPrint("🧨", "listenerForStockSymbols: \(error!)")
                 return
@@ -526,6 +557,11 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         let value = [
             "symbol": symbol,
             "quantity": quantity,
@@ -536,7 +572,7 @@ class FirebaseService: ObservableObject {
         ] as [String : Any]
         
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").addDocument(data: value)
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").addDocument(data: value)
         } catch {
             debugPrint(String.boom, "addItem: \(error)")
         }
@@ -572,12 +608,17 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: "")
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array)])
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array)])
         } catch {
             do {
-                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).setData(["dividends": FieldValue.arrayUnion(array)])
+                try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).setData(["dividends": FieldValue.arrayUnion(array)])
             } catch {
                 debugPrint(String.boom, "addDividend failed: \(error)")
             }
@@ -590,12 +631,17 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: numberOfShares)
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array)])
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array)])
         } catch {
             do {
-                try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).setData(["dividends": FieldValue.arrayUnion(array)])
+                try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).setData(["dividends": FieldValue.arrayUnion(array)])
             } catch {
                 debugPrint(String.boom, "addDividend failed: \(error)")
             }
@@ -608,6 +654,11 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         var str = dividendDisplayData.id + "," + dividendDisplayData.date + ",\(dividendDisplayData.price)"
         if dividendDisplayData.quantity.isNotEmpty {
             str += ",\(dividendDisplayData.quantity)"
@@ -615,7 +666,7 @@ class FirebaseService: ObservableObject {
         var array: [String] = []
         array.append(str)
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
         } catch {
             debugPrint(String.boom, "deleteDividend failed: \(error)")
         }
@@ -627,6 +678,11 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         var str = dividendDisplayData.id + "," + dividendDisplayData.date + ",\(dividendDisplayData.price)"
         if dividendDisplayData.quantity.isNotEmpty {
             str += ",\(dividendDisplayData.quantity)"
@@ -636,8 +692,8 @@ class FirebaseService: ObservableObject {
         let array2 = buildDividendArrayElement(id: dividendDisplayData.id, dividendDate: dividendDate, dividendAmount: dividendAmount, dividendQuantity: numberOfShares)
         
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array2)])
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayRemove(array)])
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(["dividends": FieldValue.arrayUnion(array2)])
             
         } catch {
             debugPrint(String.boom, "updateDividend failed: \(error)")
@@ -650,6 +706,11 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         let value = [
             "quantity": quantity,
             "basis": basis,
@@ -657,7 +718,7 @@ class FirebaseService: ObservableObject {
             "stockTag": stockTag,
         ] as [String : Any]
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)
         } catch {
                 debugPrint(String.boom, "updateItem for portfolio \(portfolioName) document \(firestoreId) failed: \(error)")
         }
@@ -669,13 +730,18 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         let value = [
             "soldDate": date,
             "price": price,
             "isSold": true
         ] as [String : Any]
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)
         } catch {
                 debugPrint(String.boom, "soldItem for portfolio \(portfolioName) document \(firestoreId) failed: \(error)")
         }
@@ -686,15 +752,20 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         do {
-            let querySnapshot = try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").getDocuments()
+            let querySnapshot = try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").getDocuments()
             for document in querySnapshot.documents {
                 let item = try document.data(as: StockItem.self)
                 if let id = item.id {
-                    try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
+                    try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(id).delete()
                 }
             }
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).delete()
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).delete()
         } catch {
             debugPrint(String.boom, "deletePortfolio for portfolio: \(portfolioName) \(error)")
         }
@@ -706,8 +777,13 @@ class FirebaseService: ObservableObject {
             return
         }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         do {
-            try await database.collection("users").document(user.uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).delete()
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(stockId).delete()
         } catch {
             debugPrint(String.boom, "deletePortfolioStock for portfolio: \(portfolioName) sockid: \(stockId) error: \(error)")
         }
@@ -717,15 +793,23 @@ class FirebaseService: ObservableObject {
     func getStocksNotification() async -> [NotificationData] {
         guard let user = Auth.auth().currentUser else { return [] }
         
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
         do {
-            let data = try await database.collection("users").document(user.uid).getDocument(as: StocksNotificationData.self)
+            let data = try await database.collection("users").document(uid).getDocument(as: StocksNotificationData.self)
             var notificationData: [NotificationData] = []
             for item in data.notifications {
                 let value = item.split(separator: ",")
-                if value.count == 4 {
+                if value.count == 5 {
+                    let symbol = String(value[0])
                     let notificationType = await getNotificationTypeFromString(action: String(value[1]))
-                    let action = await getNotificationActionFromString(action: String(value[2]))
-                    let result = NotificationData(symbol: String(value[0]), notificationType: notificationType, action: action, amount: Double(value[3]) ?? 0)
+                    let notificationFrequency = await getNotificationFrequencyFromString(action: String(value[2]))
+                    let action = await getNotificationActionFromString(action: String(value[3]))
+                    let amount = Double(value[4]) ?? 0
+                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount)
                     notificationData.append(result)
                 }
                 
@@ -738,13 +822,18 @@ class FirebaseService: ObservableObject {
         return []
     }
     
-    func addStocksNotification(symbol: String, notificationType: NotificationType, action: NotificationAction, amount: Double) async {
+    func addStocksNotification(symbol: String, notificationType: NotificationType, notificationFrequency: NotificationFrequency, action: NotificationAction, amount: Double) async {
         guard let user = Auth.auth().currentUser else { return }
         
-        let string = symbol + "," + notificationType.rawValue + "," + action.rawValue + "," + String(amount)
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let string = symbol + "," + notificationType.rawValue + "," + notificationFrequency.rawValue + "," + action.rawValue + "," + String(amount)
 
         do {
-            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayUnion([string])])
+            try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayUnion([string])])
         } catch {
             debugPrint(String.bell, "Error addStocksNotification: \(error)")
             return
@@ -755,12 +844,18 @@ class FirebaseService: ObservableObject {
         guard let user = Auth.auth().currentUser else {
             return
         }
-        let string = oldNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + ","  + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount)
-        let string2 = newNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + ","  + newNotificationData.action.rawValue + "," + String(newNotificationData.amount)
+        
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let string = oldNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + "," + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount)
+        let string2 = newNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + ","  + newNotificationData.action.rawValue + "," + String(newNotificationData.amount)
         
         do {
-            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayRemove([string])])
-            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayUnion([string2])])
+            try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayRemove([string])])
+            try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayUnion([string2])])
             
         } catch {
             debugPrint(String.boom, "Error updateStocksNotification: \(error)")
@@ -773,11 +868,16 @@ class FirebaseService: ObservableObject {
             return
         }
         
-        let string = item.symbol + "," + item.notificationType.rawValue + ","  + item.action.rawValue + "," + String(item.amount)
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let string = item.symbol + "," + item.notificationType.rawValue + "," + item.notificationFrequency.rawValue + ","  + item.action.rawValue + "," + String(item.amount)
         var array: [String] = []
         array.append(string)
         do {
-            try await database.collection("users").document(user.uid).updateData(["notifications": FieldValue.arrayRemove(array)])
+            try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayRemove(array)])
         } catch {
             debugPrint(String.boom, "deleteStockNotification failed: \(error)")
         }
@@ -802,6 +902,15 @@ class FirebaseService: ObservableObject {
         case NotificationType.price.rawValue : return .price
         case NotificationType.volume.rawValue : return .volume
         default: return .price
+        }
+        
+    }
+    
+    func getNotificationFrequencyFromString(action: String) async -> NotificationFrequency {
+        switch action {
+        case NotificationFrequency.once.rawValue : return .once
+        case NotificationFrequency.repeated.rawValue : return .repeated
+        default: return .once
         }
         
     }
