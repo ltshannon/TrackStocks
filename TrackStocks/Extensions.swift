@@ -175,5 +175,35 @@ extension Date {
     }
 }
 
+func getNotificationActionFromString(action: String) -> NotificationAction {
+    switch action {
+    case NotificationAction.lessThan.rawValue : return .lessThan
+    case NotificationAction.greaterThan.rawValue : return .greaterThan
+    case NotificationAction.equalTo.rawValue : return .equalTo
+    case NotificationAction.lessThanOrEqualTo.rawValue : return .lessThanOrEqualTo
+    case NotificationAction.greaterThanOrEqualTo.rawValue : return .greaterThanOrEqualTo
+    default: return .notSelected
+    }
+    
+}
+
+func getNotificationTypeFromString(action: String)-> NotificationType {
+    switch action {
+    case NotificationType.price.rawValue : return .price
+    case NotificationType.volume.rawValue : return .volume
+    default: return .price
+    }
+    
+}
+
+func getNotificationFrequencyFromString(action: String) -> NotificationFrequency {
+    switch action {
+    case NotificationFrequency.once.rawValue : return .once
+    case NotificationFrequency.repeated.rawValue : return .repeated
+    default: return .once
+    }
+    
+}
+
 
 

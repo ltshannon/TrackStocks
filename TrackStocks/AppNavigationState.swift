@@ -76,6 +76,11 @@ struct DetailStocksNotificationParameters: Identifiable, Hashable, Encodable {
     var notificationData: NotificationData
 }
 
+struct SymbolChartParameters: Identifiable, Hashable, Encodable {
+    var id = UUID().uuidString
+    var symbol: String
+}
+
 enum PortfolioNavDestination: Hashable {
     case portfolioView(PortfolioParameters)
     case portfolioDetailView(PortfolioDetailParameters)
@@ -83,6 +88,7 @@ enum PortfolioNavDestination: Hashable {
     case portfolioSoldView(PortfolioUpdateParameters)
     case dividendCreateView(DividendCreateParameters)
     case dividendEditView(DividendEditParameters)
+    case symbolChartView(SymbolChartParameters)
 }
 
 enum NavigationNavDestination: Hashable {
@@ -93,6 +99,10 @@ enum NavigationNavDestination: Hashable {
 class AppNavigationState: ObservableObject {
     @Published var portfolioNavigation: [PortfolioNavDestination] = []
     @Published var navigationNavigation: [NavigationNavDestination] = []
+    
+    func symbolChartView(parameters: SymbolChartParameters) {
+        portfolioNavigation.append(PortfolioNavDestination.symbolChartView(parameters))
+    }
     
     func detailStocksNotificationView(parameters: DetailStocksNotificationParameters) {
         navigationNavigation.append(NavigationNavDestination.detailStocksNotificationView(parameters))

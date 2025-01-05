@@ -72,7 +72,7 @@ struct StockNotificationView: View {
                     }
                 }
             }
-            .navigationTitle("Add Stock Notifications")
+            .navigationTitle("Stock Notifications")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 updateDisplay()
@@ -96,22 +96,47 @@ struct StockNotificationView: View {
                     DetailStockNotificationView(parameters: parameters)
                 }
             }
+            .onChange(of: firebaseService.user) { oldValue, newValue in
+                let data = firebaseService.user.notifications
+                self.notificationData = convertToNotificationData(data: data)
+
+            }
         }
     }
     
     func updateDisplay() {
-        Task {
-            let data = await firebaseService.getStocksNotification()
-            await MainActor.run {
-                notificationData = data
+        let data = firebaseService.user.notifications
+        self.notificationData = convertToNotificationData(data: data)
+
+    }
+    
+    func convertToNotificationData(data: [String]?) -> [NotificationData] {
+        var notificationData: [NotificationData] = []
+        if let data = data {
+            for item in data {
+                let value = item.split(separator: ",")
+                if value.count == 7 {
+                    let symbol = String(value[0])
+                    let notificationType = getNotificationTypeFromString(action: String(value[1]))
+                    let notificationFrequency = getNotificationFrequencyFromString(action: String(value[2]))
+                    let action = getNotificationActionFromString(action: String(value[3]))
+                    let amount = Double(value[4]) ?? 0
+                    let marketPrice = Double(value[5]) ?? 0
+                    let volume = String(value[6])
+                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume)
+                    notificationData.append(result)
+                }
             }
+            notificationData.sort { $0.symbol < $1.symbol }
         }
+        return notificationData
+        
     }
     
     func delete(item: NotificationData) {
         Task {
             await firebaseService.deleteStockNotification(item: item)
-            updateDisplay()
+//            updateDisplay()
         }
     }
     
@@ -128,7 +153,13 @@ struct DisplaynotificationDataView: View {
             HStack {
                 Text(item.symbol)
                 Text(item.action.rawValue)
-                Text("\(String(format: item.notificationType == .price ? "%.2f" : "%.0f", item.amount))")
+                if item.notificationType == .price {
+                    Text(item.amount, format: .currency(code: "USD"))
+                } else {
+                    Text("\(String(format: "%.0f", item.amount))")
+                }
+                Text(item.marketPrice, format: .currency(code: "USD"))
+                Text("\(item.volume)")
             }
             .swipeActions(allowsFullSwipe: false) {
                 Button {

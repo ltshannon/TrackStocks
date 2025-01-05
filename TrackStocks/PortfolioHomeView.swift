@@ -100,6 +100,8 @@ struct PortfolioHomeView: View {
                     DividendCreateView(parameters: parameters)
                 case .dividendEditView(let parameters):
                     DividendEditView(parameters: parameters)
+                case .symbolChartView(let parameters):
+                    SymbolChartView(parameters: parameters)
                 }
             }
         }

@@ -16,11 +16,15 @@ struct DetailStockNotificationView: View {
     var oldNotificationFrequency: NotificationFrequency = .once
     var oldAction: NotificationAction = .notSelected
     var oldAmount: Double = 0
+    var oldMarketPrice: Double = 0
+    var oldVolume = ""
     @State var selectedStock = ""
     @State var selectedNotificationType: NotificationType = .price
     @State var selectedNotificationAction: NotificationAction = .notSelected
     @State var selectedNotificationFrequency: NotificationFrequency = .once
     @State var amount: Double?
+    @State var marketPrice: Double = 0
+    @State var volume = ""
     @State var showingStockSelector: Bool = false
     @State var showingMissingSymbol: Bool = false
     @State var showingMissingAction: Bool = false
@@ -33,6 +37,8 @@ struct DetailStockNotificationView: View {
         self.oldNotificationFrequency = notificationData.notificationFrequency
         self.oldAction = notificationData.action
         self.oldAmount = notificationData.amount
+        self.oldMarketPrice = notificationData.marketPrice
+        self.oldVolume = notificationData.volume
     }
     
     var body: some View {
@@ -102,6 +108,8 @@ struct DetailStockNotificationView: View {
             self.selectedNotificationFrequency = oldNotificationFrequency
             self.selectedNotificationAction = oldAction
             self.amount = oldAmount
+            self.marketPrice = oldMarketPrice
+            self.volume = oldVolume
         }
         .alert("You are missing a Stock Symbol", isPresented: $showingMissingSymbol) {
             Button("Cancel", role: .cancel) { }
@@ -142,8 +150,8 @@ struct DetailStockNotificationView: View {
             if oldSymbol == "" && oldNotificationType == .price && oldAction == .notSelected && oldAmount == 0 && oldNotificationFrequency == .once {
                 await firebaseService.addStocksNotification(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: doubleAmount)
             } else {
-                let oldNotificationData = NotificationData(symbol: oldSymbol, notificationType: oldNotificationType, notificationFrequency: oldNotificationFrequency, action: oldAction, amount: oldAmount)
-                let newNotificationData = NotificationData(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: doubleAmount)
+                let oldNotificationData = NotificationData(symbol: oldSymbol, notificationType: oldNotificationType, notificationFrequency: oldNotificationFrequency, action: oldAction, amount: oldAmount, marketPrice: oldMarketPrice, volume: oldVolume)
+                let newNotificationData = NotificationData(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: doubleAmount, marketPrice: marketPrice, volume: volume)
                 await firebaseService.updateStocksNotification(oldNotificationData: oldNotificationData, newNotificationData: newNotificationData)
             }
             dismiss()

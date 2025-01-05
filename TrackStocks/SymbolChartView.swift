@@ -15,18 +15,26 @@ struct SymbolChartView: View {
     @State var high: Double = 0
     @State var low: Double = 0
     
+    init(parameters: SymbolChartParameters) {
+        self.symbol = parameters.symbol
+    }
+    
     var body: some View {
         VStack {
-            Chart {
-                ForEach(chartData) { item in
-                    LineMark(
-                        x: .value("Date", item.date),
-                        y: .value("Close", item.close)
-                    )
+            if chartData.isEmpty {
+                Text("No chart data available currently")
+            } else {
+                Chart {
+                    ForEach(chartData) { item in
+                        LineMark(
+                            x: .value("Date", item.date),
+                            y: .value("Close", item.close)
+                        )
+                    }
                 }
+                .frame(height: 300)
+                .chartYScale(domain: [low, high])
             }
-            .frame(height: 300)
-            .chartYScale(domain: [low, high])
         }
         .onAppear {
             Task {

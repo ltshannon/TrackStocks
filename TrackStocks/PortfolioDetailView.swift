@@ -104,7 +104,7 @@ struct PortfolioDetailView: View {
                         Text("Shares")
                     }
             }
-            SymbolChartView(symbol: item.symbol)
+//            SymbolChartView(symbol: item.symbol)
             Spacer()
         }
         .padding([.leading, .trailing], 20)

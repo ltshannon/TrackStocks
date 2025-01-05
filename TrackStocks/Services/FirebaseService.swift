@@ -112,9 +112,9 @@ struct DividendDisplayData: Codable, Identifiable, Hashable, Equatable {
 
 struct FirebaseUserInformation: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
-    var displayName: String?
+    var fcm: String?
     var email: String?
-    var subscription: Bool?
+    var notifications: [String]?
 }
 
 struct StocksNotificationData: Codable, Identifiable, Hashable {
@@ -129,6 +129,8 @@ struct NotificationData: Codable, Identifiable, Hashable {
     var notificationFrequency: NotificationFrequency = .once
     var action: NotificationAction = .notSelected
     var amount: Double = 0
+    var marketPrice: Double = 0
+    var volume: String = ""
 }
 
 enum NotificationAction: String, Codable, CaseIterable, Identifiable, Hashable {
@@ -149,7 +151,7 @@ class FirebaseService: ObservableObject {
     var settingService = SettingsService.shared
     var debugService = DebugService.shared
     @AppStorage("profile-url") var profileURL: String = ""
-    @Published var user: FirebaseUserInformation = FirebaseUserInformation(id: "", displayName: "", email: "", subscription: false)
+    @Published var user: FirebaseUserInformation = FirebaseUserInformation()
     @Published var portfolioList: [Portfolio] = []
     @Published var masterSymbolList: [MasterSymbolList] = []
     var fmc: String = ""
@@ -803,13 +805,15 @@ class FirebaseService: ObservableObject {
             var notificationData: [NotificationData] = []
             for item in data.notifications {
                 let value = item.split(separator: ",")
-                if value.count == 5 {
+                if value.count == 7 {
                     let symbol = String(value[0])
-                    let notificationType = await getNotificationTypeFromString(action: String(value[1]))
-                    let notificationFrequency = await getNotificationFrequencyFromString(action: String(value[2]))
-                    let action = await getNotificationActionFromString(action: String(value[3]))
+                    let notificationType = getNotificationTypeFromString(action: String(value[1]))
+                    let notificationFrequency = getNotificationFrequencyFromString(action: String(value[2]))
+                    let action = getNotificationActionFromString(action: String(value[3]))
                     let amount = Double(value[4]) ?? 0
-                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount)
+                    let marketPrice = Double(value[5]) ?? 0
+                    let volume = String(value[6])
+                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume)
                     notificationData.append(result)
                 }
                 
@@ -830,7 +834,7 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = symbol + "," + notificationType.rawValue + "," + notificationFrequency.rawValue + "," + action.rawValue + "," + String(amount)
+        let string = symbol + "," + notificationType.rawValue + "," + notificationFrequency.rawValue + "," + action.rawValue + "," + String(amount) + "," + "0.0" + "," + "0"
 
         do {
             try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayUnion([string])])
@@ -850,8 +854,8 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = oldNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + "," + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount)
-        let string2 = newNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + ","  + newNotificationData.action.rawValue + "," + String(newNotificationData.amount)
+        let string = oldNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + "," + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount) + "," + String(oldNotificationData.marketPrice) + "," + oldNotificationData.volume
+        let string2 = newNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + ","  + newNotificationData.action.rawValue + "," + String(newNotificationData.amount) + "," + String(newNotificationData.marketPrice) + "," + newNotificationData.volume
         
         do {
             try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayRemove([string])])
@@ -873,44 +877,13 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = item.symbol + "," + item.notificationType.rawValue + "," + item.notificationFrequency.rawValue + ","  + item.action.rawValue + "," + String(item.amount)
+        let string = item.symbol + "," + item.notificationType.rawValue + "," + item.notificationFrequency.rawValue + ","  + item.action.rawValue + "," + String(item.amount) + "," + String(item.marketPrice) + "," + item.volume
         var array: [String] = []
         array.append(string)
         do {
             try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayRemove(array)])
         } catch {
             debugPrint(String.boom, "deleteStockNotification failed: \(error)")
-        }
-        
-    }
-
-    
-    func getNotificationActionFromString(action: String) async -> NotificationAction {
-        switch action {
-        case NotificationAction.lessThan.rawValue : return .lessThan
-        case NotificationAction.greaterThan.rawValue : return .greaterThan
-        case NotificationAction.equalTo.rawValue : return .equalTo
-        case NotificationAction.lessThanOrEqualTo.rawValue : return .lessThanOrEqualTo
-        case NotificationAction.greaterThanOrEqualTo.rawValue : return .greaterThanOrEqualTo
-        default: return .notSelected
-        }
-        
-    }
-    
-    func getNotificationTypeFromString(action: String) async -> NotificationType {
-        switch action {
-        case NotificationType.price.rawValue : return .price
-        case NotificationType.volume.rawValue : return .volume
-        default: return .price
-        }
-        
-    }
-    
-    func getNotificationFrequencyFromString(action: String) async -> NotificationFrequency {
-        switch action {
-        case NotificationFrequency.once.rawValue : return .once
-        case NotificationFrequency.repeated.rawValue : return .repeated
-        default: return .once
         }
         
     }

@@ -169,6 +169,12 @@ struct View5: View {
                         Text("Stock Details").lineLimit(nil)
                     }
                     Button {
+                        let parameters = SymbolChartParameters(symbol: item.symbol)
+                        appNavigationState.symbolChartView(parameters: parameters)
+                    } label: {
+                        Text("Daily Chart").lineLimit(nil)
+                    }
+                    Button {
                         let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
                         appNavigationState.dividendCreateView(parameters: parameters)
                     } label: {
