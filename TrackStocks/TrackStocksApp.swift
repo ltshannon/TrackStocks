@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseCore
 import FirebaseMessaging
+import FirebaseAuth
 import UserNotifications
 import SwiftData
 
@@ -17,6 +18,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         
         FirebaseApp.configure()
+        do {
+            try Auth.auth().useUserAccessGroup("DDDAQ32TPA.com.breakawaydesign.TrackStocks")
+        } catch {
+            debugPrint(String.boom, "Auth.auth().useUserAccessGroup failed: \(error.localizedDescription)")
+        }
         debugPrint("Firebase started")
         
         UNUserNotificationCenter.current().delegate = self

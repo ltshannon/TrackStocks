@@ -7,22 +7,6 @@
 
 import SwiftUI
 
-enum NotificationType: String, Codable, CaseIterable, Identifiable, Hashable {
-    case price = "Price"
-    case volume = "Volume"
-    
-    var id: Self { self }
-    
-}
-
-enum NotificationFrequency: String, Codable, CaseIterable, Identifiable, Hashable {
-    case once = "Once"
-    case repeated = "Repeated"
-    
-    var id: Self { self }
-    
-}
-
 struct StockNotificationView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var appNavigationState: AppNavigationState
@@ -98,7 +82,7 @@ struct StockNotificationView: View {
             }
             .onChange(of: firebaseService.user) { oldValue, newValue in
                 let data = firebaseService.user.notifications
-                self.notificationData = convertToNotificationData(data: data)
+                self.notificationData = firebaseService.convertToNotificationData(data: data)
 
             }
         }
@@ -106,31 +90,8 @@ struct StockNotificationView: View {
     
     func updateDisplay() {
         let data = firebaseService.user.notifications
-        self.notificationData = convertToNotificationData(data: data)
+        self.notificationData = firebaseService.convertToNotificationData(data: data)
 
-    }
-    
-    func convertToNotificationData(data: [String]?) -> [NotificationData] {
-        var notificationData: [NotificationData] = []
-        if let data = data {
-            for item in data {
-                let value = item.split(separator: ",")
-                if value.count == 7 {
-                    let symbol = String(value[0])
-                    let notificationType = getNotificationTypeFromString(action: String(value[1]))
-                    let notificationFrequency = getNotificationFrequencyFromString(action: String(value[2]))
-                    let action = getNotificationActionFromString(action: String(value[3]))
-                    let amount = Double(value[4]) ?? 0
-                    let marketPrice = Double(value[5]) ?? 0
-                    let volume = String(value[6])
-                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume)
-                    notificationData.append(result)
-                }
-            }
-            notificationData.sort { $0.symbol < $1.symbol }
-        }
-        return notificationData
-        
     }
     
     func delete(item: NotificationData) {

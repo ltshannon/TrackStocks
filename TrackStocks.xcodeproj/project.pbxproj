@@ -20,10 +20,47 @@
 		B13E6F152CD30A0100FEAAF4 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B13E6F142CD30A0100FEAAF4 /* FirebaseMessaging */; };
 		B13E6F172CD30A0100FEAAF4 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B13E6F162CD30A0100FEAAF4 /* FirebaseStorage */; };
 		B13E6F192CD30A0100FEAAF4 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = B13E6F182CD30A0100FEAAF4 /* FirebaseStorageCombine-Community */; };
+		B1C840182D2B6CE200D08C36 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C840172D2B6CE200D08C36 /* WidgetKit.framework */; };
+		B1C8401A2D2B6CE200D08C36 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C840192D2B6CE200D08C36 /* SwiftUI.framework */; };
+		B1C8402B2D2B6CE300D08C36 /* StocksNotificationWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B1C840382D2C52C300D08C36 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B1C840372D2C52C300D08C36 /* FirebaseAuth */; };
+		B1C8403A2D2C52CB00D08C36 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B1C840392D2C52CB00D08C36 /* FirebaseFirestore */; };
+		B1C8403C2D2C52D900D08C36 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = B1C8403B2D2C52D900D08C36 /* FirebaseFunctions */; };
+		B1C8403E2D2C52E100D08C36 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B1C8403D2D2C52E100D08C36 /* FirebaseMessaging */; };
+		B1C840402D2C52E700D08C36 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B1C8403F2D2C52E700D08C36 /* FirebaseStorage */; };
+		B1C840472D2C555400D08C36 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = B1C840462D2C555400D08C36 /* FirebaseCore */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B1C840292D2B6CE300D08C36 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13E6EE52CD2F6D100FEAAF4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B1C840142D2B6CE200D08C36;
+			remoteInfo = StocksNotificationWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B1C840302D2B6CE300D08C36 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B1C8402B2D2B6CE300D08C36 /* StocksNotificationWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		B13E6EED2CD2F6D100FEAAF4 /* TrackStocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrackStocks.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = StocksNotificationWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1C840172D2B6CE200D08C36 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B1C840192D2B6CE200D08C36 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		B1C840492D2C701D00D08C36 /* StocksNotificationWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StocksNotificationWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -34,6 +71,26 @@
 			);
 			target = B13E6EEC2CD2F6D100FEAAF4 /* TrackStocks */;
 		};
+		B1C8402F2D2B6CE300D08C36 /* Exceptions for "StocksNotificationWidget" folder in "StocksNotificationWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */;
+		};
+		B1C840322D2C4FF900D08C36 /* Exceptions for "TrackStocks" folder in "StocksNotificationWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Extensions.swift,
+				"GoogleService-Info.plist",
+				Services/Authentication.swift,
+				Services/DebugService.swift,
+				Services/FirebaseService.swift,
+				Services/SettingService.swift,
+				Services/StockDataService.swift,
+			);
+			target = B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -41,8 +98,17 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				B13465862D0FBCAC009F6625 /* Exceptions for "TrackStocks" folder in "TrackStocks" target */,
+				B1C840322D2C4FF900D08C36 /* Exceptions for "TrackStocks" folder in "StocksNotificationWidgetExtension" target */,
 			);
 			path = TrackStocks;
+			sourceTree = "<group>";
+		};
+		B1C8401B2D2B6CE200D08C36 /* StocksNotificationWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B1C8402F2D2B6CE300D08C36 /* Exceptions for "StocksNotificationWidget" folder in "StocksNotificationWidgetExtension" target */,
+			);
+			path = StocksNotificationWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -68,13 +134,31 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1C840122D2B6CE200D08C36 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1C8403E2D2C52E100D08C36 /* FirebaseMessaging in Frameworks */,
+				B1C8401A2D2B6CE200D08C36 /* SwiftUI.framework in Frameworks */,
+				B1C8403A2D2C52CB00D08C36 /* FirebaseFirestore in Frameworks */,
+				B1C8403C2D2C52D900D08C36 /* FirebaseFunctions in Frameworks */,
+				B1C840402D2C52E700D08C36 /* FirebaseStorage in Frameworks */,
+				B1C840382D2C52C300D08C36 /* FirebaseAuth in Frameworks */,
+				B1C840472D2C555400D08C36 /* FirebaseCore in Frameworks */,
+				B1C840182D2B6CE200D08C36 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		B13E6EE42CD2F6D100FEAAF4 = {
 			isa = PBXGroup;
 			children = (
+				B1C840492D2C701D00D08C36 /* StocksNotificationWidgetExtension.entitlements */,
 				B13E6EEF2CD2F6D100FEAAF4 /* TrackStocks */,
+				B1C8401B2D2B6CE200D08C36 /* StocksNotificationWidget */,
+				B1C840162D2B6CE200D08C36 /* Frameworks */,
 				B13E6EEE2CD2F6D100FEAAF4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -83,8 +167,18 @@
 			isa = PBXGroup;
 			children = (
 				B13E6EED2CD2F6D100FEAAF4 /* TrackStocks.app */,
+				B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B1C840162D2B6CE200D08C36 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B1C840172D2B6CE200D08C36 /* WidgetKit.framework */,
+				B1C840192D2B6CE200D08C36 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -97,10 +191,12 @@
 				B13E6EE92CD2F6D100FEAAF4 /* Sources */,
 				B13E6EEA2CD2F6D100FEAAF4 /* Frameworks */,
 				B13E6EEB2CD2F6D100FEAAF4 /* Resources */,
+				B1C840302D2B6CE300D08C36 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B1C8402A2D2B6CE300D08C36 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B13E6EEF2CD2F6D100FEAAF4 /* TrackStocks */,
@@ -125,6 +221,34 @@
 			productReference = B13E6EED2CD2F6D100FEAAF4 /* TrackStocks.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1C8402C2D2B6CE300D08C36 /* Build configuration list for PBXNativeTarget "StocksNotificationWidgetExtension" */;
+			buildPhases = (
+				B1C840112D2B6CE200D08C36 /* Sources */,
+				B1C840122D2B6CE200D08C36 /* Frameworks */,
+				B1C840132D2B6CE200D08C36 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B1C8401B2D2B6CE200D08C36 /* StocksNotificationWidget */,
+			);
+			name = StocksNotificationWidgetExtension;
+			packageProductDependencies = (
+				B1C840372D2C52C300D08C36 /* FirebaseAuth */,
+				B1C840392D2C52CB00D08C36 /* FirebaseFirestore */,
+				B1C8403B2D2C52D900D08C36 /* FirebaseFunctions */,
+				B1C8403D2D2C52E100D08C36 /* FirebaseMessaging */,
+				B1C8403F2D2C52E700D08C36 /* FirebaseStorage */,
+				B1C840462D2C555400D08C36 /* FirebaseCore */,
+			);
+			productName = StocksNotificationWidgetExtension;
+			productReference = B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -136,6 +260,9 @@
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					B13E6EEC2CD2F6D100FEAAF4 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					B1C840142D2B6CE200D08C36 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 				};
@@ -158,12 +285,20 @@
 			projectRoot = "";
 			targets = (
 				B13E6EEC2CD2F6D100FEAAF4 /* TrackStocks */,
+				B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B13E6EEB2CD2F6D100FEAAF4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B1C840132D2B6CE200D08C36 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -180,7 +315,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1C840112D2B6CE200D08C36 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B1C8402A2D2B6CE300D08C36 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */;
+			targetProxy = B1C840292D2B6CE300D08C36 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B13E6EFA2CD2F6D200FEAAF4 /* Debug */ = {
@@ -391,6 +541,67 @@
 			};
 			name = Release;
 		};
+		B1C8402D2D2B6CE300D08C36 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = StocksNotificationWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 33;
+				DEVELOPMENT_TEAM = DDDAQ32TPA;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = StocksNotificationWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = StocksNotificationWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.TrackStocks.StocksNotificationWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B1C8402E2D2B6CE300D08C36 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = StocksNotificationWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 33;
+				DEVELOPMENT_TEAM = DDDAQ32TPA;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = StocksNotificationWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = StocksNotificationWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.TrackStocks.StocksNotificationWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -408,6 +619,15 @@
 			buildConfigurations = (
 				B13E6EFD2CD2F6D200FEAAF4 /* Debug */,
 				B13E6EFE2CD2F6D200FEAAF4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B1C8402C2D2B6CE300D08C36 /* Build configuration list for PBXNativeTarget "StocksNotificationWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1C8402D2D2B6CE300D08C36 /* Debug */,
+				B1C8402E2D2B6CE300D08C36 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -490,6 +710,36 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B13E6EFF2CD30A0100FEAAF4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseStorageCombine-Community";
+		};
+		B1C840372D2C52C300D08C36 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B13E6EFF2CD30A0100FEAAF4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		B1C840392D2C52CB00D08C36 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B13E6EFF2CD30A0100FEAAF4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		B1C8403B2D2C52D900D08C36 /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B13E6EFF2CD30A0100FEAAF4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
+		B1C8403D2D2C52E100D08C36 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B13E6EFF2CD30A0100FEAAF4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		B1C8403F2D2C52E700D08C36 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B13E6EFF2CD30A0100FEAAF4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		B1C840462D2C555400D08C36 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B13E6EFF2CD30A0100FEAAF4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

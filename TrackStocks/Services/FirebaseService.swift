@@ -5,6 +5,7 @@
 //  Created by Larry Shannon on 2/5/24.
 //
 
+import Combine
 import SwiftUI
 import Firebase
 import FirebaseFirestore
@@ -122,6 +123,22 @@ struct StocksNotificationData: Codable, Identifiable, Hashable {
     var notifications: [String] = []
 }
 
+enum NotificationType: String, Codable, CaseIterable, Identifiable, Hashable {
+    case price = "Price"
+    case volume = "Volume"
+    
+    var id: Self { self }
+    
+}
+
+enum NotificationFrequency: String, Codable, CaseIterable, Identifiable, Hashable {
+    case once = "Once"
+    case repeated = "Repeated"
+    
+    var id: Self { self }
+    
+}
+
 struct NotificationData: Codable, Identifiable, Hashable {
     var id: String = UUID().uuidString
     var symbol: String = ""
@@ -131,6 +148,7 @@ struct NotificationData: Codable, Identifiable, Hashable {
     var amount: Double = 0
     var marketPrice: Double = 0
     var volume: String = ""
+    var change: Double = 0
 }
 
 enum NotificationAction: String, Codable, CaseIterable, Identifiable, Hashable {
@@ -157,6 +175,7 @@ class FirebaseService: ObservableObject {
     var fmc: String = ""
     var userListener: ListenerRegistration?
     var portfolioListener: ListenerRegistration?
+    let stockNotifications = PassthroughSubject<[String], Never>()
     
     func getUser() {
         
@@ -179,6 +198,9 @@ class FirebaseService: ObservableObject {
                 let user = try document.data(as: FirebaseUserInformation.self)
                 DispatchQueue.main.async {
                     self.user = user
+                    if let notifications = user.notifications {
+                        self.stockNotifications.send(notifications)
+                    }
                 }
             } catch {
                 debugPrint("getUser reading data: \(error.localizedDescription)")
@@ -805,7 +827,7 @@ class FirebaseService: ObservableObject {
             var notificationData: [NotificationData] = []
             for item in data.notifications {
                 let value = item.split(separator: ",")
-                if value.count == 7 {
+                if value.count == 8 {
                     let symbol = String(value[0])
                     let notificationType = getNotificationTypeFromString(action: String(value[1]))
                     let notificationFrequency = getNotificationFrequencyFromString(action: String(value[2]))
@@ -813,11 +835,13 @@ class FirebaseService: ObservableObject {
                     let amount = Double(value[4]) ?? 0
                     let marketPrice = Double(value[5]) ?? 0
                     let volume = String(value[6])
-                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume)
+                    let change = Double(value[7]) ?? 0
+                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume, change: change)
                     notificationData.append(result)
                 }
                 
             }
+            notificationData.sort( by: {$0.symbol < $1.symbol} )
             return notificationData
         } catch {
             debugPrint("Error getStocksNotification: \(error)")
@@ -834,7 +858,7 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = symbol + "," + notificationType.rawValue + "," + notificationFrequency.rawValue + "," + action.rawValue + "," + String(amount) + "," + "0.0" + "," + "0"
+        let string = symbol + "," + notificationType.rawValue + "," + notificationFrequency.rawValue + "," + action.rawValue + "," + String(amount) + "," + "0.0" + "," + "0" + "," + "0.0"
 
         do {
             try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayUnion([string])])
@@ -854,8 +878,8 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = oldNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + "," + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount) + "," + String(oldNotificationData.marketPrice) + "," + oldNotificationData.volume
-        let string2 = newNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + ","  + newNotificationData.action.rawValue + "," + String(newNotificationData.amount) + "," + String(newNotificationData.marketPrice) + "," + newNotificationData.volume
+        let string = oldNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + "," + oldNotificationData.action.rawValue + "," + String(oldNotificationData.amount) + "," + String(oldNotificationData.marketPrice) + "," + oldNotificationData.volume + "," + String(oldNotificationData.change)
+        let string2 = newNotificationData.symbol + "," + oldNotificationData.notificationType.rawValue + "," + oldNotificationData.notificationFrequency.rawValue + ","  + newNotificationData.action.rawValue + "," + String(newNotificationData.amount) + "," + String(newNotificationData.marketPrice) + "," + newNotificationData.volume + "," + String(newNotificationData.change)
         
         do {
             try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayRemove([string])])
@@ -877,7 +901,7 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = item.symbol + "," + item.notificationType.rawValue + "," + item.notificationFrequency.rawValue + ","  + item.action.rawValue + "," + String(item.amount) + "," + String(item.marketPrice) + "," + item.volume
+        let string = item.symbol + "," + item.notificationType.rawValue + "," + item.notificationFrequency.rawValue + ","  + item.action.rawValue + "," + String(item.amount) + "," + String(item.marketPrice) + "," + item.volume + "," + String(item.change)
         var array: [String] = []
         array.append(string)
         do {
@@ -885,6 +909,30 @@ class FirebaseService: ObservableObject {
         } catch {
             debugPrint(String.boom, "deleteStockNotification failed: \(error)")
         }
+        
+    }
+    
+    func convertToNotificationData(data: [String]?) -> [NotificationData] {
+        var notificationData: [NotificationData] = []
+        if let data = data {
+            for item in data {
+                let value = item.split(separator: ",")
+                if value.count == 8 {
+                    let symbol = String(value[0])
+                    let notificationType = getNotificationTypeFromString(action: String(value[1]))
+                    let notificationFrequency = getNotificationFrequencyFromString(action: String(value[2]))
+                    let action = getNotificationActionFromString(action: String(value[3]))
+                    let amount = Double(value[4]) ?? 0
+                    let marketPrice = Double(value[5]) ?? 0
+                    let volume = String(value[6])
+                    let change = Double(value[7]) ?? 0
+                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume, change: change)
+                    notificationData.append(result)
+                }
+            }
+            notificationData.sort { $0.symbol < $1.symbol }
+        }
+        return notificationData
         
     }
     

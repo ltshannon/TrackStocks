@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 struct ContentView: View {
     @EnvironmentObject var userAuth: Authentication
@@ -43,25 +44,10 @@ struct ContentView: View {
                 }
             }
         }
-//        .onReceive(userAuth.$state) { state in
-//            debugPrint("😍", "ContentView onReceive userAtuh.state: \(state)")
-//            if state == .loggedOut {
-//                tabSelection = 1
-//            }
-//            if state == .loggedIn {
-//                Task {
-//                    await firebaseService.createUser(token: userAuth.fcmToken)
-//                    firebaseService.getUser()
-//                    DispatchQueue.main.async {
-//                        tabSelection = 2
-//                    }
-//                }
-//
-//            }
-//        }
-//        .fullScreenCover(isPresented: $showSignIn) {
-//            SignInView()
-//        }
+        .onChange(of: firebaseService.user) { oldValue, newValue in
+            WidgetCenter.shared.reloadAllTimelines()
+
+        }
     }
 }
 
