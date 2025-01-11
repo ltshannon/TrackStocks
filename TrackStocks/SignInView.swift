@@ -8,12 +8,14 @@
 import SwiftUI
 import AuthenticationServices
 import FirebaseAuth
+import ActivityKit
 
 struct SignInView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var userAuth: Authentication
     @Environment(\.colorScheme) var colorScheme
     @State var showingContentView: Bool = false
+    @State private var activity: Activity<StockTrackingAttributes>? = nil
     
     var body: some View {
         VStack {
@@ -37,6 +39,11 @@ struct SignInView: View {
                 Task {
                     await firebaseService.createUser(token: userAuth.fcmToken)
                     firebaseService.getUser()
+//                    let notifications = firebaseService.user.notifications
+//                    let items = firebaseService.convertToNotificationData(data: notifications)
+//                    let state = StockTrackingAttributes.ContentState(items: items)
+//                    let attributes = StockTrackingAttributes()
+//                    activity = try? Activity<StockTrackingAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .minute, value: 1, to: Date())!), pushType: nil)
                     DispatchQueue.main.async {
                         showingContentView = true
                     }

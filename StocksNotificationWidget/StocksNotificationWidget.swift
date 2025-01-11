@@ -43,6 +43,17 @@ class Provider: TimelineProvider {
             completion(timeline)
         }
         
+//        let currentDate = Date()
+//        let formatter3 = DateFormatter()
+//        formatter3.dateFormat = "HH:mm E, d MMM y"
+//        let string = formatter3.string(from: Date.now)
+//        let notificationData = NotificationData(symbol: string)
+//        let entryDate = Calendar.current.date(byAdding: .minute, value: 1, to: currentDate)!
+//        let entry = SimpleEntry(date: entryDate, items: [notificationData])
+//        let timeline = Timeline(entries: [entry], policy: .atEnd)
+//
+//        completion(timeline)
+        
     }
     
 }
@@ -55,9 +66,11 @@ struct SimpleEntry: TimelineEntry {
 
 struct WidgetView: View {
     var entry: Provider.Entry
+    @State var date = ""
     
     var body: some View {
         VStack {
+            Text(date)
             ForEach(entry.items, id: \.id) { item in
                 HStack {
                     Text(item.symbol)
@@ -76,30 +89,83 @@ struct WidgetView: View {
             }
             Spacer()
         }
+        .onAppear {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .short
+            dateFormatter.locale = Locale.current
+            date = dateFormatter.string(from: Date.now)
+        }
     }
 }
 
-
 struct StocksNotificationWidget: Widget {
-    init() {
-        FirebaseApp.configure()
-        do {
-            try Auth.auth().useUserAccessGroup("DDDAQ32TPA.com.breakawaydesign.TrackStocks")
-        } catch {
-            debugPrint(String.boom, "Auth.auth().useUserAccessGroup failed: \(error.localizedDescription)")
-        }
-    }
-    let kind: String = "StocksNotificationWidget"
-
+//    init() {
+//        FirebaseApp.configure()
+//        do {
+//            try Auth.auth().useUserAccessGroup("DDDAQ32TPA.com.breakawaydesign.TrackStocks")
+//        } catch {
+//            debugPrint(String.boom, "Auth.auth().useUserAccessGroup failed: \(error.localizedDescription)")
+//        }
+//    }
+//    let kind: String = "StocksNotificationWidget"
+//
+//    var body: some WidgetConfiguration {
+//        StaticConfiguration(kind: kind, provider: Provider()) { entry in
+//            WidgetView(entry: entry)
+//                .containerBackground(.fill.tertiary, for: .widget)
+//        }
+//        .supportedFamilies([.systemLarge, .accessoryRectangular])
+//        .configurationDisplayName("My Lists")
+//        .description("View your current list")
+//    }
+    
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            WidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+        ActivityConfiguration(for: StockTrackingAttributes.self) { context in
+            StockTrackingWidgetView(context: context)
+        } dynamicIsland: { context in
+            DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+//                    Text("Main")
+                }
+            } compactLeading: {
+//                Text("CL")
+            } compactTrailing: {
+//                Text("CT")
+            } minimal: {
+//                Text("M")
+            }
         }
-        .supportedFamilies([.systemLarge, .accessoryRectangular])
-        .configurationDisplayName("My Lists")
-        .description("View your current list")
     }
     
 }
 
+struct StockTrackingWidgetView: View {
+    let context: ActivityViewContext<StockTrackingAttributes>
+    @State var notificationData: [NotificationData] = []
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(Date.now, style: .date)
+                Text(Date.now, style: .time)
+            }
+            ForEach(notificationData, id: \.id) { item in
+                HStack {
+                    Text(item.symbol)
+                    Text(item.marketPrice, format: .currency(code: "USD"))
+                    Text("\(String(format: "%.2f", item.change))")
+                        .padding([.leading, .trailing], 5)
+                        .foregroundStyle(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 5, style: .continuous).fill(item.change < 0 ?.red : .green)
+                        )
+                }
+            }
+        }
+        .padding(20)
+        .onAppear {
+            notificationData = context.state.items
+        }
+    }
+}

@@ -12,7 +12,7 @@ import SwiftUI
 struct StocksNotificationWidgetBundle: WidgetBundle {
     var body: some Widget {
         StocksNotificationWidget()
-        StocksNotificationWidgetControl()
-        StocksNotificationWidgetLiveActivity()
+//        StocksNotificationWidgetControl()
+//        StocksNotificationWidgetLiveActivity()
     }
 }
