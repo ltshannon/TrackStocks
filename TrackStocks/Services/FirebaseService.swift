@@ -151,6 +151,13 @@ struct NotificationData: Codable, Identifiable, Hashable {
     var change: Double = 0
 }
 
+struct ActivityData: Codable, Identifiable, Hashable {
+    var id: String = UUID().uuidString
+    var symbol: String = ""
+    var marketPrice: Double = 0
+    var change: Double = 0
+}
+
 enum NotificationAction: String, Codable, CaseIterable, Identifiable, Hashable {
     case equalTo = "="
     case lessThan = "<"
@@ -173,6 +180,7 @@ class FirebaseService: ObservableObject {
     @Published var portfolioList: [Portfolio] = []
     @Published var masterSymbolList: [MasterSymbolList] = []
     var fmc: String = ""
+    var activityToken: String = ""
     var userListener: ListenerRegistration?
     var portfolioListener: ListenerRegistration?
     let stockNotifications = PassthroughSubject<[String], Never>()
@@ -936,6 +944,25 @@ class FirebaseService: ObservableObject {
         
     }
     
+    func convertToActivityData(data: [String]?) -> [ActivityData] {
+        var activityData: [ActivityData] = []
+        if let data = data {
+            for item in data {
+                let value = item.split(separator: ",")
+                if value.count == 8 {
+                    let symbol = String(value[0])
+                    let marketPrice = Double(value[5]) ?? 0
+                    let change = Double(value[7]) ?? 0
+                    let result = ActivityData(symbol: symbol, marketPrice: marketPrice, change: change)
+                    activityData.append(result)
+                }
+            }
+            activityData.sort { $0.symbol < $1.symbol }
+        }
+        return activityData
+        
+    }
+    
     func updateAddFCM(token: String) async {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
@@ -952,6 +979,23 @@ class FirebaseService: ObservableObject {
         
     }
 
+    func updateAddActivity(token: String) async {
+        guard let currentUid = Auth.auth().currentUser?.uid else { return }
+        
+        self.activityToken = token
+        
+        let values = [
+                        "activityToken" : token,
+                     ]
+        do {
+            try await database.collection("users").document(currentUid).updateData(values)
+        } catch {
+            debugPrint("🧨", "updateAddactivityTokenToUser: \(error)")
+        }
+        
+    }
+    
+    
     func updateAddUserProfileImage(url: String) async {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         

@@ -88,6 +88,7 @@
 				Services/FirebaseService.swift,
 				Services/SettingService.swift,
 				Services/StockDataService.swift,
+				StockActivityAttributes.swift,
 				StockTrackingAttributes.swift,
 			);
 			target = B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */;
@@ -457,7 +458,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TrackStocks/TrackStocks.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"TrackStocks/Preview Content\"";
 				DEVELOPMENT_TEAM = DDDAQ32TPA;
@@ -504,7 +505,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TrackStocks/TrackStocks.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"TrackStocks/Preview Content\"";
 				DEVELOPMENT_TEAM = DDDAQ32TPA;
@@ -551,7 +552,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = StocksNotificationWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = DDDAQ32TPA;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = StocksNotificationWidget/Info.plist;
@@ -581,7 +582,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = StocksNotificationWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = DDDAQ32TPA;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = StocksNotificationWidget/Info.plist;

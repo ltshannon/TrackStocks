@@ -16,6 +16,7 @@ struct ContentView: View {
 //    var parameters = DetailStocksNotificationParameters(notificationData: NotificationData(symbol: "", action: .notSelected, amount: 0))
     var parameters = StocksNotificationParameters()
     @State private var activity: Activity<StockTrackingAttributes>? = nil
+    @State private var activityToken: Activity<StockActivityAttributes>? = nil
 
     var body: some View {
         TabView {
@@ -39,6 +40,9 @@ struct ContentView: View {
                 }
                 .tag(3)
         }
+        .onAppear {
+            sendActivityToken(notifications: [])
+        }
         .onReceive(userAuth.$fcmToken) { token in
             if token.isNotEmpty {
                 Task {
@@ -46,19 +50,19 @@ struct ContentView: View {
                 }
             }
         }
-        .onChange(of: firebaseService.user) { oldValue, newValue in
-            if var newNotifications = newValue.notifications, newNotifications.count > 0 {
-                if var oldNotifications = oldValue.notifications, oldNotifications.count == newNotifications.count {
-                    newNotifications.sort(by: { $0 < $1 } )
-                    oldNotifications.sort(by: { $0 < $1 } )
-                    if newNotifications != oldNotifications {
-                        sendActivity(notifications: newNotifications)
-                    }
-                } else {
-                    sendActivity(notifications: newNotifications)
-                }
-            }
-        }
+//        .onChange(of: firebaseService.user) { oldValue, newValue in
+//            if var newNotifications = newValue.notifications, newNotifications.count > 0 {
+//                if var oldNotifications = oldValue.notifications, oldNotifications.count == newNotifications.count {
+//                    newNotifications.sort(by: { $0 < $1 } )
+//                    oldNotifications.sort(by: { $0 < $1 } )
+//                    if newNotifications != oldNotifications {
+//                        sendActivityToken(notifications: newNotifications)
+//                    }
+//                } else {
+//                    sendActivityToken(notifications: newNotifications)
+//                }
+//            }
+//        }
         
     }
     
@@ -68,13 +72,38 @@ struct ContentView: View {
         
         if activity != nil {
             Task {
-                await activity?.update(ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!))
+                await self.activity?.update(ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!))
             }
         } else {
             let attributes = StockTrackingAttributes()
-            activity = try? Activity<StockTrackingAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!), pushType: nil)
+            self.activity = try? Activity<StockTrackingAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!), pushType: nil)
         }
     }
+    
+    func sendActivityToken(notifications: [String]) {
+        let items = Array(firebaseService.convertToActivityData(data: notifications).prefix(6))
+        debugPrint("🐸", "\(items)")
+        let state = StockActivityAttributes.ContentState(items: items)
+        
+        if activityToken != nil {
+            Task {
+                await self.activityToken?.update(ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!))
+            }
+        } else {
+            let attributes = StockActivityAttributes()
+            self.activityToken = try? Activity<StockActivityAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: nil), pushType: .token)
+            Task {
+                for await pushToken in self.activityToken!.pushTokenUpdates {
+                    let pushTokenString = pushToken.reduce("") {
+                        $0 + String(format: "%02x", $1)
+                    }
+                    debugPrint("🦉, New push token: \(pushTokenString)")
+                    await firebaseService.updateAddActivity(token: pushTokenString)
+                }
+            }
+        }
+    }
+    
 }
 
 #Preview {

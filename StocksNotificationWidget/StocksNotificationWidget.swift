@@ -121,8 +121,10 @@ struct StocksNotificationWidget: Widget {
 //    }
     
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: StockTrackingAttributes.self) { context in
-            StockTrackingWidgetView(context: context)
+//        ActivityConfiguration(for: StockTrackingAttributes.self) { context in
+//            StockTrackingWidgetView(context: context)
+        ActivityConfiguration(for: StockActivityAttributes.self) { context in
+            StockActivityWidgetView(context: context)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
@@ -166,6 +168,36 @@ struct StockTrackingWidgetView: View {
         .padding(20)
         .onAppear {
             notificationData = context.state.items
+        }
+    }
+}
+
+struct StockActivityWidgetView: View {
+    let context: ActivityViewContext<StockActivityAttributes>
+    @State var activityData: [ActivityData] = []
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(Date.now, style: .date)
+                Text(Date.now, style: .time)
+            }
+            ForEach(activityData, id: \.id) { item in
+                HStack {
+                    Text(item.symbol)
+                    Text(item.marketPrice, format: .currency(code: "USD"))
+                    Text("\(String(format: "%.2f", item.change))")
+                        .padding([.leading, .trailing], 5)
+                        .foregroundStyle(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 5, style: .continuous).fill(item.change < 0 ?.red : .green)
+                        )
+                }
+            }
+        }
+        .padding(20)
+        .onAppear {
+            activityData = context.state.items.sorted { $0.symbol < $1.symbol }
         }
     }
 }
