@@ -124,11 +124,11 @@ struct StocksNotificationWidget: Widget {
 //        ActivityConfiguration(for: StockTrackingAttributes.self) { context in
 //            StockTrackingWidgetView(context: context)
         ActivityConfiguration(for: StockActivityAttributes.self) { context in
-            StockActivityWidgetView(context: context)
+            StockActivityWidgetView(activityData: context.state.items)
         } dynamicIsland: { context in
             DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-//                    Text("Main")
+                DynamicIslandExpandedRegion(.bottom) {
+                    StockActivityWidgetView(activityData: context.state.items)
                 }
             } compactLeading: {
 //                Text("CL")
@@ -141,6 +141,39 @@ struct StocksNotificationWidget: Widget {
     }
     
 }
+
+struct StockActivityWidgetView: View {
+    @Environment(\.colorScheme) var colorScheme
+    var activityData: [ActivityData]
+    @State var data: [ActivityData] = []
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(Date.now, style: .date)
+                Text(Date.now, style: .time)
+            }
+            .foregroundStyle(colorScheme == .dark ? .white : .black)
+            ForEach(data, id: \.id) { item in
+                HStack {
+                    Text(item.symbol)
+                    Text(item.marketPrice, format: .currency(code: "USD"))
+                    Text("\(String(format: "%.2f", item.change))")
+                        .padding([.leading, .trailing], 5)
+                        .foregroundStyle(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 5, style: .continuous).fill(item.change < 0 ?.red : .green)
+                        )
+                }
+            }
+        }
+        .padding(20)
+        .onAppear {
+            data = activityData.sorted { $0.symbol < $1.symbol }
+        }
+    }
+}
+
 
 struct StockTrackingWidgetView: View {
     let context: ActivityViewContext<StockTrackingAttributes>
@@ -168,36 +201,6 @@ struct StockTrackingWidgetView: View {
         .padding(20)
         .onAppear {
             notificationData = context.state.items
-        }
-    }
-}
-
-struct StockActivityWidgetView: View {
-    let context: ActivityViewContext<StockActivityAttributes>
-    @State var activityData: [ActivityData] = []
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Text(Date.now, style: .date)
-                Text(Date.now, style: .time)
-            }
-            ForEach(activityData, id: \.id) { item in
-                HStack {
-                    Text(item.symbol)
-                    Text(item.marketPrice, format: .currency(code: "USD"))
-                    Text("\(String(format: "%.2f", item.change))")
-                        .padding([.leading, .trailing], 5)
-                        .foregroundStyle(.white)
-                        .background(
-                            RoundedRectangle(cornerRadius: 5, style: .continuous).fill(item.change < 0 ?.red : .green)
-                        )
-                }
-            }
-        }
-        .padding(20)
-        .onAppear {
-            activityData = context.state.items.sorted { $0.symbol < $1.symbol }
         }
     }
 }

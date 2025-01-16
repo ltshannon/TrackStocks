@@ -135,7 +135,7 @@ struct PortfolioDetailView: View {
         .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
             if let masterSymbol = newValue.filter({ $0.portfolioName == self.portfolio.name }).first {
                 let portfolioItems = masterSymbol.portfolioItems
-                if let item = portfolioItems.filter({ $0.symbol == self.item.symbol }).first {
+                if let item = portfolioItems.filter({ $0.id == self.item.firestoreId }).first {
                     Task {
                         await updateDividends(array: item.dividends)
                     }
