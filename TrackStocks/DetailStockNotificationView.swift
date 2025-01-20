@@ -57,40 +57,40 @@ struct DetailStockNotificationView: View {
                 } header: {
                     Text("Stock Symbol")
                 }
-                Section {
-                    Picker("Select Notification Type", selection: $selectedNotificationType) {
-                        ForEach(NotificationType.allCases) { item in
-                            Text("\(item.rawValue)")
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                } header: {
-                    Text("Select Notification Type")
-                }
-                Section {
-                    Picker("Frequency", selection: $selectedNotificationFrequency) {
-                        ForEach(NotificationFrequency.allCases) { option in
-                            Text(option.rawValue)
-                        }
-                    }
-                } header: {
-                    Text("Select Notification Frequency")
-                }
-                Section {
-                    Picker("Action", selection: $selectedNotificationAction) {
-                        ForEach(NotificationAction.allCases) { option in
-                            Text(option.rawValue)
-                        }
-                    }
-                } header: {
-                    Text("Select a Action")
-                }
-                Section {
-                    TextField("Amount", value: $amount, format: .number.precision(.fractionLength(2)))
-                        .keyboardType(.decimalPad)
-                } header: {
-                    Text("Amount")
-                }
+//                Section {
+//                    Picker("Select Notification Type", selection: $selectedNotificationType) {
+//                        ForEach(NotificationType.allCases) { item in
+//                            Text("\(item.rawValue)")
+//                        }
+//                    }
+//                    .pickerStyle(.segmented)
+//                } header: {
+//                    Text("Select Notification Type")
+//                }
+//                Section {
+//                    Picker("Frequency", selection: $selectedNotificationFrequency) {
+//                        ForEach(NotificationFrequency.allCases) { option in
+//                            Text(option.rawValue)
+//                        }
+//                    }
+//                } header: {
+//                    Text("Select Notification Frequency")
+//                }
+//                Section {
+//                    Picker("Action", selection: $selectedNotificationAction) {
+//                        ForEach(NotificationAction.allCases) { option in
+//                            Text(option.rawValue)
+//                        }
+//                    }
+//                } header: {
+//                    Text("Select a Action")
+//                }
+//                Section {
+//                    TextField("Amount", value: $amount, format: .number.precision(.fractionLength(2)))
+//                        .keyboardType(.decimalPad)
+//                } header: {
+//                    Text("Amount")
+//                }
             }
             .listSectionSpacing(1)
         }
@@ -134,28 +134,28 @@ struct DetailStockNotificationView: View {
             showingMissingSymbol = true
             return
         }
-        if selectedNotificationAction == .notSelected {
-            showingMissingAction = true
-            return
-        }
-        if amount == nil {
-            showingMissingAmount = true
-            return
-        }
-        var doubleAmount: Double = 0
-        if let a = amount {
-            doubleAmount = a
-        } else {
-            showingMissingAmount = true
-            return
-        }
+//        if selectedNotificationAction == .notSelected {
+//            showingMissingAction = true
+//            return
+//        }
+//        if amount == nil {
+//            showingMissingAmount = true
+//            return
+//        }
+//        var doubleAmount: Double = 0
+//        if let a = amount {
+//            doubleAmount = a
+//        } else {
+//            showingMissingAmount = true
+//            return
+//        }
 
         Task {
             if oldSymbol == "" && oldNotificationType == .price && oldAction == .notSelected && oldAmount == 0 && oldNotificationFrequency == .once {
-                await firebaseService.addStocksNotification(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: doubleAmount)
+                await firebaseService.addStocksNotification(symbol: selectedStock, notificationType: .price, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: 0)
             } else {
                 let oldNotificationData = NotificationData(symbol: oldSymbol, notificationType: oldNotificationType, notificationFrequency: oldNotificationFrequency, action: oldAction, amount: oldAmount, marketPrice: oldMarketPrice, volume: oldVolume, change: oldChange)
-                let newNotificationData = NotificationData(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: doubleAmount, marketPrice: marketPrice, volume: volume, change: change)
+                let newNotificationData = NotificationData(symbol: selectedStock, notificationType: selectedNotificationType, notificationFrequency: selectedNotificationFrequency, action: selectedNotificationAction, amount: 0, marketPrice: oldMarketPrice, volume: oldVolume, change: oldChange)
                 await firebaseService.updateStocksNotification(oldNotificationData: oldNotificationData, newNotificationData: newNotificationData)
             }
             dismiss()

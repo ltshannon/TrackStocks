@@ -83,6 +83,7 @@
 			membershipExceptions = (
 				Extensions.swift,
 				"GoogleService-Info.plist",
+				Services/ActivityStatus.swift,
 				Services/Authentication.swift,
 				Services/DebugService.swift,
 				Services/FirebaseService.swift,

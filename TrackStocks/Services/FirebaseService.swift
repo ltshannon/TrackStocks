@@ -983,12 +983,10 @@ class FirebaseService: ObservableObject {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
         self.activityToken = token
-        
-        let values = [
-                        "activityToken" : token,
-                     ]
+        let docRef = database.collection("users").document(currentUid)
+
         do {
-            try await database.collection("users").document(currentUid).updateData(values)
+            try await docRef.updateData(["activityToken" : token])
         } catch {
             debugPrint("🧨", "updateAddactivityTokenToUser: \(error)")
         }

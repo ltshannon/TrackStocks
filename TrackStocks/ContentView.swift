@@ -40,9 +40,9 @@ struct ContentView: View {
                 }
                 .tag(3)
         }
-        .onAppear {
-            sendActivityToken(notifications: [])
-        }
+//        .onAppear {
+//            sendActivityToken(notifications: [])
+//        }
         .onReceive(userAuth.$fcmToken) { token in
             if token.isNotEmpty {
                 Task {
@@ -81,15 +81,16 @@ struct ContentView: View {
     }
     
     func sendActivityToken(notifications: [String]) {
-        let items = Array(firebaseService.convertToActivityData(data: notifications).prefix(6))
-        debugPrint("🐸", "\(items)")
-        let state = StockActivityAttributes.ContentState(items: items)
+//        let items = Array(firebaseService.convertToActivityData(data: notifications).prefix(6))
+//        debugPrint("🐸", "\(items)")
+        let activityData = ActivityData(symbol: "Starting Activity")
+        let state = StockActivityAttributes.ContentState(items: [activityData])
         
-        if activityToken != nil {
-            Task {
-                await self.activityToken?.update(ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!))
-            }
-        } else {
+//        if activityToken != nil {
+//            Task {
+//                await self.activityToken?.update(ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!))
+//            }
+//        } else {
             let attributes = StockActivityAttributes()
             self.activityToken = try? Activity<StockActivityAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: nil), pushType: .token)
             Task {
@@ -101,7 +102,7 @@ struct ContentView: View {
                     await firebaseService.updateAddActivity(token: pushTokenString)
                 }
             }
-        }
+//        }
     }
     
 }

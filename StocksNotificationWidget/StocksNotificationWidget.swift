@@ -165,6 +165,7 @@ struct StockActivityWidgetView: View {
                             RoundedRectangle(cornerRadius: 5, style: .continuous).fill(item.change < 0 ?.red : .green)
                         )
                 }
+                .foregroundStyle(colorScheme == .dark ? .white : .black)
             }
         }
         .padding(20)

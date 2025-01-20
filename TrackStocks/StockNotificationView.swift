@@ -6,14 +6,18 @@
 //
 
 import SwiftUI
+import ActivityKit
 
 struct StockNotificationView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var appNavigationState: AppNavigationState
+    @EnvironmentObject var activiyStatus: ActivityStatus
     @State var notificationData: [NotificationData] = []
     @State var showingAddNewStockNotification: Bool = false
     @State var selectedStockNotification: NotificationData = NotificationData()
     @State var showDeleteStockNotificationAlert = false
+    @State var showingActivityStatus: Bool = false
+    @State var activityStatus: String = "Activities started successfully"
     
     init(parameters: StocksNotificationParameters) {
         self.selectedStockNotification = NotificationData()
@@ -30,18 +34,34 @@ struct StockNotificationView: View {
                             }
                         }
                     } header: {
-                        Text("Action by Price")
+                        Text("Stocks")
                     }
                     Section {
-                        ForEach(notificationData, id: \.id) { item in
-                            if item.notificationType == .volume {
-                                DisplaynotificationDataView(item: item, selectedStockNotification: $selectedStockNotification, showDeleteStockNotificationAlert: $showDeleteStockNotificationAlert)
+                        Group {
+                            if activiyStatus.activityActive == false {
+                                Button {
+                                    Task {
+                                        await startActivity()
+                                        showingActivityStatus = true
+                                    }
+                                } label: {
+                                    Text("Start Activity")
+                                }
+                            }
+                            if activiyStatus.activityActive == true {
+                                Button {
+                                    Task {
+                                        await endActivity()
+                                    }
+                                } label: {
+                                    Text("End Activity")
+                                }
                             }
                         }
-                    } header: {
-                        Text("Action by Volume")
+                        .buttonStyle(PlainTextButtonStyle())
                     }
                 }
+
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -56,6 +76,9 @@ struct StockNotificationView: View {
                     }
                 }
             }
+            .onAppear {
+                checkActivityStatus()
+            }
             .navigationTitle("Stock Notifications")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
@@ -66,6 +89,9 @@ struct StockNotificationView: View {
                     delete(item: selectedStockNotification)
                 }
                 Button("Cancel", role: .cancel) { }
+            }
+            .alert(activityStatus, isPresented: $showingActivityStatus) {
+                Button("OK", role: .destructive) {}
             }
             .fullScreenCover(isPresented: $showingAddNewStockNotification, onDismiss: updateDisplay) {
                 let notificationData = NotificationData(symbol: "", action: .notSelected, amount: 0)
@@ -83,9 +109,82 @@ struct StockNotificationView: View {
             .onChange(of: firebaseService.user) { oldValue, newValue in
                 let data = firebaseService.user.notifications
                 self.notificationData = firebaseService.convertToNotificationData(data: data)
-
+            }
+            
+        }
+    }
+    
+    func checkActivityStatus() {
+        Task {
+            if let activity = activiyStatus.activity {
+                await observeActivity(activity: activity)
             }
         }
+    }
+    
+    @MainActor
+    func observeActivity(activity: Activity<StockActivityAttributes>) async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { @MainActor in
+                for await activityState in activity.activityStateUpdates {
+                    debugPrint("👔", "activityState: ", activityState)
+                    if ActivityKit.ActivityState.active == .active {
+                        activiyStatus.activityActive = true
+                    }
+                    if ActivityKit.ActivityState.active == .dismissed {
+                        activiyStatus.activityActive = false
+                    }
+                }
+            }
+        }
+    }
+    
+    func startActivity() async {
+        
+        if ActivityAuthorizationInfo().areActivitiesEnabled {
+            let items = await Array(firebaseService.getStocksNotification().prefix(6))
+            
+            var activityArray: [ActivityData] = []
+            for item in items {
+                let activityItem = ActivityData(symbol: item.symbol, marketPrice: item.amount, change: item.change)
+                activityArray.append(activityItem)
+            }
+            let state = StockActivityAttributes.ContentState(items: activityArray)
+            let attributes = StockActivityAttributes()
+            let components = Calendar.current.date(byAdding: .year, value: 1, to: Date.now)
+            
+            do {
+                activiyStatus.activity = try Activity<StockActivityAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: components ?? Date.now), pushType: .token)
+            } catch {
+                debugPrint("Error starting activity: \(error)")
+                activityStatus = "Failed to start activity"
+            }
+            Task {
+                for await pushToken in activiyStatus.activity!.pushTokenUpdates {
+                    let pushTokenString = pushToken.reduce("") {
+                        $0 + String(format: "%02x", $1)
+                    }
+                    debugPrint("🦉, New push token: \(pushTokenString)")
+                    await firebaseService.updateAddActivity(token: pushTokenString)
+                }
+            }
+            activityStatus = "Activities started successfully"
+            activiyStatus.activityActive = true
+        } else {
+            activityStatus = "Activities are not enabled. Go to settings and enable Live Activities for this app"
+            activiyStatus.activityActive = false
+        }
+
+    }
+    
+    func endActivity() async {
+        let state = StockActivityAttributes.ContentState(items: [])
+        let dismissalPolicy: ActivityUIDismissalPolicy = .immediate
+        if let activity = activiyStatus.activity {
+            await activity.end(ActivityContent(state: state, staleDate: nil), dismissalPolicy: dismissalPolicy)
+            activiyStatus.activityActive = false
+        }
+        
     }
     
     func updateDisplay() {
@@ -97,8 +196,8 @@ struct StockNotificationView: View {
     func delete(item: NotificationData) {
         Task {
             await firebaseService.deleteStockNotification(item: item)
-//            updateDisplay()
         }
+        
     }
     
 }
@@ -113,12 +212,12 @@ struct DisplaynotificationDataView: View {
         VStack {
             HStack {
                 Text(item.symbol)
-                Text(item.action.rawValue)
-                if item.notificationType == .price {
-                    Text(item.amount, format: .currency(code: "USD"))
-                } else {
-                    Text("\(String(format: "%.0f", item.amount))")
-                }
+//                Text(item.action.rawValue)
+//                if item.notificationType == .price {
+//                    Text(item.amount, format: .currency(code: "USD"))
+//                } else {
+//                    Text("\(String(format: "%.0f", item.amount))")
+//                }
                 Text(item.marketPrice, format: .currency(code: "USD"))
                 Text("\(item.volume)")
             }

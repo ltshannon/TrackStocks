@@ -11,9 +11,11 @@ import FirebaseMessaging
 import FirebaseAuth
 import UserNotifications
 import SwiftData
+import ActivityKit
 
 class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
     let gcmMessageIDKey = "gcm.message_id"
+    var activity: Activity<StockActivityAttributes>? = nil
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         
@@ -38,10 +40,21 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
         return true
     }
     
+    @MainActor
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         debugPrint("💈", "didRegisterForRemoteNotificationsWithDeviceToken")
         Messaging.messaging().apnsToken = deviceToken
+    }
+    
+    @MainActor
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable: Any]) async
+    -> UIBackgroundFetchResult {
+        
+        debugPrint("🐲 Background Notification called", userInfo)
+       
+        return UIBackgroundFetchResult.newData
     }
     
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
@@ -100,6 +113,7 @@ struct TrackStocksApp: App {
     @StateObject var marketSymbolsService = MarketSymbolsService.shared
     @StateObject var appNavigationState = AppNavigationState()
     @StateObject var settingsService = SettingsService.shared
+    @StateObject var activityStatus = ActivityStatus()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     var body: some Scene {
@@ -111,6 +125,7 @@ struct TrackStocksApp: App {
                 .environmentObject(marketSymbolsService)
                 .environmentObject(appNavigationState)
                 .environmentObject(settingsService)
+                .environmentObject(activityStatus)
         }
         .modelContainer(for: [SymbolStorage.self])
     }
