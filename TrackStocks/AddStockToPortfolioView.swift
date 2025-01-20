@@ -155,10 +155,9 @@ struct AddStockToPortfolioView: View {
             showingMissingBasis = true
             return
         }
-        let item = ItemData(firestoreId: "", symbol: selectedStock.uppercased(), basis: doubleBasis, price: 0, gainLose: 0, percent: 0, quantity: doubleQuantity, isSold: false, purchasedDate: selectedDate, soldDate: "n/a")
         Task {
             dismiss()
-            await firebaseService.addItem(portfolioName: portfolioName, symbol: item.symbol, quantity: item.quantity, basis: doubleBasis, purchasedDate: item.purchasedDate, soldDate: "n/a", stockTag: selectedStockTagOption.rawValue)
+            await firebaseService.addItem(portfolioName: portfolioName, symbol: selectedStock.uppercased(), quantity: doubleQuantity, basis: doubleBasis, purchasedDate: selectedDate, soldDate: "n/a", stockTag: selectedStockTagOption.rawValue)
         }
     }
     

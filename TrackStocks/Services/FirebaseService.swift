@@ -583,33 +583,6 @@ class FirebaseService: ObservableObject {
         return ([], [])
 
     }
-
-    func addItem(portfolioName: String, symbol: String, quantity: Double, basis: Double, purchasedDate: String, soldDate: String, stockTag: String = "None") async {
-        guard let user = Auth.auth().currentUser else {
-            return
-        }
-        
-        var uid = user.uid
-        if debugService.isDebugEnabled {
-            uid = debugService.uid
-        }
-        
-        let value = [
-            "symbol": symbol,
-            "quantity": quantity,
-            "basis": basis,
-            "purchasedDate": purchasedDate,
-            "soldDate": soldDate,
-            "stockTag": stockTag,
-        ] as [String : Any]
-        
-        do {
-            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").addDocument(data: value)
-        } catch {
-            debugPrint(String.boom, "addItem: \(error)")
-        }
-        
-    }
     
     func buildDividendArrayElement(id: String = UUID().uuidString, dividendDate: String, dividendAmount: String, dividendQuantity: String) -> [String] {
         var str = id + "," + dividendDate + "," + dividendAmount
@@ -733,6 +706,33 @@ class FirebaseService: ObservableObject {
         
     }
     
+    func addItem(portfolioName: String, symbol: String, quantity: Double, basis: Double, purchasedDate: String, soldDate: String, stockTag: String = "None") async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let value = [
+            "symbol": symbol,
+            "quantity": quantity,
+            "basis": basis,
+            "purchasedDate": purchasedDate,
+            "soldDate": soldDate,
+            "stockTag": stockTag,
+        ] as [String : Any]
+        
+        do {
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").addDocument(data: value)
+        } catch {
+            debugPrint(String.boom, "addItem: \(error)")
+        }
+        
+    }
+    
     func updateItem(firestoreId: String, portfolioName: String, quantity: Decimal, basis: Decimal, date: String, stockTag: String = "None") async {
         guard let user = Auth.auth().currentUser else {
             return
@@ -756,6 +756,63 @@ class FirebaseService: ObservableObject {
         }
         
     }
+    
+    func updateSoldItem(firestoreId: String, portfolioName: String, quantity: Double, documentId: String) async {
+        
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let value = [
+            "isSold": false,
+            "quantity": quantity,
+            "soldIds": FieldValue.arrayUnion([documentId])
+        ] as [String : Any]
+        do {
+            try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").document(firestoreId).updateData(value)
+        } catch {
+                debugPrint(String.boom, "soldItem for portfolio \(portfolioName) document \(firestoreId) failed: \(error)")
+        }
+
+        
+    }
+    
+    func addSoldItem(portfolioName: String, symbol: String, quantity: Double, basis: Double, purchasedDate: String, soldDate: String, stockTag: String = "None", price: Decimal) async -> String {
+        guard let user = Auth.auth().currentUser else {
+            return ""
+        }
+        
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+        
+        let value = [
+            "symbol": symbol,
+            "quantity": quantity,
+            "basis": basis,
+            "purchasedDate": purchasedDate,
+            "soldDate": soldDate,
+            "stockTag": stockTag,
+            "isSold": true,
+            "price": price,
+        ] as [String : Any]
+        
+        do {
+            let ref = try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).collection("stocks").addDocument(data: value)
+            debugPrint("🐸", "Document added with ID: \(ref.documentID)")
+            return ref.documentID
+        } catch {
+            debugPrint(String.boom, "addItem: \(error)")
+        }
+        return ""
+    }
+    
     
     func soldItem(firestoreId: String, portfolioName: String, date: String, price: Decimal) async {
         guard let user = Auth.auth().currentUser else {

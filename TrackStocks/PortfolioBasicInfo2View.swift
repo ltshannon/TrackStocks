@@ -174,29 +174,31 @@ struct View5: View {
                     } label: {
                         Text("Daily Chart").lineLimit(nil)
                     }
-                    Button {
-                        let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
-                        appNavigationState.dividendCreateView(parameters: parameters)
-                    } label: {
-                        Text("Add to Position").lineLimit(nil)
-                    }
-                    Button {
-                        let parameters = DividendCreateParameters(item: item, portfolio: portfolio)
-                        appNavigationState.dividendCreateView(parameters: parameters)
-                    } label: {
-                        Text("Add Dividend").lineLimit(nil)
-                    }
-                    Button {
-                        let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
-                        appNavigationState.portfolioUpdateView(parameters: parameters)
-                    } label: {
-                        Text("Update")
-                    }
-                    Button {
-                        let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
-                        appNavigationState.portfolioSoldView(parameters: parameters)
-                    } label: {
-                        Text("Sell")
+                    if item.isSold == false {
+                        Button {
+                            let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
+                            appNavigationState.dividendCreateView(parameters: parameters)
+                        } label: {
+                            Text("Add to Position").lineLimit(nil)
+                        }
+                        Button {
+                            let parameters = DividendCreateParameters(item: item, portfolio: portfolio)
+                            appNavigationState.dividendCreateView(parameters: parameters)
+                        } label: {
+                            Text("Add Dividend").lineLimit(nil)
+                        }
+                        Button {
+                            let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
+                            appNavigationState.portfolioUpdateView(parameters: parameters)
+                        } label: {
+                            Text("Update")
+                        }
+                        Button {
+                            let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
+                            appNavigationState.portfolioSoldView(parameters: parameters)
+                        } label: {
+                            Text("Sell")
+                        }
                     }
                     Button(role: .destructive) {
                         showingDeleteAlert = true

@@ -17,6 +17,8 @@ struct PortfolioSoldView: View {
     @State var selectedDate = ""
     @State var soldPrice: Decimal = 0
     @State var soldDate: String = ""
+    @State var quantity: Double = 0
+    @State var soldQuantity: Double = 0
     @State var firestoreId: String = ""
     @State var showingDateSelector: Bool = false
     
@@ -43,6 +45,12 @@ struct PortfolioSoldView: View {
                     }
                 } header: {
                     Text("Sold Date")
+                }
+                Section {
+                    TextField("Number of Shares Sold", value: $quantity, format: .number.precision(.fractionLength(2)))
+                        .keyboardType(.decimalPad)
+                } header: {
+                    Text("Number of Shares Sold")
                 }
                 Section {
                     TextField("Sold Price per Share", value: $soldPrice, format: .number.precision(.fractionLength(2)))
@@ -75,6 +83,7 @@ struct PortfolioSoldView: View {
             symbol = item.symbol
             selectedDate = item.purchasedDate
             soldDate = item.soldDate
+            quantity = item.quantity
             firestoreId = item.firestoreId
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
@@ -83,10 +92,15 @@ struct PortfolioSoldView: View {
     }
     
     func update() {
-
         Task {
+            if quantity < item.quantity {
+                let ref = await firebaseService.addSoldItem(portfolioName: portfolio.name, symbol: symbol.uppercased(), quantity: quantity, basis: item.basis, purchasedDate: item.purchasedDate, soldDate: selectedDate, stockTag: item.stockTag ?? "None", price: soldPrice)
+                let number = item.quantity - quantity
+                await firebaseService.updateSoldItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", quantity: number, documentId: ref)
+            } else {
+                await firebaseService.soldItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", date: selectedDate, price: soldPrice)
+            }
             dismiss()
-            await firebaseService.soldItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", date: selectedDate, price: soldPrice)
         }
     }
 }
