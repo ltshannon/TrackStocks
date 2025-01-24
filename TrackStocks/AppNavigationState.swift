@@ -81,6 +81,17 @@ struct SymbolChartParameters: Identifiable, Hashable, Encodable {
     var symbol: String
 }
 
+struct PortfolioMoveParameters: Identifiable, Hashable, Encodable {
+    var id = UUID().uuidString
+    var item: ItemData
+    var portfolio: Portfolio
+    
+    init(item: ItemData, portfolio: Portfolio) {
+        self.item = item
+        self.portfolio = portfolio
+    }
+}
+
 enum PortfolioNavDestination: Hashable {
     case portfolioView(PortfolioParameters)
     case portfolioDetailView(PortfolioDetailParameters)
@@ -89,6 +100,7 @@ enum PortfolioNavDestination: Hashable {
     case dividendCreateView(DividendCreateParameters)
     case dividendEditView(DividendEditParameters)
     case symbolChartView(SymbolChartParameters)
+    case portfolioMoveView(PortfolioMoveParameters)
 }
 
 enum NavigationNavDestination: Hashable {
@@ -122,6 +134,10 @@ class AppNavigationState: ObservableObject {
     
     func portfolioUpdateView(parameters: PortfolioUpdateParameters) {
         portfolioNavigation.append(PortfolioNavDestination.portfolioUpdateView(parameters))
+    }
+    
+    func portfolioMoveView(parameters: PortfolioMoveParameters) {
+        portfolioNavigation.append(PortfolioNavDestination.portfolioMoveView(parameters))
     }
     
     func portfolioSoldView(parameters: PortfolioUpdateParameters) {

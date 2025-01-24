@@ -96,6 +96,8 @@ struct PortfolioHomeView: View {
                     PortfolioUpdateView(parameters: parameters)
                 case .portfolioSoldView(let parameters):
                     PortfolioSoldView(parameters: parameters)
+                case .portfolioMoveView(let parameters):
+                    PortfolioMoveView(parameters: parameters)
                 case .dividendCreateView(let parameters):
                     DividendCreateView(parameters: parameters)
                 case .dividendEditView(let parameters):

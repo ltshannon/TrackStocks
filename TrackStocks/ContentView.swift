@@ -40,9 +40,6 @@ struct ContentView: View {
                 }
                 .tag(3)
         }
-//        .onAppear {
-//            sendActivityToken(notifications: [])
-//        }
         .onReceive(userAuth.$fcmToken) { token in
             if token.isNotEmpty {
                 Task {
@@ -50,59 +47,6 @@ struct ContentView: View {
                 }
             }
         }
-//        .onChange(of: firebaseService.user) { oldValue, newValue in
-//            if var newNotifications = newValue.notifications, newNotifications.count > 0 {
-//                if var oldNotifications = oldValue.notifications, oldNotifications.count == newNotifications.count {
-//                    newNotifications.sort(by: { $0 < $1 } )
-//                    oldNotifications.sort(by: { $0 < $1 } )
-//                    if newNotifications != oldNotifications {
-//                        sendActivityToken(notifications: newNotifications)
-//                    }
-//                } else {
-//                    sendActivityToken(notifications: newNotifications)
-//                }
-//            }
-//        }
-        
-    }
-    
-    func sendActivity(notifications: [String]) {
-        let items = Array(firebaseService.convertToNotificationData(data: notifications).prefix(6))
-        let state = StockTrackingAttributes.ContentState(items: items)
-        
-        if activity != nil {
-            Task {
-                await self.activity?.update(ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!))
-            }
-        } else {
-            let attributes = StockTrackingAttributes()
-            self.activity = try? Activity<StockTrackingAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!), pushType: nil)
-        }
-    }
-    
-    func sendActivityToken(notifications: [String]) {
-//        let items = Array(firebaseService.convertToActivityData(data: notifications).prefix(6))
-//        debugPrint("🐸", "\(items)")
-        let activityData = ActivityData(symbol: "Starting Activity")
-        let state = StockActivityAttributes.ContentState(items: [activityData])
-        
-//        if activityToken != nil {
-//            Task {
-//                await self.activityToken?.update(ActivityContent(state: state, staleDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!))
-//            }
-//        } else {
-            let attributes = StockActivityAttributes()
-            self.activityToken = try? Activity<StockActivityAttributes>.request(attributes: attributes, content: ActivityContent(state: state, staleDate: nil), pushType: .token)
-            Task {
-                for await pushToken in self.activityToken!.pushTokenUpdates {
-                    let pushTokenString = pushToken.reduce("") {
-                        $0 + String(format: "%02x", $1)
-                    }
-                    debugPrint("🦉, New push token: \(pushTokenString)")
-                    await firebaseService.updateAddActivity(token: pushTokenString)
-                }
-            }
-//        }
     }
     
 }

@@ -48,6 +48,8 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var soldDate: String
     var stockTag: String?
     var dividendList: [DividendDisplayData] = []
+    var originalBasis: Double = 0
+    var originalQuantity: Double = 0
 }
 
 struct StockItem: Codable, Identifiable, Hashable {
@@ -383,7 +385,7 @@ class FirebaseService: ObservableObject {
                     soldPrice = value
                     isSold = true
                 }
-                let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividends, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: item.soldDate, stockTag: item.stockTag ?? "None")
+                let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividends, isSold: isSold, purchasedDate: item.purchasedDate, soldDate: item.soldDate, stockTag: item.stockTag ?? "None", originalBasis: item.basis, originalQuantity: item.quantity)
                 items.append(temp)
             }
             let array = Array(stockSymbols)
@@ -572,6 +574,40 @@ class FirebaseService: ObservableObject {
             return []
         }
         
+    }
+    
+    func moveStockToPortfolio(oldPortfolio: Portfolio, newPortfolioName: String, stock: ItemData) async {
+
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+            
+        var uid = user.uid
+        if debugService.isDebugEnabled {
+            uid = debugService.uid
+        }
+            
+        var value = [
+            "symbol": stock.symbol,
+            "quantity": stock.originalQuantity,
+            "basis": stock.originalBasis,
+            "purchasedDate": stock.purchasedDate,
+            "soldDate": stock.soldDate,
+            "stockTag": stock.stockTag ?? "None",
+            "dividends": stock.dividend ?? [],
+        ] as [String : Any]
+        
+        if stock.isSold == true {
+            value["isSold"] = true
+            value["price"] = stock.price
+        }
+
+        do {
+            try await database.collection("users").document(uid).collection("portfolios").document(newPortfolioName).collection("stocks").document(stock.firestoreId).setData(value)
+        } catch {
+            debugPrint(String.boom, "addItem: \(error)")
+        }
+            
     }
     
     func getStockList(portfolioName: String) async -> ([String], [StockItem]) {

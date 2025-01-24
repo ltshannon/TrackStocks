@@ -194,6 +194,12 @@ struct View5: View {
                             Text("Update")
                         }
                         Button {
+                            let parameters = PortfolioMoveParameters(item: item, portfolio: portfolio)
+                            appNavigationState.portfolioMoveView(parameters: parameters)
+                        } label: {
+                            Text("Move to another portfolio")
+                        }
+                        Button {
                             let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)
                             appNavigationState.portfolioSoldView(parameters: parameters)
                         } label: {

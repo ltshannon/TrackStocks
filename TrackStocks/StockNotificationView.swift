@@ -146,7 +146,7 @@ struct StockNotificationView: View {
             
             var activityArray: [ActivityData] = []
             for item in items {
-                let activityItem = ActivityData(symbol: item.symbol, marketPrice: item.amount, change: item.change)
+                let activityItem = ActivityData(symbol: item.symbol, marketPrice: item.marketPrice, change: item.change)
                 activityArray.append(activityItem)
             }
             let state = StockActivityAttributes.ContentState(items: activityArray)
