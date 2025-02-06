@@ -146,17 +146,22 @@ struct StockActivityWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
     var activityData: [ActivityData]
     @State var data: [ActivityData] = []
+    @State var marketStatus = MarketStatus.marketClosed.rawValue
+    let date: Date = Date.now
+    let dateFormatter: DateFormatter = DateFormatter()
     
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                Text(Date.now, style: .date)
-                Text(Date.now, style: .time)
+                Text(marketStatus)
+                Text(date, formatter: dateFormatter)
             }
             .foregroundStyle(colorScheme == .dark ? .white : .black)
             ForEach(data, id: \.id) { item in
                 HStack {
-                    Text(item.symbol)
+
+                        Text(item.symbol)
+
                     Text(item.marketPrice, format: .currency(code: "USD"))
                     Text("\(String(format: "%.2f", item.change))")
                         .padding([.leading, .trailing], 5)
@@ -171,6 +176,13 @@ struct StockActivityWidgetView: View {
         .padding(20)
         .onAppear {
             data = activityData.sorted { $0.symbol < $1.symbol }
+            dateFormatter.dateStyle = .short
+            dateFormatter.timeStyle = .short
+        }
+        .onChange(of: data) { oldValue, newValue in
+            if newValue.count > 0 {
+                marketStatus = newValue[0].marketStatus
+            }
         }
     }
 }

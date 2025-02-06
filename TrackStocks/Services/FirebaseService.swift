@@ -141,6 +141,15 @@ enum NotificationFrequency: String, Codable, CaseIterable, Identifiable, Hashabl
     
 }
 
+enum MarketStatus: String, Codable, CaseIterable, Identifiable, Hashable {
+    case marketOpen = "Market Open"
+    case prepostMarket = "PrePost Market"
+    case marketClosed = "Market Closed"
+    
+    var id: Self { self }
+    
+}
+
 struct NotificationData: Codable, Identifiable, Hashable {
     var id: String = UUID().uuidString
     var symbol: String = ""
@@ -151,6 +160,7 @@ struct NotificationData: Codable, Identifiable, Hashable {
     var marketPrice: Double = 0
     var volume: String = ""
     var change: Double = 0
+    var marketStatus: String = MarketStatus.marketClosed.rawValue
 }
 
 struct ActivityData: Codable, Identifiable, Hashable {
@@ -158,6 +168,7 @@ struct ActivityData: Codable, Identifiable, Hashable {
     var symbol: String = ""
     var marketPrice: Double = 0
     var change: Double = 0
+    var marketStatus: String = MarketStatus.marketClosed.rawValue
 }
 
 enum NotificationAction: String, Codable, CaseIterable, Identifiable, Hashable {
@@ -928,7 +939,7 @@ class FirebaseService: ObservableObject {
             var notificationData: [NotificationData] = []
             for item in data.notifications {
                 let value = item.split(separator: ",")
-                if value.count == 8 {
+                if value.count == 9 {
                     let symbol = String(value[0])
                     let notificationType = getNotificationTypeFromString(action: String(value[1]))
                     let notificationFrequency = getNotificationFrequencyFromString(action: String(value[2]))
@@ -959,7 +970,7 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = symbol + "," + notificationType.rawValue + "," + notificationFrequency.rawValue + "," + action.rawValue + "," + String(amount) + "," + "0.0" + "," + "0" + "," + "0.0"
+        let string = symbol + "," + notificationType.rawValue + "," + notificationFrequency.rawValue + "," + action.rawValue + "," + String(amount) + "," + "0.0" + "," + "0" + "," + "0.0" + "," + "Market Closed"
 
         do {
             try await database.collection("users").document(uid).updateData(["notifications": FieldValue.arrayUnion([string])])
@@ -1002,7 +1013,7 @@ class FirebaseService: ObservableObject {
             uid = debugService.uid
         }
         
-        let string = item.symbol + "," + item.notificationType.rawValue + "," + item.notificationFrequency.rawValue + ","  + item.action.rawValue + "," + String(item.amount) + "," + String(item.marketPrice) + "," + item.volume + "," + String(item.change)
+        let string = item.symbol + "," + item.notificationType.rawValue + "," + item.notificationFrequency.rawValue + ","  + item.action.rawValue + "," + String(item.amount) + "," + String(item.marketPrice) + "," + item.volume + "," + String(item.change) + "," + item.marketStatus
         var array: [String] = []
         array.append(string)
         do {
@@ -1018,7 +1029,7 @@ class FirebaseService: ObservableObject {
         if let data = data {
             for item in data {
                 let value = item.split(separator: ",")
-                if value.count == 8 {
+                if value.count == 9 {
                     let symbol = String(value[0])
                     let notificationType = getNotificationTypeFromString(action: String(value[1]))
                     let notificationFrequency = getNotificationFrequencyFromString(action: String(value[2]))
@@ -1027,7 +1038,8 @@ class FirebaseService: ObservableObject {
                     let marketPrice = Double(value[5]) ?? 0
                     let volume = String(value[6])
                     let change = Double(value[7]) ?? 0
-                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume, change: change)
+                    let marketStatus = String(value[8])
+                    let result = NotificationData(symbol: symbol, notificationType: notificationType, notificationFrequency: notificationFrequency, action: action, amount: amount, marketPrice: marketPrice, volume: volume, change: change, marketStatus: marketStatus)
                     notificationData.append(result)
                 }
             }
@@ -1046,7 +1058,7 @@ class FirebaseService: ObservableObject {
                     let symbol = String(value[0])
                     let marketPrice = Double(value[5]) ?? 0
                     let change = Double(value[7]) ?? 0
-                    let result = ActivityData(symbol: symbol, marketPrice: marketPrice, change: change)
+                    let result = ActivityData(symbol: symbol, marketPrice: marketPrice, change: change, marketStatus: MarketStatus.marketClosed.rawValue)
                     activityData.append(result)
                 }
             }

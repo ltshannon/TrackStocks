@@ -174,6 +174,12 @@ struct View5: View {
                     } label: {
                         Text("Daily Chart").lineLimit(nil)
                     }
+                    Button {
+                        let parameters = PortfolioMoveParameters(item: item, portfolio: portfolio)
+                        appNavigationState.portfolioMoveView(parameters: parameters)
+                    } label: {
+                        Text("Move to another portfolio")
+                    }
                     if item.isSold == false {
                         Button {
                             let parameters = DividendCreateParameters(item: item, portfolio: portfolio, isOnlyShares: true)
@@ -192,12 +198,6 @@ struct View5: View {
                             appNavigationState.portfolioUpdateView(parameters: parameters)
                         } label: {
                             Text("Update")
-                        }
-                        Button {
-                            let parameters = PortfolioMoveParameters(item: item, portfolio: portfolio)
-                            appNavigationState.portfolioMoveView(parameters: parameters)
-                        } label: {
-                            Text("Move to another portfolio")
                         }
                         Button {
                             let parameters = PortfolioUpdateParameters(item: item, portfolio: portfolio)

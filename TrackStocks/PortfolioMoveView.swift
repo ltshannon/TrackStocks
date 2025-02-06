@@ -46,6 +46,7 @@ struct PortfolioMoveView: View {
         debugPrint("Moving \(item.symbol) to \(portfolio.name)")
         Task {
             await firebaseService.moveStockToPortfolio(oldPortfolio: portfolio, newPortfolioName: portfolio.name, stock: item)
+            await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.id ?? "n/a", stockId: item.firestoreId)
             dismiss()
         }
     }
