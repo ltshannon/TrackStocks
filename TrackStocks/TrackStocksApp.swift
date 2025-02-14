@@ -12,6 +12,7 @@ import FirebaseAuth
 import UserNotifications
 import SwiftData
 import ActivityKit
+import FirebaseSignInWithApple
 
 class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
     let gcmMessageIDKey = "gcm.message_id"
@@ -118,7 +119,7 @@ struct TrackStocksApp: App {
     
     var body: some Scene {
         WindowGroup {
-            SignInView()
+            SignInWithAppleView()
                 .environmentObject(userAuth)
                 .environmentObject(firebaseService)
                 .environmentObject(stockDataService)
@@ -126,6 +127,7 @@ struct TrackStocksApp: App {
                 .environmentObject(appNavigationState)
                 .environmentObject(settingsService)
                 .environmentObject(activityStatus)
+                .configureFirebaseSignInWithAppleWith(firestoreUserCollectionPath: "users")
         }
         .modelContainer(for: [SymbolStorage.self])
     }

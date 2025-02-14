@@ -24,7 +24,7 @@ struct StockData: Identifiable, Codable, Hashable {
     var priceAvg200: Float?
     var exchange: String?
     var volume: Int?
-    var avgVolume: Int?
+    var avgVolume: Float?
     var open: Float?
     var previousClose: Float?
     var eps: Float?
@@ -167,6 +167,8 @@ class StockDataService: ObservableObject {
     
     func fetchFullQuoteStocks(tickers: String) async -> [StockData] {
         do {
+            let ticker = "https://financialmodelingprep.com/api/v3/quote-order/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q"
+            debugPrint("🥸", "fetchFullQuoteStocks url: \(ticker)")
             if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-order/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
@@ -183,7 +185,9 @@ class StockDataService: ObservableObject {
     
     func fetchShortQuoteStocks(tickers: String) async -> [StockData] {
         do {
-            if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-short/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
+            let ticker = "https://financialmodelingprep.com/api/v3/quote-short/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q"
+            debugPrint("🥸", "fetchShortQuoteStocks url: \(ticker)")
+            if let url = URL(string: ticker) {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
                 debugPrint("fetchShortQuoteStocks response: \(response.0)")

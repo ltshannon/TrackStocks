@@ -20,9 +20,7 @@ struct PlainTextButtonStyle: ButtonStyle {
                 Spacer()
             }
             .foregroundColor(foregroundColor)
-            .frame(minWidth: 0,
-                   maxWidth: .infinity,
-                   minHeight: 44.0)
+            .frame(minWidth: 0, maxWidth: .infinity, maxHeight: 35)
             .padding([.top, .bottom], verticalPadding)
             .background(
                 backgroundColor

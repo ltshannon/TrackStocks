@@ -8,8 +8,10 @@
 import SwiftUI
 import SwiftData
 import FirebaseAuth
+import FirebaseSignInWithApple
 
 struct SettingsView: View {
+    @Environment(\.firebaseSignInWithApple) private var firebaseSignInWithApple
     @EnvironmentObject var userAuth: Authentication
     @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.modelContext) var context
@@ -28,6 +30,13 @@ struct SettingsView: View {
         ZStack {
             Color("Background-grey")
             VStack {
+                FirebaseSignOutWithAppleButton {
+                    FirebaseSignInWithAppleLabel(.signOut)
+                }
+                FirebaseDeleteAccountWithAppleButton {
+                    FirebaseSignInWithAppleLabel(.deleteAccount)
+                }
+/*
                 Button("Sign Out") {
                     showSignOut = true
                 }
@@ -68,6 +77,7 @@ struct SettingsView: View {
                 } message: {
                     Text("Are you sure you want to delete your account?")
                 }
+*/
                 Button("Market Symbols Update") {
                     showSymbolUpdate = true
                 }
@@ -85,11 +95,11 @@ struct SettingsView: View {
                 }
                 Toggle("Use Date Picker", isOn: $showDatePicker)
                 Toggle("Dividend view", isOn: $isDividendDisplay)
-                Button {
-                    firebaseService.callFirebaseCallableFunction(data: "This is a test")
-                } label: {
-                    Text("Test")
-                }
+//                Button {
+//                    firebaseService.callFirebaseCallableFunction(data: "This is a test")
+//                } label: {
+//                    Text("Test")
+//                }
                 Spacer()
             }
             .padding([.top, .leading, .trailing])

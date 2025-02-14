@@ -36,7 +36,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var priceAvg200: Float?
     var exchange: String?
     var volume: Int?
-    var avgVolume: Int?
+    var avgVolume: Float?
     var open: Float?
     var previousClose: Float?
     var eps: Float?

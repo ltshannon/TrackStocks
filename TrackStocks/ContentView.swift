@@ -12,8 +12,9 @@ import ActivityKit
 struct ContentView: View {
     @EnvironmentObject var userAuth: Authentication
     @EnvironmentObject var firebaseService: FirebaseService
+    @Environment(\.firebaseSignInWithApple) private var firebaseSignInWithApple
+    @Environment(\.dismiss) var dismiss
     @State private var showSignIn: Bool = false
-//    var parameters = DetailStocksNotificationParameters(notificationData: NotificationData(symbol: "", action: .notSelected, amount: 0))
     var parameters = StocksNotificationParameters()
     @State private var activity: Activity<StockTrackingAttributes>? = nil
     @State private var activityToken: Activity<StockActivityAttributes>? = nil
@@ -45,6 +46,11 @@ struct ContentView: View {
                 Task {
                     await firebaseService.updateAddFCM(token: token)
                 }
+            }
+        }
+        .onChange(of: firebaseSignInWithApple.state) { oldValue, newValue in
+            if newValue == .notAuthenticated {
+                dismiss()
             }
         }
     }
