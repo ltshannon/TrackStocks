@@ -40,6 +40,7 @@ struct SignInWithAppleView: View {
         }
         .fullScreenCover(isPresented: $showingContentView) {
             ContentView()
+                .environmentObject(userAuth)
         }
         .fullScreenCover(isPresented: $showingSignInWithAppleLoginView) {
             SignInWithAppleLoginView()
