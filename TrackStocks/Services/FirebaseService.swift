@@ -50,6 +50,8 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var dividendList: [DividendDisplayData] = []
     var originalBasis: Double = 0
     var originalQuantity: Double = 0
+    var todaysGainLoss: Double = 0
+    var totalValue: Double = 0
 }
 
 struct StockItem: Codable, Identifiable, Hashable {

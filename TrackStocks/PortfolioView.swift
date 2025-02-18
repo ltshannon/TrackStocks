@@ -14,6 +14,7 @@ struct PortfolioView: View {
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @AppStorage("showDatePicker") var showDatePicker = false
     @AppStorage("dividendDisplay") var isDividendDisplay = false
     var portfolio: Portfolio
@@ -63,10 +64,10 @@ struct PortfolioView: View {
                     .padding(.trailing, 30)
             }
             Group {
-                if isDividendDisplay == true {
-                    PortfolioBasicInfo2View(portfolio: portfolio, items: searchResults)
-                } else {
+                if horizontalSizeClass == .compact {
                     SimplePortfolioView(portfolio: portfolio, items: searchResults)
+                } else {
+                    PortfolioBasicInfo2View(portfolio: portfolio, items: searchResults)
                 }
             }
             .toolbar {

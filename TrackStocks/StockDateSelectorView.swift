@@ -27,7 +27,7 @@ struct StockDateSelectorView: View {
                         }
                         .onChange(of: date) {
                             setDate(date: date)
-                            dismiss()
+//                            dismiss()
                         }
                     }
                     Section {
@@ -48,6 +48,7 @@ struct StockDateSelectorView: View {
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
+                            setDate(date: date)
                             dismiss()
                         } label: {
                             Text("Done")

@@ -23,7 +23,7 @@ struct SettingsView: View {
     @State var showDeleteAccount = false
     @State var showingSheet: Bool = false
     @State var showSymbolUpdate = false
-    
+    let versionString: String = "Track Stocks: \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "")(\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") ?? ""))"
     
     var body: some View {
         
@@ -94,13 +94,15 @@ struct SettingsView: View {
                     Text("Are you sure you want to update the Market Symbols, this will take a while?")
                 }
                 Toggle("Use Date Picker", isOn: $showDatePicker)
-                Toggle("Dividend view", isOn: $isDividendDisplay)
+//                Toggle("Dividend view", isOn: $isDividendDisplay)
 //                Button {
 //                    firebaseService.callFirebaseCallableFunction(data: "This is a test")
 //                } label: {
 //                    Text("Test")
 //                }
                 Spacer()
+                Text(versionString)
+                    .padding(.bottom, 20)
             }
             .padding([.top, .leading, .trailing])
             .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
