@@ -33,6 +33,7 @@ struct PortfolioBasicInfo2View: View {
     @State var showingDeleteAlert = false
     @State var firestoreId: String = ""
     @State var grandTotal: Double = 0
+    @State var gainLossTotal: Double = 0
     @State var isSymbolSortAscending: Bool = false
     @State var isTodaysLossGainSortAscending: Bool = false
     @State var isTotalLossGainSortAscending: Bool = false
@@ -43,7 +44,7 @@ struct PortfolioBasicInfo2View: View {
                                 GridItem(.fixed(65), spacing: 5),
                                 GridItem(.fixed(65), spacing: 5),
                                 GridItem(.fixed(65), spacing: 5),
-                                GridItem(.fixed(65), spacing: 5),
+                                GridItem(.fixed(70), spacing: 5),
                                 GridItem(.fixed(100), spacing: 5),
                                 GridItem(.fixed(95), spacing: 1),
                                 GridItem(.fixed(110), spacing: 1),
@@ -120,7 +121,7 @@ struct PortfolioBasicInfo2View: View {
                         NumberOfSharesView(item: item)
                         BasisView(item: item)
                         TodaysGainLossView(item: item)
-                        GainLossView(item: item)
+                        GainLossView(gainLossTotal: $gainLossTotal, item: item)
                         TotalView(grandTotal: $grandTotal, item: item)
                         View5(portfolio: portfolio, item: item, showingDeleteAlert: $showingDeleteAlert, firestoreId: $firestoreId)
                     }
@@ -133,7 +134,7 @@ struct PortfolioBasicInfo2View: View {
                     Text("")
                     Text("")
                     Text("")
-                    Text("")
+                    Text("-----------")
                     Text("-----------")
                     Text("")
                 }
@@ -145,7 +146,7 @@ struct PortfolioBasicInfo2View: View {
                     Text("")
                     Text("")
                     Text("")
-                    Text("")
+                    Text(gainLossTotal, format: .currency(code: "USD"))
                     Text(grandTotal, format: .currency(code: "USD"))
                     Text("")
                 }
@@ -153,6 +154,8 @@ struct PortfolioBasicInfo2View: View {
             .padding(.leading, 20)
         }
         .onChange(of: items, { oldValue, newValue in
+            grandTotal = 0
+            gainLossTotal = 0
             var items = newValue
             items.enumerated().forEach { (index, value) in
                 if let previousClose = items[index].previousClose {
@@ -161,6 +164,8 @@ struct PortfolioBasicInfo2View: View {
                 }
                 let value = items[index].price * items[index].quantity
                 items[index].totalValue = value
+                gainLossTotal += items[index].gainLose
+                grandTotal += items[index].totalValue
             }
             itemsClass.items = items
         })
@@ -218,7 +223,6 @@ struct View1: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(item.symbol)
-//            .font(.caption)
             .bold()
             .foregroundStyle(item.isSold ? .orange : .primary)
             if item.isSold == false, let tag = item.stockTag {
@@ -312,26 +316,32 @@ struct BasisView: View {
     }
 }
 
-struct GainLossView: View {
-    var item: ItemData
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            let gainLose = abs(item.gainLose)
-            Text(gainLose, format: .number.precision(.fractionLength(2)))
-                .foregroundStyle(item.gainLose < 0 ?.red : .green)
-        }
-    }
-}
-
 struct TodaysGainLossView: View {
     var item: ItemData
     
     var body: some View {
         VStack(alignment: .leading) {
             let todaysGainLoss = abs(item.todaysGainLoss)
-            Text(todaysGainLoss, format: .number.precision(.fractionLength(2)))
-                .foregroundStyle(item.gainLose < 0 ?.red : .green)
+            Text(todaysGainLoss, format: .currency(code: "USD"))
+                .foregroundStyle(item.isSold ? .orange : (item.gainLose >= 0 ? .green : .red))
+        }
+    }
+}
+
+struct GainLossView: View {
+    @Binding var gainLossTotal: Double
+    var item: ItemData
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            if item.isSold == false {
+                let gainLose = abs(item.gainLose)
+                Text(gainLose, format: .currency(code: "USD"))
+                    .foregroundStyle(item.gainLose >= 0 ? .green : .red)
+            } else {
+                Text(item.gainLose, format: .currency(code: "USD"))
+                    .foregroundStyle(.orange)
+            }
         }
     }
 }
@@ -345,7 +355,7 @@ struct TotalView: View {
             Text(item.totalValue, format: .currency(code: "USD"))
         }
         .onAppear {
-            grandTotal += item.totalValue
+//            grandTotal += item.totalValue
         }
     }
 
