@@ -62,12 +62,14 @@ struct StockItem: Codable, Identifiable, Hashable {
 struct Portfolio: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
     var name: String
+    var isForSoldStocks: Bool?
 }
 
 struct MasterSymbolList: Codable, Identifiable, Hashable {
     var id = UUID().uuidString
     var portfolioName: String
     var portfolioId: String
+    var isForSoldStocks: Bool
     var stockSymbols: [String]
     var stockItems: [StockItem]
     var portfolioItems: [PortfolioItem]
@@ -268,7 +270,7 @@ class FirebaseService: ObservableObject {
         }
     }
 
-    func addPortfolio(portfolioName: String) async {
+    func addPortfolio(portfolioName: String, isForSoldStocks: Bool) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -281,6 +283,7 @@ class FirebaseService: ObservableObject {
         do {
             try await database.collection("users").document(uid).collection("portfolios").document(portfolioName).setData([
                 "name": portfolioName,
+                "isForSoldStocks": isForSoldStocks
             ])
         } catch {
             debugPrint("Error creating addPortfolioCollection name: \(portfolioName) error: \(error)")
@@ -456,7 +459,8 @@ class FirebaseService: ObservableObject {
                         self.masterSymbolList[index].itemsData = items
                     }
                 } else {
-                    let value = MasterSymbolList(portfolioName: portfolioName, portfolioId: portfolioId, stockSymbols: array, stockItems: stockItems, portfolioItems: portfolioItems, itemsData: items)
+                    let isForSoldStocks = self.portfolioList.filter { $0.name == portfolioName }.first?.isForSoldStocks ?? false
+                    let value = MasterSymbolList(portfolioName: portfolioName, portfolioId: portfolioId, isForSoldStocks: isForSoldStocks, stockSymbols: array, stockItems: stockItems, portfolioItems: portfolioItems, itemsData: items)
                     DispatchQueue.main.async {
                         self.masterSymbolList.append(value)
                         self.masterSymbolList.sort(by: { $0.portfolioName < $1.portfolioName })

@@ -14,7 +14,6 @@ struct PortfolioUpdateView: View {
     var item: ItemData
     var portfolio:Portfolio
     @State var symbol: String = ""
-    @State var selectedDate = ""
     @State var basis: Decimal = 0
     @State var price: String = ""
     @State var soldPrice: String = ""
@@ -25,6 +24,8 @@ struct PortfolioUpdateView: View {
     @State var dividendDisplayData: [DividendDisplayData] = []
     @State var showingDateSelector: Bool = false
     @State private var selectedOption: StockPicks = .none
+    @State private var dobText: String = ""
+    @State var textLen = 0
     
     init(parameters: PortfolioUpdateParameters) {
         self.portfolio = parameters.portfolio
@@ -36,15 +37,19 @@ struct PortfolioUpdateView: View {
             Form {
                 Section {
                     if showDatePicker == true {
-                        TextField("Date", text: $selectedDate)
+                        TextField("MM/DD/YY", text: $dobText)
                             .textCase(.uppercase)
                             .disableAutocorrection(true)
                             .simultaneousGesture(TapGesture().onEnded {
                                 showingDateSelector = true
                             })
                     } else {
-                        TextField("Date", text: $selectedDate)
+                        TextField("MM/DD/YY", text: $dobText)
                             .textCase(.uppercase)
+                            .keyboardType(.numberPad)
+                            .onChange(of: dobText) { oldValue, newValue in
+                                ProcessDate(newValue: newValue, dobText: &dobText, textLen: &textLen)
+                            }
                     }
                 } header: {
                     Text("Purchase Date")
@@ -119,7 +124,7 @@ struct PortfolioUpdateView: View {
             quantity = Decimal(item.quantity)
             basis = Decimal(Double(item.basis))
             price = item.price.formatted(.currency(code: "USD"))
-            selectedDate = item.purchasedDate
+            dobText = item.purchasedDate
             soldDate = item.soldDate
             firestoreId = item.firestoreId
             if let stockPick = item.stockTag {
@@ -127,7 +132,7 @@ struct PortfolioUpdateView: View {
             }
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
-            StockDateSelectorView(selectedDate: $selectedDate)
+            StockDateSelectorView(selectedDate: $dobText)
         }
         
     }
@@ -135,7 +140,7 @@ struct PortfolioUpdateView: View {
     func update() {
         Task {
             dismiss()
-            await firebaseService.updateItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", quantity: quantity, basis: basis, date: selectedDate, stockTag: selectedOption.description)
+            await firebaseService.updateItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", quantity: quantity, basis: basis, date: dobText, stockTag: selectedOption.description)
         }
     }
     

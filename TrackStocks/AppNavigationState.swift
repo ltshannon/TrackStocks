@@ -92,6 +92,12 @@ struct PortfolioMoveParameters: Identifiable, Hashable, Encodable {
     }
 }
 
+struct PortfolioAddParameters: Identifiable, Hashable, Encodable {
+    var id = UUID().uuidString
+
+}
+
+
 enum PortfolioNavDestination: Hashable {
     case portfolioView(PortfolioParameters)
     case portfolioDetailView(PortfolioDetailParameters)
@@ -101,6 +107,7 @@ enum PortfolioNavDestination: Hashable {
     case dividendEditView(DividendEditParameters)
     case symbolChartView(SymbolChartParameters)
     case portfolioMoveView(PortfolioMoveParameters)
+    case portfolioAddView(PortfolioAddParameters)
 }
 
 enum NavigationNavDestination: Hashable {
@@ -122,6 +129,10 @@ class AppNavigationState: ObservableObject {
     
     func stocksNotificationView(parameters: StocksNotificationParameters) {
         navigationNavigation.append(NavigationNavDestination.stocksNotificationView(parameters))
+    }
+    
+    func portfolioAddView(parameters: PortfolioAddParameters) {
+        portfolioNavigation.append(PortfolioNavDestination.portfolioAddView(parameters))
     }
     
     func portfolioView(parameters: PortfolioParameters) {

@@ -14,13 +14,14 @@ struct PortfolioSoldView: View {
     var item: ItemData
     var portfolio: Portfolio
     @State var symbol: String = ""
-    @State var selectedDate = ""
     @State var soldPrice: Decimal = 0
     @State var soldDate: String = ""
     @State var quantity: Double = 0
     @State var soldQuantity: Double = 0
     @State var firestoreId: String = ""
     @State var showingDateSelector: Bool = false
+    @State private var dobText: String = ""
+    @State var textLen = 0
     
     init(parameters: PortfolioUpdateParameters) {
         self.portfolio = parameters.portfolio
@@ -33,15 +34,19 @@ struct PortfolioSoldView: View {
                 Section {
 
                     if showDatePicker == true {
-                        TextField("Sold Date", text: $selectedDate)
+                        TextField("Sold Date", text: $dobText)
                             .textCase(.uppercase)
                             .disableAutocorrection(true)
                             .simultaneousGesture(TapGesture().onEnded {
                                 showingDateSelector = true
                             })
                     } else {
-                        TextField("Date", text: $selectedDate)
+                        TextField("MM/DD/YY", text: $dobText)
                             .textCase(.uppercase)
+                            .keyboardType(.numberPad)
+                            .onChange(of: dobText) { oldValue, newValue in
+                                ProcessDate(newValue: newValue, dobText: &dobText, textLen: &textLen)
+                            }
                     }
                 } header: {
                     Text("Sold Date")
@@ -81,24 +86,24 @@ struct PortfolioSoldView: View {
         }
         .onAppear {
             symbol = item.symbol
-            selectedDate = item.purchasedDate
+            dobText = item.purchasedDate
             soldDate = item.soldDate
             quantity = item.quantity
             firestoreId = item.firestoreId
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
-            StockDateSelectorView(selectedDate: $selectedDate)
+            StockDateSelectorView(selectedDate: $dobText)
         }
     }
     
     func update() {
         Task {
             if quantity < item.quantity {
-                let ref = await firebaseService.addSoldItem(portfolioName: portfolio.name, symbol: symbol.uppercased(), quantity: quantity, basis: item.basis, purchasedDate: item.purchasedDate, soldDate: selectedDate, stockTag: item.stockTag ?? "None", price: soldPrice)
+                let ref = await firebaseService.addSoldItem(portfolioName: portfolio.name, symbol: symbol.uppercased(), quantity: quantity, basis: item.basis, purchasedDate: item.purchasedDate, soldDate: dobText, stockTag: item.stockTag ?? "None", price: soldPrice)
                 let number = item.quantity - quantity
                 await firebaseService.updateSoldItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", quantity: number, documentId: ref)
             } else {
-                await firebaseService.soldItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", date: selectedDate, price: soldPrice)
+                await firebaseService.soldItem(firestoreId: firestoreId, portfolioName: portfolio.id ?? "n/a", date: dobText, price: soldPrice)
             }
             dismiss()
         }

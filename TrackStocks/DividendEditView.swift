@@ -16,9 +16,10 @@ struct DividendEditView: View {
     var dividendDisplayData: DividendDisplayData
     @State var dividendId = ""
     @State var dividendAmount = ""
-    @State var dividendDate = ""
     @State var quantity = ""
     @State var showingDateSelector: Bool = false
+    @State private var dobText: String = ""
+    @State var textLen = 0
     
     init(parameters: DividendEditParameters) {
         self.item = parameters.item
@@ -35,16 +36,19 @@ struct DividendEditView: View {
             }
             Section {
                 if showDatePicker == true {
-                    TextField("Dividend Date", text: $dividendDate)
+                    TextField("MM/DD/YY", text: $dobText)
                         .textCase(.uppercase)
                         .disableAutocorrection(true)
                         .simultaneousGesture(TapGesture().onEnded {
                             showingDateSelector = true
                         })
                 } else {
-                    TextField("Dividend Date", text: $dividendDate)
+                    TextField("MM/DD/YY", text: $dobText)
                         .textCase(.uppercase)
-                        .keyboardType(.numbersAndPunctuation)
+                        .keyboardType(.numberPad)
+                        .onChange(of: dobText) { oldValue, newValue in
+                            ProcessDate(newValue: newValue, dobText: &dobText, textLen: &textLen)
+                        }
                 }
             } header: {
                 Text("Select a date")
@@ -91,21 +95,21 @@ struct DividendEditView: View {
         }
         .onAppear {
             dividendId = dividendDisplayData.id
-            dividendDate = dividendDisplayData.date
+            dobText = dividendDisplayData.date
             dividendAmount = dividendDisplayData.price
             quantity = dividendDisplayData.quantity
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
-            StockDateSelectorView(selectedDate: $dividendDate)
+            StockDateSelectorView(selectedDate: $dobText)
         }
     }
     
     func updateDividend() {
         Task {
             if quantity.isEmpty {
-                await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate, numberOfShares: "")
+                await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dobText, numberOfShares: "")
             } else {
-                await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount,  dividendDate: dividendDate, numberOfShares: quantity)
+                await firebaseService.updateDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: item.firestoreId, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount,  dividendDate: dobText, numberOfShares: quantity)
             }
             await MainActor.run {
                 dismiss()

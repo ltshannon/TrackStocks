@@ -22,7 +22,7 @@ struct PortfolioHomeView: View {
     @State var portfolioName: String = ""
     @State var newName: String = ""
     @State var firstTime = true
-    @State var selectedPortfolio: Portfolio = Portfolio(id: "", name: "")
+    @State var selectedPortfolio: Portfolio = Portfolio(id: "", name: "", isForSoldStocks: false)
     @State var searchText = ""
     @State var portfolioList: [Portfolio] = []
     
@@ -33,7 +33,7 @@ struct PortfolioHomeView: View {
             var list: [Portfolio] = []
             let _ = firebaseService.masterSymbolList.map { item in
                 if item.stockSymbols.filter({ $0.contains(searchText.uppercased()) }).isEmpty == false {
-                    let portfolio = Portfolio(id: item.portfolioId, name: item.portfolioName)
+                    let portfolio = Portfolio(id: item.portfolioId, name: item.portfolioName, isForSoldStocks: item.isForSoldStocks)
                     list.append(portfolio)
                 }
             }
@@ -76,7 +76,8 @@ struct PortfolioHomeView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showAddPortfolioAlert = true
+                        let parameters = PortfolioAddParameters()
+                        appNavigationState.portfolioAddView(parameters: parameters)
                     } label: {
                         HStack {
                             Image(systemName: "plus.app")
@@ -88,6 +89,8 @@ struct PortfolioHomeView: View {
             }
             .navigationDestination(for: PortfolioNavDestination.self) { state in
                 switch state {
+                case .portfolioAddView(let parameters):
+                    AddPortfolioView(parameters: parameters)
                 case .portfolioView(let parameters):
                     PortfolioView(parameters: parameters)
                 case .portfolioDetailView(let parameters):
@@ -134,14 +137,20 @@ struct PortfolioHomeView: View {
                 marketSymbolsService.makeList(symbolStorage: symbolStorage)
             }
         }
-        .alert("Add Portfolio", isPresented: $showAddPortfolioAlert) {
-            TextField("Name", text: $portfolioName)
-                .keyboardType(.default)
-            Button("OK", action: add)
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Enter the name of the portfolio.")
-        }
+//        .alert("Add Portfolio", isPresented: $showAddPortfolioAlert) {
+//            VStack {
+//                TextField("Name", text: $portfolioName)
+//                    .keyboardType(.default)
+//                Toggle(isOn: $isOn) {
+//                    Text("Portfolio for sold stocks")
+//                }
+//                .toggleStyle(iOSCheckboxToggleStyle())
+//            }
+//            Button("OK", action: add)
+//            Button("Cancel", role: .cancel) { }
+//        } message: {
+//            Text("Enter the name of the portfolio.")
+//        }
         .alert("Rename Portfolio", isPresented: $showRenamePortfolioAlert) {
             TextField("Name", text: $newName)
                 .keyboardType(.default)
@@ -179,22 +188,16 @@ struct PortfolioHomeView: View {
             self.portfolioList = newValue
         }
         .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
-//            debugPrint("👤", "onChange masterSymbolList called")
-//            for item in newValue {
-//                debugPrint("🤡", "masterSymbolList: portfolio name: \(item.portfolioName)")
-//                for item2 in item.stockSymbols {
-//                    debugPrint("masterSymbolList: symbol: \(item2)")
-//                }
-//            }
+
         }
 
     }
     
     func add() {
-        Task {
-            await firebaseService.addPortfolio(portfolioName: portfolioName)
-            portfolioName = ""
-        }
+//        Task {
+//            await firebaseService.addPortfolio(portfolioName: portfolioName)
+//            portfolioName = ""
+//        }
     }
     
     func rename(item: Portfolio) {

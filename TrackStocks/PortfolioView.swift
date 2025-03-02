@@ -15,7 +15,6 @@ struct PortfolioView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var settingsService: SettingsService
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    @AppStorage("showDatePicker") var showDatePicker = false
     @AppStorage("dividendDisplay") var isDividendDisplay = false
     var portfolio: Portfolio
     var tempSearchText: String
@@ -47,7 +46,8 @@ struct PortfolioView: View {
     var body: some View {
         VStack {
             VStack(alignment: .leading) {
-                if settingsService.displayStocks == .showAllStocks {
+                let isForSoldStocks: Bool = portfolio.name.lowercased().contains("sold")
+                if settingsService.displayStocks == .showAllStocks && isForSoldStocks == false {
                     Text("Active Gain/Loss: \(totalActive.formatted(.currency(code: "USD")))")
                     Text("Sold Gain/Loss: \(totalSold.formatted(.currency(code: "USD")))")
                 }
@@ -67,7 +67,12 @@ struct PortfolioView: View {
                 if horizontalSizeClass == .compact {
                     SimplePortfolioView(portfolio: portfolio, items: searchResults)
                 } else {
-                    PortfolioBasicInfo2View(portfolio: portfolio, items: searchResults)
+                    if portfolio.isForSoldStocks == true {
+                        PortfolioiPadSoldView(portfolio: portfolio, items: searchResults)
+                    } else {
+                        PortfolioBasicInfo2View(portfolio: portfolio, items: searchResults)
+                    }
+                    
                 }
             }
             .toolbar {

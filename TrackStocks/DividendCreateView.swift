@@ -24,7 +24,6 @@ struct DividendCreateView: View {
     var isOnlyShares = false
     @State var symbol: String = ""
     @State var firestoreId: String = ""
-    @State var selectedDate = ""
     @State var dividendAmount = ""
     @State var showingDateSelector: Bool = false
     @State var basis = ""
@@ -34,6 +33,8 @@ struct DividendCreateView: View {
     @State var showingMissingQuantity: Bool = false
     @State var showingMissingBasis: Bool = false
     @State private var dividendType: DividendType = .cash
+    @State private var dobText: String = ""
+    @State var textLen = 0
     
     init(parameters: DividendCreateParameters) {
         self.portfolio = parameters.portfolio
@@ -46,16 +47,19 @@ struct DividendCreateView: View {
             Form {
                 Section {
                     if showDatePicker == true {
-                        TextField("Dividend Date", text: $selectedDate)
+                        TextField("MM/DD/YY", text: $dobText)
                             .textCase(.uppercase)
                             .disableAutocorrection(true)
                             .simultaneousGesture(TapGesture().onEnded {
                                 showingDateSelector = true
                             })
                     } else {
-                        TextField("Dividend Date", text: $selectedDate)
+                        TextField("MM/DD/YY", text: $dobText)
                             .textCase(.uppercase)
-                            .keyboardType(.numbersAndPunctuation)
+                            .keyboardType(.numberPad)
+                            .onChange(of: dobText) { oldValue, newValue in
+                                ProcessDate(newValue: newValue, dobText: &dobText, textLen: &textLen)
+                            }
                     }
                 } header: {
                     Text("Date")
@@ -127,11 +131,11 @@ struct DividendCreateView: View {
             Button("Cancel", role: .cancel) { }
         }
         .fullScreenCover(isPresented: $showingDateSelector) {
-            StockDateSelectorView(selectedDate: $selectedDate)
+            StockDateSelectorView(selectedDate: $dobText)
         }
         .onAppear {
             symbol = item.symbol
-            selectedDate = ""
+            dobText = ""
             firestoreId = item.firestoreId
             if isOnlyShares == true {
                 dividendType = .shares
@@ -140,7 +144,7 @@ struct DividendCreateView: View {
     }
     
     func addDividend() {
-        if selectedDate.isEmpty {
+        if dobText.isEmpty {
             showingMissingDate = true
             return
         }
@@ -163,9 +167,9 @@ struct DividendCreateView: View {
         dismiss()
         Task {
             if dividendType == .cash {
-                await firebaseService.addCashDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: firestoreId, dividendDate: selectedDate, dividendAmount: dividendAmount)
+                await firebaseService.addCashDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: firestoreId, dividendDate: dobText, dividendAmount: dividendAmount)
             } else {
-                await firebaseService.addSharesDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: firestoreId, dividendDate: selectedDate, dividendAmount: basis, numberOfShares: quantity)
+                await firebaseService.addSharesDividend(portfolioName: portfolio.id ?? "n/a", firestoreId: firestoreId, dividendDate: dobText, dividendAmount: basis, numberOfShares: quantity)
             }
         }
     }

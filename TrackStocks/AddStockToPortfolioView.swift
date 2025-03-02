@@ -20,7 +20,6 @@ struct AddStockToPortfolioView: View {
     @State var basis: Double?
     @State var quantity: Double?
     @State var selectedStock = ""
-    @State var selectedDate = ""
     @State var showingStockSelector: Bool = false
     @State var showingDateSelector: Bool = false
     @State var showingMissingSymbol: Bool = false
@@ -28,8 +27,9 @@ struct AddStockToPortfolioView: View {
     @State var showingMissingQuantity: Bool = false
     @State var showingMissingBasis: Bool = false
     @State private var selectedStockTagOption: StockPicks = .none
-    
     @State var navigationLinkTriggerer: Bool? = nil
+    @State private var dobText: String = ""
+    @State var textLen = 0
     
     var body: some View {
         NavigationStack {
@@ -47,16 +47,19 @@ struct AddStockToPortfolioView: View {
                     }
                     Section {
                         if showDatePicker == true {
-                            TextField("Date", text: $selectedDate)
+                            TextField("MM/DD/YY", text: $dobText)
                                 .textCase(.uppercase)
                                 .disableAutocorrection(true)
                                 .simultaneousGesture(TapGesture().onEnded {
                                     showingDateSelector = true
                                 })
                         } else {
-                            TextField("Date", text: $selectedDate)
+                            TextField("MM/DD/YY", text: $dobText)
                                 .textCase(.uppercase)
-                                .keyboardType(.numbersAndPunctuation)
+                                .keyboardType(.numberPad)
+                                .onChange(of: dobText) { oldValue, newValue in
+                                    ProcessDate(newValue: newValue, dobText: &dobText, textLen: &textLen)
+                                }
                         }
                     } header: {
                         Text("Date")
@@ -103,7 +106,7 @@ struct AddStockToPortfolioView: View {
                 StockSymbolSelectorView(symbol: $selectedStock)
             }
             .fullScreenCover(isPresented: $showingDateSelector) {
-                StockDateSelectorView(selectedDate: $selectedDate)
+                StockDateSelectorView(selectedDate: $dobText)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -129,7 +132,7 @@ struct AddStockToPortfolioView: View {
             showingMissingSymbol = true
             return
         }
-        if selectedDate.isEmpty {
+        if dobText.isEmpty {
             showingMissingDate = true
             return
         }
@@ -157,11 +160,38 @@ struct AddStockToPortfolioView: View {
         }
         Task {
             dismiss()
-            await firebaseService.addItem(portfolioName: portfolioName, symbol: selectedStock.uppercased(), quantity: doubleQuantity, basis: doubleBasis, purchasedDate: selectedDate, soldDate: "n/a", stockTag: selectedStockTagOption.rawValue)
+            await firebaseService.addItem(portfolioName: portfolioName, symbol: selectedStock.uppercased(), quantity: doubleQuantity, basis: doubleBasis, purchasedDate: dobText, soldDate: "n/a", stockTag: selectedStockTagOption.rawValue)
         }
     }
     
 }
+
+func ProcessDate(newValue: String, dobText: inout String, textLen: inout Int) {
+    if newValue.count < textLen {
+        dobText = ""
+        textLen = 0
+        return
+    }
+    // Check if the input length exceeds 8 characters
+     guard newValue.count <= 8 else {
+         dobText = String(newValue.prefix(8))
+         return
+     }
+    
+     // Handle backspace
+     if newValue.count < dobText.count {
+         dobText = ""
+         return
+     }
+     if newValue.count >= 2 && !newValue.contains("/") {
+         dobText.insert("/", at: dobText.index(dobText.startIndex, offsetBy: 2))
+     }
+     if newValue.count >= 5 && !newValue[dobText.index(dobText.startIndex, offsetBy: 5)...].contains("/") {
+         dobText.insert("/", at: dobText.index(dobText.startIndex, offsetBy: 5))
+     }
+    textLen = dobText.count
+}
+
 
 #Preview {
     AddStockToPortfolioView()

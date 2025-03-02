@@ -57,4 +57,17 @@ struct MoreListsButtonStyle: ButtonStyle {
     }
 }
 
+struct iOSCheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        // 1
+        Button(action: {
+            configuration.isOn.toggle()
+        }, label: {
+            HStack {
+                Image(systemName: configuration.isOn ? "checkmark.square" : "square")
+                configuration.label
+            }
+        })
+    }
+}
 

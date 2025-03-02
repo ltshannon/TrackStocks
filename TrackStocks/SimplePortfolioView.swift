@@ -52,6 +52,7 @@ struct SimplePortfolioView: View {
                         .foregroundStyle(item.isSold ? .orange : .primary)
                     View8(item: item)
                     Text("\(String(format: "%.2f", item.price))").bold()
+                        .foregroundStyle(item.isSold ? .orange : .primary)
                     if isCurrent == true {
                         let value = item.price * item.quantity
                         Text("\(value, specifier: "%.2f")")
@@ -104,5 +105,6 @@ struct View8: View {
             Text("\(item.basis, specifier: "%.2f")")
         }
         .font(.caption)
+        .foregroundStyle(item.isSold ? .orange : .primary)
     }
 }

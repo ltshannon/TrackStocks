@@ -21,7 +21,6 @@ class ItemsClass: ObservableObject {
 }
 
 struct PortfolioBasicInfo2View: View {
-    @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var appNavigationState: AppNavigationState
     var portfolio: Portfolio
     var items: [ItemData]
@@ -62,7 +61,7 @@ struct PortfolioBasicInfo2View: View {
                 Group {
                     Button {
                         itemsClass.sortType = .symbol
-                        SortItems(ascending: isSymbolSortAscending)
+                        SortItems(ascending: isSymbolSortAscending, itemsClass: itemsClass)
                         isSymbolSortAscending.toggle()
                     } label: {
                         HStack(spacing: 1) {
@@ -78,7 +77,7 @@ struct PortfolioBasicInfo2View: View {
                     Text("Cost\nBasis")
                     Button {
                         itemsClass.sortType = .todaysLossGain
-                        SortItems(ascending: isTodaysLossGainSortAscending)
+                        SortItems(ascending: isTodaysLossGainSortAscending, itemsClass: itemsClass)
                         isTodaysLossGainSortAscending.toggle()
                     } label: {
                         HStack(spacing: 1) {
@@ -89,7 +88,7 @@ struct PortfolioBasicInfo2View: View {
                     }
                     Button {
                         itemsClass.sortType = .totalLossGain
-                        SortItems(ascending: isTotalLossGainSortAscending)
+                        SortItems(ascending: isTotalLossGainSortAscending, itemsClass: itemsClass)
                         isTotalLossGainSortAscending.toggle()
                     } label: {
                         HStack(spacing: 1) {
@@ -100,7 +99,7 @@ struct PortfolioBasicInfo2View: View {
                     }
                     Button {
                         itemsClass.sortType = .currentValue
-                        SortItems(ascending: isCurrentValueSortAscending)
+                        SortItems(ascending: isCurrentValueSortAscending, itemsClass: itemsClass)
                         isCurrentValueSortAscending.toggle()
                     } label: {
                         HStack(spacing: 1) {
@@ -172,38 +171,41 @@ struct PortfolioBasicInfo2View: View {
 
         .alert("Are you sure you want to delete this?", isPresented: $showingDeleteAlert) {
             Button("OK", role: .destructive) {
-                deleteItem(firestoreId: firestoreId)
+                deleteItem(firestoreId: firestoreId, portfolio: self.portfolio)
             }
             Button("Cancel", role: .cancel) { }
         }
 
     }
     
-    func deleteItem(firestoreId: String) {
-        Task {
-            await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.id ?? "n/a", stockId: firestoreId)
-        }
-    }
-    
-    func SortItems(ascending: Bool) {
-        if ascending == true {
-            switch itemsClass.sortType {
-            case .symbol: itemsClass.items.sort { $0.symbol < $1.symbol }
-            case .todaysLossGain: itemsClass.items.sort { $0.todaysGainLoss < $1.todaysGainLoss }
-            case .totalLossGain: itemsClass.items.sort { $0.gainLose < $1.gainLose }
-            case .currentValue: itemsClass.items.sort { $0.totalValue < $1.totalValue }
-            }
-        } else {
-            switch itemsClass.sortType {
-            case .symbol: itemsClass.items.sort { $0.symbol > $1.symbol }
-            case .todaysLossGain: itemsClass.items.sort { $0.todaysGainLoss > $1.todaysGainLoss }
-            case .totalLossGain: itemsClass.items.sort { $0.gainLose > $1.gainLose }
-            case .currentValue: itemsClass.items.sort { $0.totalValue > $1.totalValue }
-            }
-        }
+}
 
-    }
+func SortItems(ascending: Bool, itemsClass: ItemsClass) {
     
+    if ascending == true {
+        switch itemsClass.sortType {
+        case .symbol: itemsClass.items.sort { $0.symbol < $1.symbol }
+        case .todaysLossGain: itemsClass.items.sort { $0.todaysGainLoss < $1.todaysGainLoss }
+        case .totalLossGain: itemsClass.items.sort { $0.gainLose < $1.gainLose }
+        case .currentValue: itemsClass.items.sort { $0.totalValue < $1.totalValue }
+        }
+    } else {
+        switch itemsClass.sortType {
+        case .symbol: itemsClass.items.sort { $0.symbol > $1.symbol }
+        case .todaysLossGain: itemsClass.items.sort { $0.todaysGainLoss > $1.todaysGainLoss }
+        case .totalLossGain: itemsClass.items.sort { $0.gainLose > $1.gainLose }
+        case .currentValue: itemsClass.items.sort { $0.totalValue > $1.totalValue }
+        }
+    }
+
+}
+
+func deleteItem(firestoreId: String, portfolio: Portfolio) {
+    let firebaseService = FirebaseService.shared
+    
+    Task {
+        await firebaseService.deletePortfolioStock(portfolioName: portfolio.id ?? "n/a", stockId: firestoreId)
+    }
 }
 
 struct SortArrow: View {
@@ -219,12 +221,13 @@ struct SortArrow: View {
 
 struct View1: View {
     var item: ItemData
+    var isSoldPortfolio: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
             Text(item.symbol)
             .bold()
-            .foregroundStyle(item.isSold ? .orange : .primary)
+            .foregroundStyle(item.isSold && isSoldPortfolio == false ? .orange : .primary)
             if item.isSold == false, let tag = item.stockTag {
                 let tag = StockPicks.hold.getStockPick(type: tag)
                 if tag != .none {
@@ -260,9 +263,11 @@ struct View2: View {
 
 struct PriceView: View {
     var item: ItemData
+    var isSoldPortfolio: Bool = false
     
     var body: some View {
         Text(item.price, format: .currency(code: "USD"))
+            .foregroundStyle(isSoldPortfolio == false ? item.isSold ? .orange : .primary : .primary)
     }
     
 }
@@ -296,23 +301,25 @@ struct ChangesPercentageView: View {
 
 struct NumberOfSharesView: View {
     var item: ItemData
+    var isSoldPortfolio: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
             Text("\(String(format: "%.2f", item.quantity))")
         }
-        .foregroundStyle(item.isSold ? .orange : .primary)
+        .foregroundStyle(isSoldPortfolio == false ? item.isSold ? .orange : .primary : .primary)
     }
 }
 
 struct BasisView: View {
     var item: ItemData
+    var isSoldPortfolio: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
             Text(item.basis, format: .currency(code: "USD"))
         }
-        .foregroundStyle(item.isSold ? .orange : .primary)
+        .foregroundStyle(isSoldPortfolio == false ? item.isSold ? .orange : .primary : .primary)
     }
 }
 
@@ -323,7 +330,7 @@ struct TodaysGainLossView: View {
         VStack(alignment: .leading) {
             let todaysGainLoss = abs(item.todaysGainLoss)
             Text(todaysGainLoss, format: .currency(code: "USD"))
-                .foregroundStyle(item.isSold ? .orange : (item.gainLose >= 0 ? .green : .red))
+                .foregroundStyle(item.isSold ? .orange : (item.change ?? 0 >= 0 ? .green : .red))
         }
     }
 }
@@ -331,17 +338,18 @@ struct TodaysGainLossView: View {
 struct GainLossView: View {
     @Binding var gainLossTotal: Double
     var item: ItemData
+    var isSoldPortfolio: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
-            if item.isSold == false {
+//            if item.isSold == false || isSoldPortfolio == true {
                 let gainLose = abs(item.gainLose)
                 Text(gainLose, format: .currency(code: "USD"))
                     .foregroundStyle(item.gainLose >= 0 ? .green : .red)
-            } else {
-                Text(item.gainLose, format: .currency(code: "USD"))
-                    .foregroundStyle(.orange)
-            }
+//            } else {
+//                Text(item.gainLose, format: .currency(code: "USD"))
+//                    .foregroundStyle(.orange)
+//            }
         }
     }
 }
@@ -349,6 +357,7 @@ struct GainLossView: View {
 struct TotalView: View {
     @Binding var grandTotal: Double
     var item: ItemData
+    var isSoldPortfolio: Bool = false
     
     var body: some View {
         VStack {
