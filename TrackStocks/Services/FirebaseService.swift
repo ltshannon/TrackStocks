@@ -471,8 +471,8 @@ class FirebaseService: ObservableObject {
 
     }
     
-    func refreshPortfolio(portfolioName: String) async -> ([ItemData], Double, Double, Double, Double) {
-        if let masterSymbol = masterSymbolList.filter({ $0.portfolioName == portfolioName }).first {
+    func refreshPortfolio(portfolio: Portfolio) async -> ([ItemData], Double, Double, Double, Double) {
+        if let masterSymbol = masterSymbolList.filter({ $0.portfolioName == portfolio.name }).first {
             
             var items = masterSymbol.itemsData
             let list = masterSymbol.stockSymbols
@@ -531,7 +531,7 @@ class FirebaseService: ObservableObject {
                         }
                     }
                 }
-                let results = await computeTotals(itemsData: items)
+            let results = await computeTotals(portfolio: portfolio, itemsData: items)
                 return (results.0, results.1, results.2, results.3, results.4)
 //            }
         } else {
@@ -539,7 +539,7 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func computeTotals(itemsData: [ItemData]) async -> ([ItemData], Double, Double, Double, Double) {
+    func computeTotals(portfolio: Portfolio, itemsData: [ItemData]) async -> ([ItemData], Double, Double, Double, Double) {
         var result: [ItemData] = []
         let displayStockState = settingService.displayStocks
         var total: Double = 0
@@ -551,7 +551,11 @@ class FirebaseService: ObservableObject {
             if displayStockState == .showSoldStocks && item.isSold == false {
                 continue
             }
-            if item.isSold == true, displayStockState == .showActiveStocks {
+            var isForSoldStocks = false
+            if portfolio.isForSoldStocks == true {
+                isForSoldStocks = true
+            }
+            if displayStockState == .showActiveStocks && item.isSold == true && isForSoldStocks == false {
                 continue
             }
 

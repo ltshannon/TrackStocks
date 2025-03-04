@@ -121,7 +121,7 @@ struct TotalsView: View {
         Task {
             let portfolios = firebaseService.portfolioList
             for portfolio in portfolios {
-                let results = await firebaseService.refreshPortfolio(portfolioName: portfolio.name)
+                let results = await firebaseService.refreshPortfolio(portfolio: portfolio)
                 let item = PortfolioTotal(name: portfolio.name, stocks: results.0, total: results.1, totalBasis: results.2, totalSold: results.3, totalActive: results.4)
                 total += item.total
                 totalBasis += item.totalBasis

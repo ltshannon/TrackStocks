@@ -125,7 +125,7 @@ struct PortfolioView: View {
     
     func refreshPrices() {
         Task {
-            let results = await firebaseService.refreshPortfolio(portfolioName: self.portfolio.name)
+            let results = await firebaseService.refreshPortfolio(portfolio: self.portfolio)
             
             await MainActor.run {
                 self.stocks = results.0

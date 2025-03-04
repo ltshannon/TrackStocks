@@ -13,6 +13,7 @@ struct PortfolioMoveView: View {
     var portfolio: Portfolio
     var item: ItemData
     @State var portfolios: [Portfolio] = []
+    @State var isCanNotMoveToPortfolio: Bool = false
     
     init(parameters: PortfolioMoveParameters) {
         self.portfolio = parameters.portfolio
@@ -29,6 +30,10 @@ struct PortfolioMoveView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
+                        if item.isForSoldStocks == true && self.item.isSold == false {
+                            isCanNotMoveToPortfolio = true
+                            return
+                        }
                         moveItemToPortfolio(portfolio: item)
                     }
                 }
@@ -40,12 +45,15 @@ struct PortfolioMoveView: View {
             let values = firebaseService.portfolioList.filter { $0.name != portfolio.name }
             self.portfolios = values
         }
+        .alert("Only Sold stocks can be moved into a sold portfolio.", isPresented: $isCanNotMoveToPortfolio) {
+            Button("Cancel", role: .cancel) { }
+        }
     }
     
     func moveItemToPortfolio(portfolio: Portfolio) {
         debugPrint("Moving \(item.symbol) to \(portfolio.name)")
         Task {
-            await firebaseService.moveStockToPortfolio(oldPortfolio: portfolio, newPortfolioName: portfolio.name, stock: item)
+            await firebaseService.moveStockToPortfolio(oldPortfolio: portfolio, newPortfolioName: portfolio.id ?? "n/a", stock: item)
             await firebaseService.deletePortfolioStock(portfolioName: self.portfolio.id ?? "n/a", stockId: item.firestoreId)
             dismiss()
         }
