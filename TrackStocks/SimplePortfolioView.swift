@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SimplePortfolioView: View {
     @EnvironmentObject var firebaseService: FirebaseService
+    @EnvironmentObject var settingsService: SettingsService
     var portfolio: Portfolio
     var items: [ItemData]
     @State var searchText = ""
@@ -52,7 +53,7 @@ struct SimplePortfolioView: View {
                         .foregroundStyle(item.isSold ? .orange : .primary)
                     View8(item: item)
                     Text("\(String(format: "%.2f", item.price))").bold()
-                        .foregroundStyle(item.isSold ? .orange : .primary)
+                        .foregroundStyle(settingsService.displayStocks == .showAfterHourPrice ? .blue : item.isSold ? .orange : .primary)
                     if isCurrent == true {
                         let value = item.price * item.quantity
                         Text("\(value, specifier: "%.2f")")

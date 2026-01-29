@@ -30,6 +30,11 @@ struct ShowStockToolbar: ToolbarContent {
                     Label("Show Sold Stocks", systemImage: settingsService.displayStocks == .showSoldStocks ? "checkmark.circle" : "circle")
                 }
                 Button {
+                    settingsService.setShowAfterHourPrice()
+                } label: {
+                    Label("Show After Hour Price", systemImage: settingsService.displayStocks == .showAfterHourPrice ? "checkmark.circle" : "circle")
+                }
+                Button {
                     
                 } label: {
                     Text("Cancel")

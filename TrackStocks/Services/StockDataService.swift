@@ -19,7 +19,7 @@ struct StockData: Identifiable, Codable, Hashable {
     var dayHigh: Float?
     var yearLow: Float?
     var yearHigh: Float?
-    var marketCap: Int?
+    var marketCap: Float?
     var priceAvg50: Float?
     var priceAvg200: Float?
     var exchange: String?
@@ -164,12 +164,21 @@ struct ChartData: Identifiable, Codable, Hashable {
 
 class StockDataService: ObservableObject {
     static let shared = StockDataService()
+    var settingService = SettingsService.shared
     
     func fetchFullQuoteStocks(tickers: String) async -> [StockData] {
+        var url = ""
+        
+        if settingService.displayStocks != .showAfterHourPrice {
+            url += "https://financialmodelingprep.com/api/v3/quote-order/"
+        } else {
+            url += "https://financialmodelingprep.com/api/v4/batch-pre-post-market-trade/"
+        }
+        
         do {
-            let ticker = "https://financialmodelingprep.com/api/v3/quote-order/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q"
+            let ticker = url + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q"
             debugPrint("🥸", "fetchFullQuoteStocks url: \(ticker)")
-            if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-order/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
+            if let url = URL(string: ticker) {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
                 debugPrint("fetchFullQuoteStocks response: \(response.0)")
@@ -184,8 +193,16 @@ class StockDataService: ObservableObject {
     }
     
     func fetchShortQuoteStocks(tickers: String) async -> [StockData] {
+        var url = "https://financialmodelingprep.com/api/v3/"
+        
+        if settingService.displayStocks != .showAfterHourPrice {
+            url += "quote-short/"
+        } else {
+            url += "batch-pre-post-market-trade/"
+        }
+        
         do {
-            let ticker = "https://financialmodelingprep.com/api/v3/quote-short/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q"
+            let ticker = url + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q"
             debugPrint("🥸", "fetchShortQuoteStocks url: \(ticker)")
             if let url = URL(string: ticker) {
                 let session = URLSession(configuration: .default)

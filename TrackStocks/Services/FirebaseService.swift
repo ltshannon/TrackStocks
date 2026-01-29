@@ -31,7 +31,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var dayHigh: Float?
     var yearLow: Float?
     var yearHigh: Float?
-    var marketCap: Int?
+    var marketCap: Float?
     var priceAvg50: Float?
     var priceAvg200: Float?
     var exchange: String?
@@ -556,6 +556,9 @@ class FirebaseService: ObservableObject {
                 isForSoldStocks = true
             }
             if displayStockState == .showActiveStocks && item.isSold == true && isForSoldStocks == false {
+                continue
+            }
+            if displayStockState == .showAfterHourPrice && item.isSold == true {
                 continue
             }
 

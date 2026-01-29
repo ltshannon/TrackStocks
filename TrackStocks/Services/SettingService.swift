@@ -12,6 +12,7 @@ enum DisplayStockState: String, Codable {
     case showActiveStocks
     case showAllStocks
     case showSoldStocks
+    case showAfterHourPrice
 }
 
 class SettingsService: ObservableObject {
@@ -36,5 +37,10 @@ class SettingsService: ObservableObject {
     func setShowSoldStocks() {
         displayStocks = .showSoldStocks
         displayStockState = .showSoldStocks
+    }
+    
+    func setShowAfterHourPrice() {
+        displayStocks = .showAfterHourPrice
+        displayStockState = .showAfterHourPrice
     }
 }
