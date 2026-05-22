@@ -205,5 +205,40 @@ func getNotificationFrequencyFromString(action: String) -> NotificationFrequency
     
 }
 
+extension Date {
+    func isWeekdayAndBetweenWorkHours() -> Bool {
+        let calendar = Calendar.current
+        
+        // 1. Check if it's a weekday
+        // Weekday values typically range from 1 (Sunday) to 7 (Saturday),
+        // depending on the locale. isDateInWeekend() is more reliable.
+        if calendar.isDateInWeekend(self) {
+            return false
+        }
+        
+        // 2. Check the time components
+        let components = calendar.dateComponents([.hour, .minute], from: self)
+        guard let hour = components.hour, let minute = components.minute else {
+            return false
+        }
+        
+        // Define the target time range
+        let startHour = 9
+        let startMinute = 30
+        let endHour = 16 // 4 PM
+        let endMinute = 30
+        
+        // Create comparable minute values
+        let currentTimeInMinutes = hour * 60 + minute
+        let startTimeInMinutes = startHour * 60 + startMinute
+        let endTimeInMinutes = endHour * 60 + endMinute
+        
+        // Check if the current time falls within the range
+        // Use a half-open range to include the start time but exclude the end time
+        return currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes
+    }
+}
+
+
 
 

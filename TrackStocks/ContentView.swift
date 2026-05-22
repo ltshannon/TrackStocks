@@ -18,6 +18,7 @@ struct ContentView: View {
     var parameters = StocksNotificationParameters()
     @State private var activity: Activity<StockTrackingAttributes>? = nil
     @State private var activityToken: Activity<StockActivityAttributes>? = nil
+    let connectivity = iOSConnectivity.shared
 
     var body: some View {
         TabView {

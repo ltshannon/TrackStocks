@@ -16,6 +16,7 @@ struct PortfolioView: View {
     @EnvironmentObject var settingsService: SettingsService
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @AppStorage("dividendDisplay") var isDividendDisplay = false
+    let connectivity = iOSConnectivity.shared
     var portfolio: Portfolio
     var tempSearchText: String
     @State var stocks: [ItemData] = []
@@ -125,7 +126,7 @@ struct PortfolioView: View {
     
     func refreshPrices() {
         Task {
-            let results = await firebaseService.refreshPortfolio(portfolio: self.portfolio)
+            let results = await firebaseService.refreshPortfolio(portfolio: self.portfolio, isMarketHours: true)
             
             await MainActor.run {
                 self.stocks = results.0
@@ -134,6 +135,7 @@ struct PortfolioView: View {
                 self.totalSold = results.3
                 self.totalActive = results.4
             }
+//            connectivity.sendUpdatedStocks(stocks: self.stocks)
         }
     }
     

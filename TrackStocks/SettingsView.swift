@@ -16,6 +16,7 @@ struct SettingsView: View {
     @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.modelContext) var context
     @Environment(\.dismiss) private var dismiss
+    let connectivity = iOSConnectivity.shared
     @AppStorage("showDatePicker") var showDatePicker = false
     @AppStorage("dividendDisplay") var isDividendDisplay = false
     @Query(sort: \SymbolStorage.symbol) var symbolStorage: [SymbolStorage]
@@ -92,6 +93,24 @@ struct SettingsView: View {
                     }
                 } message: {
                     Text("Are you sure you want to update the Market Symbols, this will take a while?")
+                }
+                if connectivity.shouldContinue {
+                    Button {
+                        connectivity.stopWatchOSDataFeed()
+                    } label: {
+                        Text("Stop WatchOS Data feed")
+                        Text("\(connectivity.count)")
+                    }
+                    .buttonStyle(PlainTextButtonStyle())
+                } else {
+                    Button {
+                        connectivity.startWatchOSDataFeed()
+                    } label: {
+                        HStack {
+                            Text("Start WatchOS Data feed")
+                        }
+                    }
+                    .buttonStyle(PlainTextButtonStyle())
                 }
                 Toggle("Use Date Picker", isOn: $showDatePicker)
 //                Toggle("Dividend view", isOn: $isDividendDisplay)

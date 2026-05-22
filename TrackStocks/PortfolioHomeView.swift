@@ -190,7 +190,6 @@ struct PortfolioHomeView: View {
         .onChange(of: firebaseService.masterSymbolList) { oldValue, newValue in
 
         }
-
     }
     
     func add() {

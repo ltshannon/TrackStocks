@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B12437882F2C0F1F007FE423 /* TrackStocksWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B124377E2F2C0F1E007FE423 /* TrackStocksWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B17F30F02D5EAB1100B83282 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B17F30EF2D5EAB1100B83282 /* FirebaseAuth */; };
 		B17F30F22D5EAB1100B83282 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = B17F30F12D5EAB1100B83282 /* FirebaseCore */; };
 		B17F30F42D5EAB1100B83282 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B17F30F32D5EAB1100B83282 /* FirebaseFirestore */; };
@@ -22,9 +23,19 @@
 		B1C840182D2B6CE200D08C36 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C840172D2B6CE200D08C36 /* WidgetKit.framework */; };
 		B1C8401A2D2B6CE200D08C36 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C840192D2B6CE200D08C36 /* SwiftUI.framework */; };
 		B1C8402B2D2B6CE300D08C36 /* StocksNotificationWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B1EE20382F315F040053F3FE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C840172D2B6CE200D08C36 /* WidgetKit.framework */; };
+		B1EE20392F315F040053F3FE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C840192D2B6CE200D08C36 /* SwiftUI.framework */; };
+		B1EE20442F315F050053F3FE /* TrackStocksWatch ComplicationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B1EE20372F315F040053F3FE /* TrackStocksWatch ComplicationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		B12437862F2C0F1F007FE423 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13E6EE52CD2F6D100FEAAF4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B124377D2F2C0F1E007FE423;
+			remoteInfo = "TrackStocksWatch Watch App";
+		};
 		B1C840292D2B6CE300D08C36 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B13E6EE52CD2F6D100FEAAF4 /* Project object */;
@@ -32,9 +43,27 @@
 			remoteGlobalIDString = B1C840142D2B6CE200D08C36;
 			remoteInfo = StocksNotificationWidgetExtension;
 		};
+		B1EE20422F315F050053F3FE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13E6EE52CD2F6D100FEAAF4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B1EE20362F315F040053F3FE;
+			remoteInfo = "TrackStocksWatch ComplicationExtension";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		B12437892F2C0F1F007FE423 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				B12437882F2C0F1F007FE423 /* TrackStocksWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B1C840302D2B6CE300D08C36 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,17 +75,38 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1EE20452F315F050053F3FE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B1EE20442F315F050053F3FE /* TrackStocksWatch ComplicationExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B124377E2F2C0F1E007FE423 /* TrackStocksWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "TrackStocksWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B13E6EED2CD2F6D100FEAAF4 /* TrackStocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrackStocks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = StocksNotificationWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1C840172D2B6CE200D08C36 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		B1C840192D2B6CE200D08C36 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		B1C840492D2C701D00D08C36 /* StocksNotificationWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StocksNotificationWidgetExtension.entitlements; sourceTree = "<group>"; };
+		B1EE20372F315F040053F3FE /* TrackStocksWatch ComplicationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "TrackStocksWatch ComplicationExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1EE20732F316D3B0053F3FE /* TrackStocksWatch ComplicationExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TrackStocksWatch ComplicationExtension.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B12437C02F2C1C16007FE423 /* Exceptions for "TrackStocksWatch Watch App" folder in "TrackStocks" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WatchStock.swift,
+			);
+			target = B13E6EEC2CD2F6D100FEAAF4 /* TrackStocks */;
+		};
 		B13465862D0FBCAC009F6625 /* Exceptions for "TrackStocks" folder in "TrackStocks" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -87,9 +137,33 @@
 			);
 			target = B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */;
 		};
+		B1EE20492F315F050053F3FE /* Exceptions for "TrackStocksWatch Complication" folder in "TrackStocksWatch ComplicationExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B1EE20362F315F040053F3FE /* TrackStocksWatch ComplicationExtension */;
+		};
+		B1EE204B2F315FC30053F3FE /* Exceptions for "TrackStocksWatch Watch App" folder in "TrackStocksWatch ComplicationExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				SharedStocks.swift,
+				WatchStock.swift,
+			);
+			target = B1EE20362F315F040053F3FE /* TrackStocksWatch ComplicationExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B124377F2F2C0F1E007FE423 /* TrackStocksWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B12437C02F2C1C16007FE423 /* Exceptions for "TrackStocksWatch Watch App" folder in "TrackStocks" target */,
+				B1EE204B2F315FC30053F3FE /* Exceptions for "TrackStocksWatch Watch App" folder in "TrackStocksWatch ComplicationExtension" target */,
+			);
+			path = "TrackStocksWatch Watch App";
+			sourceTree = "<group>";
+		};
 		B13E6EEF2CD2F6D100FEAAF4 /* TrackStocks */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -107,9 +181,24 @@
 			path = StocksNotificationWidget;
 			sourceTree = "<group>";
 		};
+		B1EE203A2F315F040053F3FE /* TrackStocksWatch Complication */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B1EE20492F315F050053F3FE /* Exceptions for "TrackStocksWatch Complication" folder in "TrackStocksWatch ComplicationExtension" target */,
+			);
+			path = "TrackStocksWatch Complication";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B124377B2F2C0F1E007FE423 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B13E6EEA2CD2F6D100FEAAF4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -138,15 +227,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1EE20342F315F040053F3FE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1EE20392F315F040053F3FE /* SwiftUI.framework in Frameworks */,
+				B1EE20382F315F040053F3FE /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		B13E6EE42CD2F6D100FEAAF4 = {
 			isa = PBXGroup;
 			children = (
+				B1EE20732F316D3B0053F3FE /* TrackStocksWatch ComplicationExtension.entitlements */,
 				B1C840492D2C701D00D08C36 /* StocksNotificationWidgetExtension.entitlements */,
 				B13E6EEF2CD2F6D100FEAAF4 /* TrackStocks */,
 				B1C8401B2D2B6CE200D08C36 /* StocksNotificationWidget */,
+				B124377F2F2C0F1E007FE423 /* TrackStocksWatch Watch App */,
+				B1EE203A2F315F040053F3FE /* TrackStocksWatch Complication */,
 				B1C840162D2B6CE200D08C36 /* Frameworks */,
 				B13E6EEE2CD2F6D100FEAAF4 /* Products */,
 			);
@@ -157,6 +258,8 @@
 			children = (
 				B13E6EED2CD2F6D100FEAAF4 /* TrackStocks.app */,
 				B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */,
+				B124377E2F2C0F1E007FE423 /* TrackStocksWatch Watch App.app */,
+				B1EE20372F315F040053F3FE /* TrackStocksWatch ComplicationExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -173,6 +276,30 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B124377D2F2C0F1E007FE423 /* TrackStocksWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B124378C2F2C0F1F007FE423 /* Build configuration list for PBXNativeTarget "TrackStocksWatch Watch App" */;
+			buildPhases = (
+				B124377A2F2C0F1E007FE423 /* Sources */,
+				B124377B2F2C0F1E007FE423 /* Frameworks */,
+				B124377C2F2C0F1E007FE423 /* Resources */,
+				B1EE20452F315F050053F3FE /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B1EE20432F315F050053F3FE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B124377F2F2C0F1E007FE423 /* TrackStocksWatch Watch App */,
+			);
+			name = "TrackStocksWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "TrackStocksWatch Watch App";
+			productReference = B124377E2F2C0F1E007FE423 /* TrackStocksWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		B13E6EEC2CD2F6D100FEAAF4 /* TrackStocks */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B13E6EFC2CD2F6D200FEAAF4 /* Build configuration list for PBXNativeTarget "TrackStocks" */;
@@ -181,11 +308,13 @@
 				B13E6EEA2CD2F6D100FEAAF4 /* Frameworks */,
 				B13E6EEB2CD2F6D100FEAAF4 /* Resources */,
 				B1C840302D2B6CE300D08C36 /* Embed Foundation Extensions */,
+				B12437892F2C0F1F007FE423 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				B1C8402A2D2B6CE300D08C36 /* PBXTargetDependency */,
+				B12437872F2C0F1F007FE423 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B13E6EEF2CD2F6D100FEAAF4 /* TrackStocks */,
@@ -231,6 +360,28 @@
 			productReference = B1C840152D2B6CE200D08C36 /* StocksNotificationWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		B1EE20362F315F040053F3FE /* TrackStocksWatch ComplicationExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1EE20482F315F050053F3FE /* Build configuration list for PBXNativeTarget "TrackStocksWatch ComplicationExtension" */;
+			buildPhases = (
+				B1EE20332F315F040053F3FE /* Sources */,
+				B1EE20342F315F040053F3FE /* Frameworks */,
+				B1EE20352F315F040053F3FE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B1EE203A2F315F040053F3FE /* TrackStocksWatch Complication */,
+			);
+			name = "TrackStocksWatch ComplicationExtension";
+			packageProductDependencies = (
+			);
+			productName = "TrackStocksWatch ComplicationExtension";
+			productReference = B1EE20372F315F040053F3FE /* TrackStocksWatch ComplicationExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -238,14 +389,20 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1610;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					B124377D2F2C0F1E007FE423 = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					B13E6EEC2CD2F6D100FEAAF4 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 					B1C840142D2B6CE200D08C36 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					B1EE20362F315F040053F3FE = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -269,11 +426,20 @@
 			targets = (
 				B13E6EEC2CD2F6D100FEAAF4 /* TrackStocks */,
 				B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */,
+				B124377D2F2C0F1E007FE423 /* TrackStocksWatch Watch App */,
+				B1EE20362F315F040053F3FE /* TrackStocksWatch ComplicationExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B124377C2F2C0F1E007FE423 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B13E6EEB2CD2F6D100FEAAF4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -288,9 +454,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1EE20352F315F040053F3FE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B124377A2F2C0F1E007FE423 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B13E6EE92CD2F6D100FEAAF4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -305,17 +485,101 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1EE20332F315F040053F3FE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B12437872F2C0F1F007FE423 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B124377D2F2C0F1E007FE423 /* TrackStocksWatch Watch App */;
+			targetProxy = B12437862F2C0F1F007FE423 /* PBXContainerItemProxy */;
+		};
 		B1C8402A2D2B6CE300D08C36 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B1C840142D2B6CE200D08C36 /* StocksNotificationWidgetExtension */;
 			targetProxy = B1C840292D2B6CE300D08C36 /* PBXContainerItemProxy */;
 		};
+		B1EE20432F315F050053F3FE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B1EE20362F315F040053F3FE /* TrackStocksWatch ComplicationExtension */;
+			targetProxy = B1EE20422F315F050053F3FE /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		B124378A2F2C0F1F007FE423 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "TrackStocksWatch Watch App/TrackStocksWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TrackStocksWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.breakawaydesign.TrackStocks;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.TrackStocks.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		B124378B2F2C0F1F007FE423 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "TrackStocksWatch Watch App/TrackStocksWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TrackStocksWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.breakawaydesign.TrackStocks;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.TrackStocks.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Release;
+		};
 		B13E6EFA2CD2F6D200FEAAF4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -352,6 +616,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = DDDAQ32TPA;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -373,6 +638,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -414,6 +680,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = DDDAQ32TPA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -428,6 +695,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -442,12 +710,14 @@
 				CURRENT_PROJECT_VERSION = 48;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"TrackStocks/Preview Content\"";
-				DEVELOPMENT_TEAM = DDDAQ32TPA;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TrackStocks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Track Stocks";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -460,7 +730,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -489,12 +759,14 @@
 				CURRENT_PROJECT_VERSION = 48;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"TrackStocks/Preview Content\"";
-				DEVELOPMENT_TEAM = DDDAQ32TPA;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TrackStocks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Track Stocks";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -507,7 +779,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -534,7 +806,6 @@
 				CODE_SIGN_ENTITLEMENTS = StocksNotificationWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 48;
-				DEVELOPMENT_TEAM = DDDAQ32TPA;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = StocksNotificationWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = StocksNotificationWidget;
@@ -564,7 +835,6 @@
 				CODE_SIGN_ENTITLEMENTS = StocksNotificationWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 48;
-				DEVELOPMENT_TEAM = DDDAQ32TPA;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = StocksNotificationWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = StocksNotificationWidget;
@@ -587,9 +857,85 @@
 			};
 			name = Release;
 		};
+		B1EE20462F315F050053F3FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "TrackStocksWatch ComplicationExtension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TrackStocksWatch Complication/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "TrackStocksWatch Complication";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.breakawaydesign.TrackStocks.watchkitapp.TrackStocksWatch-Complication";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		B1EE20472F315F050053F3FE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "TrackStocksWatch ComplicationExtension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TrackStocksWatch Complication/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "TrackStocksWatch Complication";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.breakawaydesign.TrackStocks.watchkitapp.TrackStocksWatch-Complication";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B124378C2F2C0F1F007FE423 /* Build configuration list for PBXNativeTarget "TrackStocksWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B124378A2F2C0F1F007FE423 /* Debug */,
+				B124378B2F2C0F1F007FE423 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B13E6EE82CD2F6D100FEAAF4 /* Build configuration list for PBXProject "TrackStocks" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -613,6 +959,15 @@
 			buildConfigurations = (
 				B1C8402D2D2B6CE300D08C36 /* Debug */,
 				B1C8402E2D2B6CE300D08C36 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B1EE20482F315F050053F3FE /* Build configuration list for PBXNativeTarget "TrackStocksWatch ComplicationExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1EE20462F315F050053F3FE /* Debug */,
+				B1EE20472F315F050053F3FE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

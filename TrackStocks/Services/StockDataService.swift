@@ -23,7 +23,7 @@ struct StockData: Identifiable, Codable, Hashable {
     var priceAvg50: Float?
     var priceAvg200: Float?
     var exchange: String?
-    var volume: Int?
+    var volume: Float?
     var avgVolume: Float?
     var open: Float?
     var previousClose: Float?
@@ -166,10 +166,10 @@ class StockDataService: ObservableObject {
     static let shared = StockDataService()
     var settingService = SettingsService.shared
     
-    func fetchFullQuoteStocks(tickers: String) async -> [StockData] {
+    func fetchFullQuoteStocks(tickers: String, isMarketHours: Bool = true) async -> [StockData] {
         var url = ""
         
-        if settingService.displayStocks != .showAfterHourPrice {
+        if isMarketHours {
             url += "https://financialmodelingprep.com/api/v3/quote-order/"
         } else {
             url += "https://financialmodelingprep.com/api/v4/batch-pre-post-market-trade/"

@@ -35,7 +35,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var priceAvg50: Float?
     var priceAvg200: Float?
     var exchange: String?
-    var volume: Int?
+    var volume: Float?
     var avgVolume: Float?
     var open: Float?
     var previousClose: Float?
@@ -471,7 +471,7 @@ class FirebaseService: ObservableObject {
 
     }
     
-    func refreshPortfolio(portfolio: Portfolio) async -> ([ItemData], Double, Double, Double, Double) {
+    func refreshPortfolio(portfolio: Portfolio, isMarketHours: Bool = false) async -> ([ItemData], Double, Double, Double, Double) {
         if let masterSymbol = masterSymbolList.filter({ $0.portfolioName == portfolio.name }).first {
             
             var items = masterSymbol.itemsData
@@ -479,7 +479,7 @@ class FirebaseService: ObservableObject {
 //            Task {
                 let string: String = list.joined(separator: ",")
                 var stockData: [StockData] = []
-                stockData = await stockDataService.fetchFullQuoteStocks(tickers: string)
+                stockData = await stockDataService.fetchFullQuoteStocks(tickers: string, isMarketHours: isMarketHours)
                 for item in stockData {
                     items.indices.forEach { index in
                         if item.id == items[index].symbol {
